@@ -15,10 +15,12 @@
 | 2026-02-17 | Schema update: Add dog walk activity type, enums, RouteTagEntity, metadata fields, tests | 19 | 1 | +811/-17 |
 | 2026-02-17 | Checkpoint 4: Active workout screen with live stats, permissions, navigation | 16 | 1 | +1020/-150 |
 | 2026-02-17 | Checkpoint 5: Save completed workouts, crash recovery, summary screen, tests | 17 | 1 | +818/-91 |
+| 2026-02-17 | Checkpoint 6: Workout history screen, date formatting, home preview, tests | 12 | 1 | +706/-9 |
+| 2026-02-17 | Checkpoint 7: Workout detail screen with Google Maps route display, tests | 10 | 1 | +700/-70 |
 
 ## Totals
-- **Total Sessions:** 4
-- **Total Commits:** 7
-- **Total Files Changed:** 104
-- **Total Lines Added:** 6614
-- **Total Lines Removed:** 258
+- **Total Sessions:** 6
+- **Total Commits:** 9
+- **Total Files Changed:** 126
+- **Total Lines Added:** 8020
+- **Total Lines Removed:** 337
