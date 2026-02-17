@@ -1,5 +1,7 @@
 package com.gitfast.app.ui.home
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -12,20 +14,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gitfast.app.service.WorkoutService
 
 @Composable
 fun HomeScreen(
@@ -33,6 +41,7 @@ fun HomeScreen(
     onViewHistory: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -51,7 +60,8 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -107,6 +117,65 @@ fun HomeScreen(
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             }
+
+            // --- Debug Section (temporary, removed in Checkpoint 4) ---
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            HorizontalDivider()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Debug Controls",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = { sendServiceAction(context, WorkoutService.ACTION_START) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Start Tracking")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = { sendServiceAction(context, WorkoutService.ACTION_PAUSE) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Pause Tracking")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = { sendServiceAction(context, WorkoutService.ACTION_RESUME) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Resume Tracking")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = { sendServiceAction(context, WorkoutService.ACTION_STOP) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Stop Tracking")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
+}
+
+private fun sendServiceAction(context: Context, action: String) {
+    val intent = Intent(context, WorkoutService::class.java).apply {
+        this.action = action
+    }
+    context.startForegroundService(intent)
 }
