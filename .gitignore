@@ -1,17 +1,35 @@
-# Environment
-.env
-.env.*
-!.env.example
+# Built application files
+*.apk
+*.aab
+*.ap_
+*.aab
 
-# Dependencies
-node_modules/
+# Files for the ART/Dalvik VM
+*.dex
 
-# OS
-.DS_Store
-Thumbs.db
+# Generated files
+bin/
+gen/
+out/
+build/
 
-# IDE
-.vscode/
+# Gradle files
+.gradle/
+gradle-app.setting
+
+# Local configuration file
+local.properties
+
+# Android Studio
+*.iml
 .idea/
-*.swp
-*.swo
+.DS_Store
+captures/
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild
+.cxx/
