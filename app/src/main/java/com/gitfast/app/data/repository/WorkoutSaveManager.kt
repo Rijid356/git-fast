@@ -3,6 +3,7 @@ package com.gitfast.app.data.repository
 import android.util.Log
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.GpsPointEntity
+import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.model.ActivityType
@@ -18,15 +19,42 @@ class WorkoutSaveManager @Inject constructor(
 
     suspend fun saveCompletedWorkout(snapshot: WorkoutSnapshot): String? {
         return try {
-            val workout = buildWorkoutEntity(snapshot)
-            val phase = buildDefaultPhase(snapshot)
-            val gpsPoints = buildGpsPointEntities(snapshot)
+            val phases = snapshot.phases.map { phaseData ->
+                WorkoutPhaseEntity(
+                    id = UUID.randomUUID().toString(),
+                    workoutId = snapshot.workoutId,
+                    type = phaseData.type,
+                    startTime = phaseData.startTime.toEpochMilli(),
+                    endTime = phaseData.endTime.toEpochMilli(),
+                    distanceMeters = phaseData.distanceMeters,
+                    steps = phaseData.steps
+                )
+            }
+
+            // Build lap entities, linking each to its parent phase
+            val lapsPhaseEntity = phases.find { it.type == PhaseType.LAPS }
+            val lapEntities = if (lapsPhaseEntity != null) {
+                val lapsPhaseData = snapshot.phases.find { it.type == PhaseType.LAPS }
+                lapsPhaseData?.laps?.map { lapData ->
+                    LapEntity(
+                        id = UUID.randomUUID().toString(),
+                        phaseId = lapsPhaseEntity.id,
+                        lapNumber = lapData.lapNumber,
+                        startTime = lapData.startTime.toEpochMilli(),
+                        endTime = lapData.endTime.toEpochMilli(),
+                        distanceMeters = lapData.distanceMeters,
+                        steps = lapData.steps
+                    )
+                } ?: emptyList()
+            } else {
+                emptyList()
+            }
 
             workoutDao.saveWorkoutTransaction(
-                workout = workout,
-                phases = listOf(phase),
-                laps = emptyList(),
-                gpsPoints = gpsPoints
+                workout = buildWorkoutEntity(snapshot),
+                phases = phases,
+                laps = lapEntities,
+                gpsPoints = buildGpsPointEntities(snapshot)
             )
 
             Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}")
@@ -52,18 +80,6 @@ class WorkoutSaveManager @Inject constructor(
             weatherTemp = null,
             energyLevel = null,
             routeTag = null
-        )
-    }
-
-    private fun buildDefaultPhase(snapshot: WorkoutSnapshot): WorkoutPhaseEntity {
-        return WorkoutPhaseEntity(
-            id = UUID.randomUUID().toString(),
-            workoutId = snapshot.workoutId,
-            type = PhaseType.WARMUP,
-            startTime = snapshot.startTime.toEpochMilli(),
-            endTime = snapshot.endTime.toEpochMilli(),
-            distanceMeters = snapshot.totalDistanceMeters,
-            steps = 0
         )
     }
 
