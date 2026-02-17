@@ -57,4 +57,9 @@ object DistanceCalculator {
      * Convert miles to meters.
      */
     fun milesToMeters(miles: Double): Double = miles / 0.000621371
+
+    /**
+     * Convert meters to kilometers.
+     */
+    fun metersToKm(meters: Double): Double = meters / 1000.0
 }

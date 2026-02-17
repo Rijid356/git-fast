@@ -64,8 +64,8 @@ fun ActiveWorkoutScreen(
         showBackConfirmation = true
     }
 
-    // Keep screen on during workout
-    if (uiState.isActive) {
+    // Keep screen on during workout (respects settings)
+    if (uiState.isActive && uiState.keepScreenOn) {
         KeepScreenOn()
     }
 
