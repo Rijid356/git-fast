@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.gitfast.app.ui.home.HomeScreen
+import com.gitfast.app.ui.workout.ActiveWorkoutScreen
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
@@ -32,7 +33,14 @@ fun GitFastNavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.Workout.route) {
-            // TODO: WorkoutScreen - Checkpoint 1
+            ActiveWorkoutScreen(
+                onWorkoutComplete = {
+                    navController.popBackStack(
+                        route = Screen.Home.route,
+                        inclusive = false,
+                    )
+                },
+            )
         }
         composable(Screen.History.route) {
             // TODO: HistoryScreen - Checkpoint 2
