@@ -9,4 +9,7 @@ data class CharacterProfileEntity(
     val totalXp: Int = 0,
     val level: Int = 1,
     val createdAt: Long = System.currentTimeMillis(),
+    val speedStat: Int = 1,
+    val enduranceStat: Int = 1,
+    val consistencyStat: Int = 1,
 )

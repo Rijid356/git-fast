@@ -113,4 +113,16 @@ class WorkoutRepository @Inject constructor(
     suspend fun savePhase(phase: WorkoutPhaseEntity) {
         workoutDao.insertPhase(phase)
     }
+
+    suspend fun getAllCompletedWorkoutsOnce(): List<Workout> {
+        return workoutDao.getAllCompletedWorkoutsOnce().map { entity ->
+            entity.toDomain(emptyList(), emptyList())
+        }
+    }
+
+    suspend fun getRecentCompletedRuns(limit: Int): List<Workout> {
+        return workoutDao.getRecentCompletedRuns(limit).map { entity ->
+            entity.toDomain(emptyList(), emptyList())
+        }
+    }
 }
