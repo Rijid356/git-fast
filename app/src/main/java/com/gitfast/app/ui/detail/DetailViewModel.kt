@@ -3,6 +3,8 @@ package com.gitfast.app.ui.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gitfast.app.analysis.RouteComparisonAnalyzer
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.util.LapAnalyzer
@@ -37,10 +39,20 @@ class DetailViewModel @Inject constructor(
                 val lapsPhase = workout.phases.find { it.type == PhaseType.LAPS }
                 val lapAnalysis = lapsPhase?.laps?.let { LapAnalyzer.analyze(it) }
 
+                // Route comparison for dog walks
+                val routeComparison = if (workout.activityType == ActivityType.DOG_WALK && workout.routeTag != null) {
+                    val previousWalks = workoutRepository.getDogWalksByRouteOnce(workout.routeTag!!)
+                        .filter { it.id != workout.id }
+                    RouteComparisonAnalyzer.compare(workout, previousWalks)
+                } else {
+                    emptyList()
+                }
+
                 _uiState.value = DetailUiState.Loaded(
                     detail = workout.toDetailItem(),
                     phases = PhaseAnalyzer.analyzePhases(workout.phases),
-                    lapAnalysis = lapAnalysis
+                    lapAnalysis = lapAnalysis,
+                    routeComparison = routeComparison
                 )
             }
         }
@@ -61,6 +73,7 @@ sealed class DetailUiState {
     data class Loaded(
         val detail: WorkoutDetailItem,
         val phases: List<PhaseAnalyzer.PhaseDisplayItem>,
-        val lapAnalysis: LapAnalysis?
+        val lapAnalysis: LapAnalysis?,
+        val routeComparison: List<RouteComparisonAnalyzer.RouteComparisonItem> = emptyList()
     ) : DetailUiState()
 }

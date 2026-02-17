@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
 
 @Composable
@@ -34,6 +35,7 @@ fun WorkoutContent(
         if (uiState.isActive) {
             RecordingIndicator(
                 isPaused = uiState.isPaused,
+                activityType = uiState.activityType,
                 modifier = Modifier.align(Alignment.TopEnd),
             )
         }
@@ -48,23 +50,27 @@ fun WorkoutContent(
         ) {
             // Phase label + lap indicator header
             if (uiState.isActive) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = uiState.phaseLabel,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-
-                    if (uiState.phase == PhaseType.LAPS && uiState.lastLapTimeFormatted != null) {
-                        LapIndicator(
-                            lastLapTimeFormatted = uiState.lastLapTimeFormatted,
-                            lastLapDeltaFormatted = uiState.lastLapDeltaFormatted,
-                            lastLapDeltaSeconds = uiState.lastLapDeltaSeconds,
+                if (uiState.activityType == ActivityType.DOG_WALK) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = uiState.phaseLabel,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.secondary,
                         )
+
+                        if (uiState.phase == PhaseType.LAPS && uiState.lastLapTimeFormatted != null) {
+                            LapIndicator(
+                                lastLapTimeFormatted = uiState.lastLapTimeFormatted,
+                                lastLapDeltaFormatted = uiState.lastLapDeltaFormatted,
+                                lastLapDeltaSeconds = uiState.lastLapDeltaSeconds,
+                            )
+                        }
                     }
                 }
             } else {
@@ -93,8 +99,8 @@ fun WorkoutContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Stat grid - phase-specific
-            when (uiState.phase) {
-                PhaseType.WARMUP -> {
+            when {
+                uiState.activityType == ActivityType.DOG_WALK -> {
                     StatGrid(
                         elapsedTimeFormatted = uiState.elapsedTimeFormatted,
                         distanceFormatted = uiState.distanceFormatted,
@@ -102,7 +108,15 @@ fun WorkoutContent(
                         gpsPointCount = uiState.gpsPointCount,
                     )
                 }
-                PhaseType.LAPS -> {
+                uiState.phase == PhaseType.WARMUP -> {
+                    StatGrid(
+                        elapsedTimeFormatted = uiState.elapsedTimeFormatted,
+                        distanceFormatted = uiState.distanceFormatted,
+                        averagePaceFormatted = uiState.averagePaceFormatted,
+                        gpsPointCount = uiState.gpsPointCount,
+                    )
+                }
+                uiState.phase == PhaseType.LAPS -> {
                     LapStatGrid(
                         elapsedTimeFormatted = uiState.elapsedTimeFormatted,
                         distanceFormatted = uiState.distanceFormatted,
@@ -110,7 +124,7 @@ fun WorkoutContent(
                         averageLapTimeFormatted = uiState.averageLapTimeFormatted,
                     )
                 }
-                PhaseType.COOLDOWN -> {
+                uiState.phase == PhaseType.COOLDOWN -> {
                     CooldownStatGrid(
                         elapsedTimeFormatted = uiState.elapsedTimeFormatted,
                         distanceFormatted = uiState.distanceFormatted,
@@ -126,6 +140,7 @@ fun WorkoutContent(
                 isActive = uiState.isActive,
                 isPaused = uiState.isPaused,
                 phase = uiState.phase,
+                activityType = uiState.activityType,
                 onStart = onStart,
                 onPause = onPause,
                 onResume = onResume,

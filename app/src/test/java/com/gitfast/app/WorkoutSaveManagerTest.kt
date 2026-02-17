@@ -61,7 +61,8 @@ class WorkoutSaveManagerTest {
             gpsPoints = gpsPoints,
             totalDistanceMeters = totalDistanceMeters,
             totalPausedDurationMillis = totalPausedDurationMillis,
-            phases = defaultPhases
+            phases = defaultPhases,
+            activityType = ActivityType.RUN
         )
     }
 

@@ -7,7 +7,10 @@ import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.data.model.WeatherCondition
+import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.service.WorkoutSnapshot
 import java.util.UUID
@@ -73,7 +76,7 @@ class WorkoutSaveManager @Inject constructor(
             totalSteps = 0,
             distanceMeters = snapshot.totalDistanceMeters,
             status = WorkoutStatus.COMPLETED,
-            activityType = ActivityType.RUN,
+            activityType = snapshot.activityType,
             dogName = null,
             notes = null,
             weatherCondition = null,
@@ -94,5 +97,27 @@ class WorkoutSaveManager @Inject constructor(
                 sortIndex = index
             )
         }
+    }
+
+    suspend fun updateDogWalkMetadata(
+        workoutId: String,
+        dogName: String?,
+        routeTag: String?,
+        weatherCondition: WeatherCondition?,
+        weatherTemp: WeatherTemp?,
+        energyLevel: EnergyLevel?,
+        notes: String?
+    ) {
+        val existing = workoutDao.getWorkoutById(workoutId) ?: return
+        workoutDao.updateWorkout(
+            existing.copy(
+                dogName = dogName,
+                routeTag = routeTag,
+                weatherCondition = weatherCondition,
+                weatherTemp = weatherTemp,
+                energyLevel = energyLevel,
+                notes = notes
+            )
+        )
     }
 }

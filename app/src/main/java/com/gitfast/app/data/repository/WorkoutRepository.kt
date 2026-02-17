@@ -10,6 +10,7 @@ import com.gitfast.app.data.local.mappers.toDomain
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.Workout
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -43,6 +44,13 @@ class WorkoutRepository @Inject constructor(
                     .map { it.toDomain(emptyList()) }
                 entity.toDomain(phases, emptyList())
             }
+        }
+    }
+
+    suspend fun getDogWalksByRouteOnce(routeTag: String): List<Workout> {
+        return workoutDao.getDogWalksByRoute(routeTag).first().map { entity ->
+            val phases = workoutDao.getPhasesForWorkout(entity.id).map { it.toDomain(emptyList()) }
+            entity.toDomain(phases, emptyList())
         }
     }
 

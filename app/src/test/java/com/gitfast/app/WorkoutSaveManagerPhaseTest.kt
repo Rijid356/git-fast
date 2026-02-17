@@ -1,5 +1,6 @@
 package com.gitfast.app
 
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.repository.WorkoutSaveManager
@@ -73,7 +74,8 @@ class WorkoutSaveManagerPhaseTest {
             gpsPoints = gpsPoints,
             totalDistanceMeters = totalDistanceMeters,
             totalPausedDurationMillis = 0L,
-            phases = phases
+            phases = phases,
+            activityType = ActivityType.RUN
         )
     }
 
