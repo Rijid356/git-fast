@@ -5,7 +5,7 @@
 - **Started:** 2026-02-17
 - **Last Active:** 2026-02-17
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
-- **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3
+- **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose
 
 ## Activity Log
 
@@ -20,10 +20,14 @@
 | 2026-02-17 | Checkpoint 8: Lap tracking with phase flow (warmup/laps/cooldown), lap UI, tests | 17 | 1 | +748/-79 |
 | 2026-02-17 | Checkpoint 9: Lap analysis with phase breakdown, trend chart, lap table, tests | 19 | 1 | +1084/-0 |
 | 2026-02-17 | Checkpoint 10: Dog walk activity type with post-walk metadata, route comparison, tests | 29 | 1 | +1536/-83 |
+| 2026-02-17 | Checkpoint 11: Auto-pause based on GPS speed for running workouts | 20 | 1 | +512/-26 |
+| 2026-02-17 | Checkpoint 12: Settings screen with distance unit, auto-pause, and keep-screen-on preferences | 13 | 1 | +501/-11 |
+| 2026-02-17 | Checkpoint 13: Post-workout flow fix — VIEW DETAILS button and dog walk navigation | 5 | 1 | +159/-19 |
+| 2026-02-17 | Checkpoint 14: Post-test-walk bug fixes — crash recovery, active workout resume, split home sections, map hardening | 7 | 1 | +65/-10 |
 
 ## Totals
-- **Total Sessions:** 9
-- **Total Commits:** 12
-- **Total Files Changed:** 191
-- **Total Lines Added:** 11388
-- **Total Lines Removed:** 499
+- **Total Sessions:** 13
+- **Total Commits:** 16
+- **Total Files Changed:** 236
+- **Total Lines Added:** 12625
+- **Total Lines Removed:** 565
