@@ -71,7 +71,7 @@ class XpCalculatorTest {
     @Test
     fun `lap bonus awards 20 XP per lap`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34,
+            distanceMeters = 1609.35,
             durationMillis = 600_000L,
             activityType = ActivityType.RUN,
             lapCount = 3,
@@ -86,7 +86,7 @@ class XpCalculatorTest {
     @Test
     fun `all phases bonus adds 15 XP`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34,
+            distanceMeters = 1609.35,
             durationMillis = 600_000L,
             activityType = ActivityType.RUN,
             lapCount = 1,
@@ -101,7 +101,7 @@ class XpCalculatorTest {
     @Test
     fun `no all phases bonus without cooldown`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34,
+            distanceMeters = 1609.35,
             durationMillis = 600_000L,
             activityType = ActivityType.RUN,
             lapCount = 1,
@@ -116,7 +116,7 @@ class XpCalculatorTest {
     @Test
     fun `rainy weather gives 1_25x multiplier`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34,
+            distanceMeters = 1609.35,
             durationMillis = 600_000L,
             activityType = ActivityType.RUN,
             lapCount = 0,
@@ -132,7 +132,7 @@ class XpCalculatorTest {
     @Test
     fun `hot weather gives 1_1x multiplier`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34,
+            distanceMeters = 1609.35,
             durationMillis = 600_000L,
             activityType = ActivityType.RUN,
             lapCount = 0,
@@ -148,7 +148,7 @@ class XpCalculatorTest {
     @Test
     fun `rainy weather overrides hot temperature multiplier`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34,
+            distanceMeters = 1609.35,
             durationMillis = 600_000L,
             activityType = ActivityType.RUN,
             lapCount = 0,
@@ -165,7 +165,7 @@ class XpCalculatorTest {
     @Test
     fun `breakdown contains descriptive entries`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34,
+            distanceMeters = 1609.35,
             durationMillis = 600_000L,
             activityType = ActivityType.RUN,
             lapCount = 2,
