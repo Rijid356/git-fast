@@ -3,6 +3,7 @@ package com.gitfast.app
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.service.WorkoutSnapshot
 import com.gitfast.app.service.WorkoutStateManager
@@ -22,7 +23,7 @@ class WorkoutSaveManagerPhaseTest {
     @Before
     fun setUp() {
         fakeDao = FakeWorkoutDao()
-        saveManager = WorkoutSaveManager(fakeDao)
+        saveManager = WorkoutSaveManager(fakeDao, CharacterRepository(FakeCharacterDao()))
     }
 
     private fun createPhaseData(

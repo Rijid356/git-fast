@@ -13,14 +13,21 @@ import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.service.WorkoutSnapshot
+import com.gitfast.app.util.XpCalculator
 import java.util.UUID
 import javax.inject.Inject
 
+data class SaveResult(
+    val workoutId: String,
+    val xpEarned: Int,
+)
+
 class WorkoutSaveManager @Inject constructor(
-    private val workoutDao: WorkoutDao
+    private val workoutDao: WorkoutDao,
+    private val characterRepository: CharacterRepository,
 ) {
 
-    suspend fun saveCompletedWorkout(snapshot: WorkoutSnapshot): String? {
+    suspend fun saveCompletedWorkout(snapshot: WorkoutSnapshot): SaveResult? {
         return try {
             val phases = snapshot.phases.map { phaseData ->
                 WorkoutPhaseEntity(
@@ -60,8 +67,16 @@ class WorkoutSaveManager @Inject constructor(
                 gpsPoints = buildGpsPointEntities(snapshot)
             )
 
-            Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}")
-            snapshot.workoutId
+            // Calculate and award XP
+            val xpResult = XpCalculator.calculateXp(snapshot)
+            val xpAwarded = characterRepository.awardXp(
+                workoutId = snapshot.workoutId,
+                xpAmount = xpResult.totalXp,
+                reason = xpResult.breakdown.joinToString("; "),
+            )
+
+            Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}, awarded $xpAwarded XP")
+            SaveResult(workoutId = snapshot.workoutId, xpEarned = xpAwarded)
         } catch (e: Exception) {
             Log.e("WorkoutSaveManager", "Failed to save workout", e)
             null

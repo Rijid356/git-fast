@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.ui.character.CharacterSheetScreen
 import com.gitfast.app.ui.detail.DetailScreen
 import com.gitfast.app.ui.dogwalk.DogWalkSummaryScreen
 import com.gitfast.app.ui.history.HistoryScreen
@@ -28,10 +29,11 @@ sealed class Screen(val route: String) {
         fun createRoute(workoutId: String): String = "detail/$workoutId"
     }
     data object Settings : Screen("settings")
+    data object CharacterSheet : Screen("character_sheet")
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
         fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
     }
-    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}&workoutId={workoutId}") {
+    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}&workoutId={workoutId}&xpEarned={xpEarned}") {
         fun createRoute(
             time: String,
             distance: String,
@@ -42,6 +44,7 @@ sealed class Screen(val route: String) {
             bestLapNumber: Int? = null,
             trendLabel: String? = null,
             workoutId: String? = null,
+            xpEarned: Int = 0,
         ): String {
             val enc = { s: String -> URLEncoder.encode(s, "UTF-8") }
             val base = "workout_summary/${enc(time)}/${enc(distance)}/${enc(pace)}/${enc(points)}"
@@ -51,6 +54,7 @@ sealed class Screen(val route: String) {
                 bestLapNumber?.let { append("&bestLapNumber=$it") }
                 trendLabel?.let { append("&trendLabel=${enc(it)}") }
                 workoutId?.let { append("&workoutId=${enc(it)}") }
+                append("&xpEarned=$xpEarned")
             }
             return base + params
         }
@@ -76,6 +80,16 @@ fun GitFastNavGraph(navController: NavHostController) {
                 },
                 onSettingsClick = {
                     navController.navigate(Screen.Settings.route)
+                },
+                onCharacterClick = {
+                    navController.navigate(Screen.CharacterSheet.route)
+                },
+            )
+        }
+        composable(Screen.CharacterSheet.route) {
+            CharacterSheetScreen(
+                onBackClick = {
+                    navController.popBackStack()
                 },
             )
         }
@@ -114,6 +128,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                                 bestLapNumber = stats.bestLapNumber,
                                 trendLabel = stats.trendLabel,
                                 workoutId = workoutId,
+                                xpEarned = stats.xpEarned,
                             )
                         ) {
                             popUpTo(Screen.Home.route) { inclusive = false }
@@ -140,6 +155,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                 navArgument("bestLapNumber") { type = NavType.StringType; defaultValue = "" },
                 navArgument("trendLabel") { type = NavType.StringType; defaultValue = "" },
                 navArgument("workoutId") { type = NavType.StringType; defaultValue = "" },
+                navArgument("xpEarned") { type = NavType.StringType; defaultValue = "0" },
             ),
         ) { backStackEntry ->
             val dec = { key: String ->
@@ -153,6 +169,7 @@ fun GitFastNavGraph(navController: NavHostController) {
             val bestLapNumber = dec("bestLapNumber").toIntOrNull()
             val trendLabel = dec("trendLabel").ifEmpty { null }
             val workoutId = dec("workoutId").ifEmpty { null }
+            val xpEarned = dec("xpEarned").toIntOrNull() ?: 0
 
             WorkoutSummaryScreen(
                 time = dec("time"),
@@ -164,6 +181,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                 bestLapNumber = bestLapNumber,
                 trendLabel = trendLabel,
                 workoutId = workoutId,
+                xpEarned = xpEarned,
                 onViewDetails = {
                     workoutId?.let { id ->
                         navController.navigate(Screen.Detail.createRoute(id)) {

@@ -1,15 +1,19 @@
 package com.gitfast.app
 
+import com.gitfast.app.data.local.CharacterDao
 import com.gitfast.app.data.local.WorkoutDao
+import com.gitfast.app.data.local.entity.CharacterProfileEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
+import com.gitfast.app.data.local.entity.XpTransactionEntity
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WorkoutStatus
+import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.service.WorkoutSnapshot
 import com.gitfast.app.service.WorkoutStateManager
@@ -27,12 +31,14 @@ import java.time.Instant
 class WorkoutSaveManagerTest {
 
     private lateinit var fakeDao: FakeWorkoutDao
+    private lateinit var fakeCharacterDao: FakeCharacterDao
     private lateinit var saveManager: WorkoutSaveManager
 
     @Before
     fun setUp() {
         fakeDao = FakeWorkoutDao()
-        saveManager = WorkoutSaveManager(fakeDao)
+        fakeCharacterDao = FakeCharacterDao()
+        saveManager = WorkoutSaveManager(fakeDao, CharacterRepository(fakeCharacterDao))
     }
 
     private fun createSnapshot(
@@ -69,12 +75,14 @@ class WorkoutSaveManagerTest {
     // --- saveCompletedWorkout returns correct ID ---
 
     @Test
-    fun `saveCompletedWorkout returns workout ID on success`() = runTest {
+    fun `saveCompletedWorkout returns SaveResult on success`() = runTest {
         val snapshot = createSnapshot(workoutId = "w-abc")
 
         val result = saveManager.saveCompletedWorkout(snapshot)
 
-        assertEquals("w-abc", result)
+        assertNotNull(result)
+        assertEquals("w-abc", result!!.workoutId)
+        assertTrue(result.xpEarned > 0)
     }
 
     @Test
@@ -183,7 +191,8 @@ class WorkoutSaveManagerTest {
 
         val result = saveManager.saveCompletedWorkout(snapshot)
 
-        assertEquals("workout-123", result)
+        assertNotNull(result)
+        assertEquals("workout-123", result!!.workoutId)
         assertTrue(fakeDao.savedGpsPoints.isEmpty())
         assertNotNull(fakeDao.savedWorkout)
     }
@@ -194,7 +203,8 @@ class WorkoutSaveManagerTest {
 
         val result = saveManager.saveCompletedWorkout(snapshot)
 
-        assertEquals("workout-123", result)
+        assertNotNull(result)
+        assertEquals("workout-123", result!!.workoutId)
         assertEquals(0.0, fakeDao.savedWorkout!!.distanceMeters, 0.001)
         assertEquals(0.0, fakeDao.savedPhases[0].distanceMeters, 0.001)
     }
@@ -256,4 +266,18 @@ class FakeWorkoutDao : WorkoutDao {
     override suspend fun getAllRouteTags(): List<RouteTagEntity> = emptyList()
     override suspend fun updateRouteTagLastUsed(name: String, timestamp: Long) {}
     override suspend fun deleteWorkout(workoutId: String) {}
+}
+
+class FakeCharacterDao : CharacterDao {
+    private var profile: CharacterProfileEntity? = CharacterProfileEntity(id = 1, totalXp = 0, level = 1)
+    private val transactions = mutableListOf<XpTransactionEntity>()
+
+    override fun getProfile(): Flow<CharacterProfileEntity?> = flowOf(profile)
+    override suspend fun getProfileOnce(): CharacterProfileEntity? = profile
+    override suspend fun updateProfile(profile: CharacterProfileEntity) { this.profile = profile }
+    override suspend fun insertProfile(profile: CharacterProfileEntity) { this.profile = profile }
+    override suspend fun insertXpTransaction(tx: XpTransactionEntity) { transactions.add(tx) }
+    override fun getRecentXpTransactions(limit: Int): Flow<List<XpTransactionEntity>> = flowOf(transactions.take(limit))
+    override suspend fun getXpTransactionForWorkout(workoutId: String): XpTransactionEntity? = transactions.find { it.workoutId == workoutId }
+    override fun getTotalTransactionCount(): Flow<Int> = flowOf(transactions.size)
 }
