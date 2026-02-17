@@ -59,11 +59,20 @@ class WorkoutService : LifecycleService() {
         const val ACTION_START_LAPS = "com.gitfast.app.ACTION_START_LAPS"
         const val ACTION_MARK_LAP = "com.gitfast.app.ACTION_MARK_LAP"
         const val ACTION_END_LAPS = "com.gitfast.app.ACTION_END_LAPS"
+
+        @Volatile
+        var isRunning = false
     }
 
     override fun onCreate() {
         super.onCreate()
+        isRunning = true
         createNotificationChannel()
+    }
+
+    override fun onDestroy() {
+        isRunning = false
+        super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
