@@ -50,6 +50,9 @@ class WorkoutService : LifecycleService() {
         const val ACTION_RESUME = "com.gitfast.app.ACTION_RESUME"
         const val ACTION_STOP = "com.gitfast.app.ACTION_STOP"
         const val ACTION_DISCARD = "com.gitfast.app.ACTION_DISCARD"
+        const val ACTION_START_LAPS = "com.gitfast.app.ACTION_START_LAPS"
+        const val ACTION_MARK_LAP = "com.gitfast.app.ACTION_MARK_LAP"
+        const val ACTION_END_LAPS = "com.gitfast.app.ACTION_END_LAPS"
     }
 
     override fun onCreate() {
@@ -66,6 +69,9 @@ class WorkoutService : LifecycleService() {
             ACTION_RESUME -> resumeWorkout()
             ACTION_STOP -> stopWorkout()
             ACTION_DISCARD -> discardWorkout()
+            ACTION_START_LAPS -> workoutStateManager.startLaps()
+            ACTION_MARK_LAP -> workoutStateManager.markLap()
+            ACTION_END_LAPS -> workoutStateManager.endLaps()
         }
 
         return START_REDELIVER_INTENT

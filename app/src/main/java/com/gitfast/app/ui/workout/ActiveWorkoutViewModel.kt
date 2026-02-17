@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.service.WorkoutService
 import com.gitfast.app.service.WorkoutStateManager
 import com.gitfast.app.util.PermissionManager
@@ -32,6 +33,18 @@ data class WorkoutUiState(
     val gpsPointCount: Int = 0,
     val isWorkoutComplete: Boolean = false,
     val isDiscarded: Boolean = false,
+    // Phase tracking
+    val phase: PhaseType = PhaseType.WARMUP,
+    val phaseLabel: String = "WARMUP",
+    // Lap tracking
+    val lapCount: Int = 0,
+    val currentLapNumber: Int = 0,
+    val currentLapTimeFormatted: String = "00:00",
+    val lastLapTimeFormatted: String? = null,
+    val lastLapDeltaSeconds: Int? = null,
+    val lastLapDeltaFormatted: String? = null,
+    val bestLapTimeFormatted: String? = null,
+    val averageLapTimeFormatted: String? = null,
 )
 
 data class WorkoutSummaryStats(
@@ -136,6 +149,30 @@ class ActiveWorkoutViewModel @Inject constructor(
         context.startService(intent)
     }
 
+    fun startLaps() {
+        val context = getApplication<Application>()
+        val intent = Intent(context, WorkoutService::class.java).apply {
+            action = WorkoutService.ACTION_START_LAPS
+        }
+        context.startService(intent)
+    }
+
+    fun markLap() {
+        val context = getApplication<Application>()
+        val intent = Intent(context, WorkoutService::class.java).apply {
+            action = WorkoutService.ACTION_MARK_LAP
+        }
+        context.startService(intent)
+    }
+
+    fun endLaps() {
+        val context = getApplication<Application>()
+        val intent = Intent(context, WorkoutService::class.java).apply {
+            action = WorkoutService.ACTION_END_LAPS
+        }
+        context.startService(intent)
+    }
+
     private fun snapshotSummaryStats() {
         val state = _uiState.value
         _lastSummaryStats = WorkoutSummaryStats(
@@ -155,6 +192,9 @@ class ActiveWorkoutViewModel @Inject constructor(
                 val isNowInactive = !state.isActive && state.workoutId == null
                 val completed = wasActive && isNowInactive
 
+                val bestLap = stateManager?.getBestLapDuration()
+                val avgLap = stateManager?.getAverageLapDuration()
+
                 _uiState.value = WorkoutUiState(
                     isActive = state.isActive,
                     isPaused = state.isPaused,
@@ -166,6 +206,24 @@ class ActiveWorkoutViewModel @Inject constructor(
                     gpsPointCount = _uiState.value.gpsPointCount,
                     isWorkoutComplete = completed && !_didDiscard,
                     isDiscarded = completed && _didDiscard,
+                    phase = state.phase,
+                    phaseLabel = when (state.phase) {
+                        PhaseType.WARMUP -> "WARMUP"
+                        PhaseType.LAPS -> "LAP ${state.currentLapNumber}"
+                        PhaseType.COOLDOWN -> "COOLDOWN"
+                    },
+                    lapCount = state.lapCount,
+                    currentLapNumber = state.currentLapNumber,
+                    currentLapTimeFormatted = formatElapsedTime(state.currentLapElapsedSeconds),
+                    lastLapTimeFormatted = state.lastLapDurationFormatted,
+                    lastLapDeltaSeconds = state.lastLapDeltaSeconds,
+                    lastLapDeltaFormatted = state.lastLapDeltaSeconds?.let { delta ->
+                        if (delta < 0) "\u25B2 ${delta}s"
+                        else if (delta > 0) "\u25BC +${delta}s"
+                        else "= 0s"
+                    },
+                    bestLapTimeFormatted = bestLap?.let { formatElapsedTime(it) },
+                    averageLapTimeFormatted = avgLap?.let { formatElapsedTime(it) },
                 )
             }
         }

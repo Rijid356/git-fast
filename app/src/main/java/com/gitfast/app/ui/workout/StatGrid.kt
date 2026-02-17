@@ -67,6 +67,108 @@ fun StatGrid(
 }
 
 @Composable
+fun LapStatGrid(
+    elapsedTimeFormatted: String,
+    distanceFormatted: String,
+    lapCount: Int,
+    averageLapTimeFormatted: String?,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                StatItem(
+                    label = "TOTAL TIME",
+                    value = elapsedTimeFormatted,
+                    modifier = Modifier.weight(1f),
+                )
+                StatItem(
+                    label = "TOTAL DIST",
+                    value = distanceFormatted,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                StatItem(
+                    label = "LAPS",
+                    value = lapCount.toString(),
+                    modifier = Modifier.weight(1f),
+                )
+                StatItem(
+                    label = "AVG LAP",
+                    value = averageLapTimeFormatted ?: "--:--",
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CooldownStatGrid(
+    elapsedTimeFormatted: String,
+    distanceFormatted: String,
+    lapCount: Int,
+    bestLapTimeFormatted: String?,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                StatItem(
+                    label = "TIME",
+                    value = elapsedTimeFormatted,
+                    modifier = Modifier.weight(1f),
+                )
+                StatItem(
+                    label = "DISTANCE",
+                    value = distanceFormatted,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                StatItem(
+                    label = "LAPS",
+                    value = lapCount.toString(),
+                    modifier = Modifier.weight(1f),
+                )
+                StatItem(
+                    label = "BEST LAP",
+                    value = bestLapTimeFormatted ?: "--:--",
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun StatItem(
     label: String,
     value: String,

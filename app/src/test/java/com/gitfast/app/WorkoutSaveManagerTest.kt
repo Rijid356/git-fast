@@ -12,6 +12,7 @@ import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.service.WorkoutSnapshot
+import com.gitfast.app.service.WorkoutStateManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -40,15 +41,29 @@ class WorkoutSaveManagerTest {
         endTime: Instant = Instant.ofEpochMilli(5000L),
         gpsPoints: List<GpsPoint> = emptyList(),
         totalDistanceMeters: Double = 1609.34,
-        totalPausedDurationMillis: Long = 0L
-    ) = WorkoutSnapshot(
-        workoutId = workoutId,
-        startTime = startTime,
-        endTime = endTime,
-        gpsPoints = gpsPoints,
-        totalDistanceMeters = totalDistanceMeters,
-        totalPausedDurationMillis = totalPausedDurationMillis
-    )
+        totalPausedDurationMillis: Long = 0L,
+        phases: List<WorkoutStateManager.PhaseData>? = null
+    ): WorkoutSnapshot {
+        val defaultPhases = phases ?: listOf(
+            WorkoutStateManager.PhaseData(
+                type = PhaseType.WARMUP,
+                startTime = startTime,
+                endTime = endTime,
+                distanceMeters = totalDistanceMeters,
+                steps = 0,
+                laps = emptyList()
+            )
+        )
+        return WorkoutSnapshot(
+            workoutId = workoutId,
+            startTime = startTime,
+            endTime = endTime,
+            gpsPoints = gpsPoints,
+            totalDistanceMeters = totalDistanceMeters,
+            totalPausedDurationMillis = totalPausedDurationMillis,
+            phases = defaultPhases
+        )
+    }
 
     // --- saveCompletedWorkout returns correct ID ---
 

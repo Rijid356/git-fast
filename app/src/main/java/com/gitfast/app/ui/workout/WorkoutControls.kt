@@ -20,16 +20,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.gitfast.app.data.model.PhaseType
 
 @Composable
 fun WorkoutControls(
     isActive: Boolean,
     isPaused: Boolean,
+    phase: PhaseType,
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onStop: () -> Unit,
     onDiscard: () -> Unit,
+    onStartLaps: () -> Unit,
+    onMarkLap: () -> Unit,
+    onEndLaps: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showStopConfirmation by remember { mutableStateOf(false) }
@@ -51,55 +56,206 @@ fun WorkoutControls(
                 )
             }
         } else {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                if (isPaused) {
-                    Button(
-                        onClick = onResume,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary,
-                            contentColor = MaterialTheme.colorScheme.onSecondary,
-                        ),
+            when (phase) {
+                PhaseType.WARMUP -> {
+                    // Pause/Stop row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text(
-                            text = "RESUME",
-                            style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.padding(vertical = 8.dp),
-                        )
+                        if (isPaused) {
+                            Button(
+                                onClick = onResume,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                                ),
+                            ) {
+                                Text(
+                                    text = "RESUME",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                )
+                            }
+                        } else {
+                            Button(
+                                onClick = onPause,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                                ),
+                            ) {
+                                Text(
+                                    text = "PAUSE",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                )
+                            }
+                        }
+
+                        Button(
+                            onClick = { showStopConfirmation = true },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError,
+                            ),
+                        ) {
+                            Text(
+                                text = "STOP",
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(vertical = 8.dp),
+                            )
+                        }
                     }
-                } else {
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // START LAPS button below
                     Button(
-                        onClick = onPause,
-                        modifier = Modifier.weight(1f),
+                        onClick = onStartLaps,
+                        modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.tertiary,
-                            contentColor = MaterialTheme.colorScheme.onTertiary,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
                         ),
                     ) {
                         Text(
-                            text = "PAUSE",
+                            text = "START LAPS",
                             style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.padding(vertical = 8.dp),
                         )
                     }
                 }
 
-                Button(
-                    onClick = { showStopConfirmation = true },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError,
-                    ),
-                ) {
-                    Text(
-                        text = "STOP",
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(vertical = 8.dp),
-                    )
+                PhaseType.LAPS -> {
+                    // LAP button (large, prominent) above the row
+                    Button(
+                        onClick = onMarkLap,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                    ) {
+                        Text(
+                            text = "LAP",
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(vertical = 12.dp),
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Pause/End Laps row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        if (isPaused) {
+                            Button(
+                                onClick = onResume,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                                ),
+                            ) {
+                                Text(
+                                    text = "RESUME",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                )
+                            }
+                        } else {
+                            Button(
+                                onClick = onPause,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                                ),
+                            ) {
+                                Text(
+                                    text = "PAUSE",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                )
+                            }
+                        }
+
+                        Button(
+                            onClick = onEndLaps,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError,
+                            ),
+                        ) {
+                            Text(
+                                text = "END LAPS",
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(vertical = 8.dp),
+                            )
+                        }
+                    }
+                }
+
+                PhaseType.COOLDOWN -> {
+                    // Standard pause/stop (same as original)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        if (isPaused) {
+                            Button(
+                                onClick = onResume,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                                ),
+                            ) {
+                                Text(
+                                    text = "RESUME",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                )
+                            }
+                        } else {
+                            Button(
+                                onClick = onPause,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                                ),
+                            ) {
+                                Text(
+                                    text = "PAUSE",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                )
+                            }
+                        }
+
+                        Button(
+                            onClick = { showStopConfirmation = true },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError,
+                            ),
+                        ) {
+                            Text(
+                                text = "STOP",
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(vertical = 8.dp),
+                            )
+                        }
+                    }
                 }
             }
         }
