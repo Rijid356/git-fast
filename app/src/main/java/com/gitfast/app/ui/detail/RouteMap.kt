@@ -26,6 +26,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import android.util.Log
 import androidx.compose.material3.Surface
 
 @Composable
@@ -42,7 +43,12 @@ fun RouteMap(
     }
 
     val mapStyleOptions = remember {
-        MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_dark)
+        try {
+            MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_dark)
+        } catch (e: Exception) {
+            Log.e("RouteMap", "Failed to load map style", e)
+            null
+        }
     }
 
     val mapUiSettings = remember {
@@ -60,7 +66,7 @@ fun RouteMap(
 
     val mapProperties = remember(mapStyleOptions) {
         MapProperties(
-            mapStyleOptions = mapStyleOptions,
+            mapStyleOptions = mapStyleOptions ?: MapStyleOptions("[]"),
         )
     }
 
@@ -87,6 +93,7 @@ fun RouteMap(
             cameraPositionState = cameraPositionState,
             uiSettings = mapUiSettings,
             properties = mapProperties,
+            onMapLoaded = { Log.d("RouteMap", "Map tiles loaded successfully") },
         ) {
             if (latLngPoints.size >= 2) {
                 Polyline(

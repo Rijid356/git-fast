@@ -22,6 +22,8 @@ import com.gitfast.app.ui.history.WorkoutHistoryItem
 
 @Composable
 fun RecentWorkoutsSection(
+    title: String,
+    emptyMessage: String,
     recentWorkouts: List<WorkoutHistoryItem>,
     onWorkoutClick: (workoutId: String) -> Unit,
     onViewAllClick: () -> Unit,
@@ -29,7 +31,7 @@ fun RecentWorkoutsSection(
     if (recentWorkouts.isEmpty()) {
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "No runs yet. Hit START RUN to get moving.",
+            text = emptyMessage,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -43,7 +45,7 @@ fun RecentWorkoutsSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "RECENT RUNS",
+                text = title,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

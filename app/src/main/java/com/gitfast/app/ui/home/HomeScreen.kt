@@ -47,7 +47,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
-    val recentWorkouts by viewModel.recentWorkouts.collectAsStateWithLifecycle()
+    val recentRuns by viewModel.recentRuns.collectAsStateWithLifecycle()
+    val recentDogWalks by viewModel.recentDogWalks.collectAsStateWithLifecycle()
 
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
@@ -147,7 +148,17 @@ fun HomeScreen(
             }
 
             RecentWorkoutsSection(
-                recentWorkouts = recentWorkouts,
+                title = "RECENT RUNS",
+                emptyMessage = "No runs yet. Hit START RUN to get moving.",
+                recentWorkouts = recentRuns,
+                onWorkoutClick = onWorkoutClick,
+                onViewAllClick = onViewHistory,
+            )
+
+            RecentWorkoutsSection(
+                title = "RECENT DOG WALKS",
+                emptyMessage = "No dog walks yet.",
+                recentWorkouts = recentDogWalks,
                 onWorkoutClick = onWorkoutClick,
                 onViewAllClick = onViewHistory,
             )
