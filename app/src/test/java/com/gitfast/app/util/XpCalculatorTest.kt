@@ -26,7 +26,7 @@ class XpCalculatorTest {
     @Test
     fun `run earns 10 XP per mile`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34, // 1 mile
+            distanceMeters = 1609.344, // 1 mile
             durationMillis = 600_000L, // 10 min
             activityType = ActivityType.RUN,
             lapCount = 0,
@@ -41,7 +41,7 @@ class XpCalculatorTest {
     @Test
     fun `walk earns 8 XP per mile`() {
         val result = XpCalculator.calculateXp(
-            distanceMeters = 1609.34, // 1 mile
+            distanceMeters = 1609.344, // 1 mile
             durationMillis = 1200_000L, // 20 min
             activityType = ActivityType.DOG_WALK,
             lapCount = 0,
