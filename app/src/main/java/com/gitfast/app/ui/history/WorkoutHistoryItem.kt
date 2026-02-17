@@ -1,5 +1,6 @@
 package com.gitfast.app.ui.history
 
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.util.DateFormatter
 import com.gitfast.app.util.formatDistance
@@ -16,11 +17,18 @@ data class WorkoutHistoryItem(
     val distanceFormatted: String,
     val durationFormatted: String,
     val avgPaceFormatted: String,
+    val activityType: ActivityType,
+    val subtitle: String?,
 )
 
 fun Workout.toHistoryItem(): WorkoutHistoryItem {
     val duration = durationMillis?.let { (it / 1000).toInt() }
     val pace = averagePaceSecondsPerMile?.toInt()
+
+    val subtitle = when (activityType) {
+        ActivityType.DOG_WALK -> listOfNotNull(dogName, routeTag).joinToString(" \u00B7 ").ifEmpty { null }
+        ActivityType.RUN -> null
+    }
 
     return WorkoutHistoryItem(
         workoutId = id,
@@ -31,5 +39,7 @@ fun Workout.toHistoryItem(): WorkoutHistoryItem {
         distanceFormatted = formatDistance(distanceMeters),
         durationFormatted = duration?.let { formatElapsedTime(it) } ?: "--:--",
         avgPaceFormatted = pace?.let { formatPace(it) } ?: "-- /mi",
+        activityType = activityType,
+        subtitle = subtitle,
     )
 }

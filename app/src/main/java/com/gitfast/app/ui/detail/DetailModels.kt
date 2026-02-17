@@ -1,5 +1,7 @@
 package com.gitfast.app.ui.detail
 
+import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.util.DateFormatter
 import com.gitfast.app.util.formatDistance
@@ -17,7 +19,14 @@ data class WorkoutDetailItem(
     val gpsPointCount: Int,
     val avgGpsAccuracy: Float?,
     val routePoints: List<LatLngPoint>,
-    val routeBounds: RouteBounds?
+    val routeBounds: RouteBounds?,
+    // Dog walk fields
+    val activityType: ActivityType,
+    val dogName: String?,
+    val routeTag: String?,
+    val weatherSummary: String?,
+    val energyLevel: EnergyLevel?,
+    val notes: String?
 )
 
 data class LatLngPoint(
@@ -65,6 +74,13 @@ fun Workout.toDetailItem(): WorkoutDetailItem {
         gpsPointCount = gpsPoints.size,
         avgGpsAccuracy = avgAccuracy,
         routePoints = points,
-        routeBounds = bounds
+        routeBounds = bounds,
+        // Dog walk fields
+        activityType = activityType,
+        dogName = dogName,
+        routeTag = routeTag,
+        weatherSummary = weatherSummary,
+        energyLevel = energyLevel,
+        notes = notes
     )
 }
