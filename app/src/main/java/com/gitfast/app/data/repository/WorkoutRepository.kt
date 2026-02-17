@@ -3,9 +3,11 @@ package com.gitfast.app.data.repository
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
+import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.local.mappers.toDomain
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.Workout
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -16,6 +18,26 @@ class WorkoutRepository @Inject constructor(
 ) {
     fun getCompletedWorkouts(): Flow<List<Workout>> {
         return workoutDao.getAllCompletedWorkouts().map { entities ->
+            entities.map { entity ->
+                val phases = workoutDao.getPhasesForWorkout(entity.id)
+                    .map { it.toDomain(emptyList()) }
+                entity.toDomain(phases, emptyList())
+            }
+        }
+    }
+
+    fun getCompletedWorkoutsByType(activityType: ActivityType): Flow<List<Workout>> {
+        return workoutDao.getCompletedWorkoutsByType(activityType.name).map { entities ->
+            entities.map { entity ->
+                val phases = workoutDao.getPhasesForWorkout(entity.id)
+                    .map { it.toDomain(emptyList()) }
+                entity.toDomain(phases, emptyList())
+            }
+        }
+    }
+
+    fun getDogWalksByRoute(routeTag: String): Flow<List<Workout>> {
+        return workoutDao.getDogWalksByRoute(routeTag).map { entities ->
             entities.map { entity ->
                 val phases = workoutDao.getPhasesForWorkout(entity.id)
                     .map { it.toDomain(emptyList()) }
@@ -62,6 +84,18 @@ class WorkoutRepository @Inject constructor(
 
     suspend fun getCompletedWorkoutCount(): Int {
         return workoutDao.getCompletedWorkoutCount()
+    }
+
+    suspend fun getAllRouteTags(): List<RouteTagEntity> {
+        return workoutDao.getAllRouteTags()
+    }
+
+    suspend fun saveRouteTag(tag: RouteTagEntity) {
+        workoutDao.insertRouteTag(tag)
+    }
+
+    suspend fun touchRouteTag(name: String) {
+        workoutDao.updateRouteTagLastUsed(name, System.currentTimeMillis())
     }
 
     suspend fun saveGpsPoints(points: List<GpsPointEntity>) {

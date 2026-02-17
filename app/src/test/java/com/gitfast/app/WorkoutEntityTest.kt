@@ -2,9 +2,14 @@ package com.gitfast.app
 
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
+import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
+import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.data.model.WeatherCondition
+import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.WorkoutStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -20,7 +25,14 @@ class WorkoutEntityTest {
             endTime = 2000L,
             totalSteps = 500,
             distanceMeters = 1609.34,
-            status = WorkoutStatus.COMPLETED
+            status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.RUN,
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null
         )
 
         assertEquals("workout-1", entity.id)
@@ -29,6 +41,13 @@ class WorkoutEntityTest {
         assertEquals(500, entity.totalSteps)
         assertEquals(1609.34, entity.distanceMeters, 0.001)
         assertEquals(WorkoutStatus.COMPLETED, entity.status)
+        assertEquals(ActivityType.RUN, entity.activityType)
+        assertNull(entity.dogName)
+        assertNull(entity.notes)
+        assertNull(entity.weatherCondition)
+        assertNull(entity.weatherTemp)
+        assertNull(entity.energyLevel)
+        assertNull(entity.routeTag)
     }
 
     @Test
@@ -39,11 +58,73 @@ class WorkoutEntityTest {
             endTime = null,
             totalSteps = 0,
             distanceMeters = 0.0,
-            status = WorkoutStatus.ACTIVE
+            status = WorkoutStatus.ACTIVE,
+            activityType = ActivityType.RUN,
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null
         )
 
         assertNull(entity.endTime)
         assertEquals(WorkoutStatus.ACTIVE, entity.status)
+    }
+
+    @Test
+    fun `create WorkoutEntity with DOG_WALK type and all metadata`() {
+        val entity = WorkoutEntity(
+            id = "workout-3",
+            startTime = 1000L,
+            endTime = 2000L,
+            totalSteps = 300,
+            distanceMeters = 800.0,
+            status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.DOG_WALK,
+            dogName = "Buddy",
+            notes = "Great walk in the park",
+            weatherCondition = WeatherCondition.SUNNY,
+            weatherTemp = WeatherTemp.MILD,
+            energyLevel = EnergyLevel.NORMAL,
+            routeTag = "park-loop"
+        )
+
+        assertEquals("workout-3", entity.id)
+        assertEquals(ActivityType.DOG_WALK, entity.activityType)
+        assertEquals("Buddy", entity.dogName)
+        assertEquals("Great walk in the park", entity.notes)
+        assertEquals(WeatherCondition.SUNNY, entity.weatherCondition)
+        assertEquals(WeatherTemp.MILD, entity.weatherTemp)
+        assertEquals(EnergyLevel.NORMAL, entity.energyLevel)
+        assertEquals("park-loop", entity.routeTag)
+    }
+
+    @Test
+    fun `RUN workout has null dog walk metadata by default`() {
+        val entity = WorkoutEntity(
+            id = "workout-4",
+            startTime = 1000L,
+            endTime = 2000L,
+            totalSteps = 500,
+            distanceMeters = 1609.34,
+            status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.RUN,
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null
+        )
+
+        assertEquals(ActivityType.RUN, entity.activityType)
+        assertNull(entity.dogName)
+        assertNull(entity.notes)
+        assertNull(entity.weatherCondition)
+        assertNull(entity.weatherTemp)
+        assertNull(entity.energyLevel)
+        assertNull(entity.routeTag)
     }
 
     @Test
@@ -122,5 +203,18 @@ class WorkoutEntityTest {
 
         assertEquals(42L, entity.id)
         assertEquals(5, entity.sortIndex)
+    }
+
+    @Test
+    fun `create RouteTagEntity with all fields`() {
+        val entity = RouteTagEntity(
+            name = "park-loop",
+            createdAt = 1000L,
+            lastUsed = 2000L
+        )
+
+        assertEquals("park-loop", entity.name)
+        assertEquals(1000L, entity.createdAt)
+        assertEquals(2000L, entity.lastUsed)
     }
 }

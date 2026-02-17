@@ -16,6 +16,7 @@ import com.gitfast.app.R
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.data.repository.WorkoutRepository
@@ -84,7 +85,14 @@ class WorkoutService : LifecycleService() {
                     endTime = null,
                     totalSteps = 0,
                     distanceMeters = 0.0,
-                    status = WorkoutStatus.ACTIVE
+                    status = WorkoutStatus.ACTIVE,
+                    activityType = ActivityType.RUN,
+                    dogName = null,
+                    notes = null,
+                    weatherCondition = null,
+                    weatherTemp = null,
+                    energyLevel = null,
+                    routeTag = null
                 ),
                 phases = emptyList(),
                 laps = emptyList(),

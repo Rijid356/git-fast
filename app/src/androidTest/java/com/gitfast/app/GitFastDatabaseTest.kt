@@ -7,9 +7,14 @@ import com.gitfast.app.data.local.GitFastDatabase
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
+import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
+import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.data.model.WeatherCondition
+import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.WorkoutStatus
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -50,14 +55,28 @@ class GitFastDatabaseTest {
         endTime: Long? = 2000L,
         totalSteps: Int = 500,
         distanceMeters: Double = 1609.34,
-        status: WorkoutStatus = WorkoutStatus.COMPLETED
+        status: WorkoutStatus = WorkoutStatus.COMPLETED,
+        activityType: ActivityType = ActivityType.RUN,
+        dogName: String? = null,
+        notes: String? = null,
+        weatherCondition: WeatherCondition? = null,
+        weatherTemp: WeatherTemp? = null,
+        energyLevel: EnergyLevel? = null,
+        routeTag: String? = null
     ) = WorkoutEntity(
         id = id,
         startTime = startTime,
         endTime = endTime,
         totalSteps = totalSteps,
         distanceMeters = distanceMeters,
-        status = status
+        status = status,
+        activityType = activityType,
+        dogName = dogName,
+        notes = notes,
+        weatherCondition = weatherCondition,
+        weatherTemp = weatherTemp,
+        energyLevel = energyLevel,
+        routeTag = routeTag
     )
 
     private fun createPhase(
@@ -277,5 +296,93 @@ class GitFastDatabaseTest {
         dao.insertWorkout(createWorkout(id = "w-3", status = WorkoutStatus.ACTIVE, endTime = null))
 
         assertEquals(2, dao.getCompletedWorkoutCount())
+    }
+
+    // --- Activity type filter tests ---
+
+    @Test
+    fun getCompletedWorkoutsByTypeFiltersCorrectly() = runTest {
+        dao.insertWorkout(createWorkout(id = "run-1", activityType = ActivityType.RUN))
+        dao.insertWorkout(createWorkout(id = "run-2", activityType = ActivityType.RUN))
+        dao.insertWorkout(createWorkout(id = "walk-1", activityType = ActivityType.DOG_WALK))
+
+        val runs = dao.getCompletedWorkoutsByType("RUN").first()
+        assertEquals(2, runs.size)
+        assertTrue(runs.all { it.activityType == ActivityType.RUN })
+
+        val walks = dao.getCompletedWorkoutsByType("DOG_WALK").first()
+        assertEquals(1, walks.size)
+        assertEquals(ActivityType.DOG_WALK, walks[0].activityType)
+    }
+
+    @Test
+    fun getDogWalksByRouteFiltersCorrectly() = runTest {
+        dao.insertWorkout(createWorkout(id = "walk-1", activityType = ActivityType.DOG_WALK, routeTag = "park-loop"))
+        dao.insertWorkout(createWorkout(id = "walk-2", activityType = ActivityType.DOG_WALK, routeTag = "park-loop"))
+        dao.insertWorkout(createWorkout(id = "walk-3", activityType = ActivityType.DOG_WALK, routeTag = "neighborhood"))
+        dao.insertWorkout(createWorkout(id = "run-1", activityType = ActivityType.RUN))
+
+        val parkWalks = dao.getDogWalksByRoute("park-loop").first()
+        assertEquals(2, parkWalks.size)
+        assertTrue(parkWalks.all { it.routeTag == "park-loop" })
+    }
+
+    @Test
+    fun insertAndRetrieveDogWalkWithAllMetadata() = runTest {
+        dao.insertWorkout(createWorkout(
+            id = "walk-1",
+            activityType = ActivityType.DOG_WALK,
+            dogName = "Buddy",
+            notes = "Great walk",
+            weatherCondition = WeatherCondition.SUNNY,
+            weatherTemp = WeatherTemp.MILD,
+            energyLevel = EnergyLevel.NORMAL,
+            routeTag = "park-loop"
+        ))
+
+        val retrieved = dao.getWorkoutById("walk-1")
+        assertNotNull(retrieved)
+        assertEquals(ActivityType.DOG_WALK, retrieved!!.activityType)
+        assertEquals("Buddy", retrieved.dogName)
+        assertEquals("Great walk", retrieved.notes)
+        assertEquals(WeatherCondition.SUNNY, retrieved.weatherCondition)
+        assertEquals(WeatherTemp.MILD, retrieved.weatherTemp)
+        assertEquals(EnergyLevel.NORMAL, retrieved.energyLevel)
+        assertEquals("park-loop", retrieved.routeTag)
+    }
+
+    // --- Route tag tests ---
+
+    @Test
+    fun insertAndRetrieveRouteTags() = runTest {
+        dao.insertRouteTag(RouteTagEntity(name = "park-loop", createdAt = 1000L, lastUsed = 1000L))
+        dao.insertRouteTag(RouteTagEntity(name = "neighborhood", createdAt = 2000L, lastUsed = 3000L))
+
+        val tags = dao.getAllRouteTags()
+        assertEquals(2, tags.size)
+        // Ordered by lastUsed DESC
+        assertEquals("neighborhood", tags[0].name)
+        assertEquals("park-loop", tags[1].name)
+    }
+
+    @Test
+    fun updateRouteTagLastUsed() = runTest {
+        dao.insertRouteTag(RouteTagEntity(name = "park-loop", createdAt = 1000L, lastUsed = 1000L))
+
+        dao.updateRouteTagLastUsed("park-loop", 5000L)
+
+        val tags = dao.getAllRouteTags()
+        assertEquals(1, tags.size)
+        assertEquals(5000L, tags[0].lastUsed)
+    }
+
+    @Test
+    fun insertRouteTagWithReplaceOnConflict() = runTest {
+        dao.insertRouteTag(RouteTagEntity(name = "park-loop", createdAt = 1000L, lastUsed = 1000L))
+        dao.insertRouteTag(RouteTagEntity(name = "park-loop", createdAt = 1000L, lastUsed = 5000L))
+
+        val tags = dao.getAllRouteTags()
+        assertEquals(1, tags.size)
+        assertEquals(5000L, tags[0].lastUsed)
     }
 }

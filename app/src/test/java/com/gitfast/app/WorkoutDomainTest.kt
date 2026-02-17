@@ -1,5 +1,8 @@
 package com.gitfast.app
 
+import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.WeatherCondition
+import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.model.WorkoutStatus
 import org.junit.Assert.assertEquals
@@ -13,7 +16,10 @@ class WorkoutDomainTest {
         distanceMeters: Double = 1609.34,
         startTime: Instant = Instant.ofEpochMilli(0),
         endTime: Instant? = Instant.ofEpochMilli(600_000),
-        status: WorkoutStatus = WorkoutStatus.COMPLETED
+        status: WorkoutStatus = WorkoutStatus.COMPLETED,
+        activityType: ActivityType = ActivityType.RUN,
+        weatherCondition: WeatherCondition? = null,
+        weatherTemp: WeatherTemp? = null
     ) = Workout(
         id = "w-1",
         startTime = startTime,
@@ -21,8 +27,15 @@ class WorkoutDomainTest {
         totalSteps = 1000,
         distanceMeters = distanceMeters,
         status = status,
+        activityType = activityType,
         phases = emptyList(),
-        gpsPoints = emptyList()
+        gpsPoints = emptyList(),
+        dogName = null,
+        notes = null,
+        weatherCondition = weatherCondition,
+        weatherTemp = weatherTemp,
+        energyLevel = null,
+        routeTag = null
     )
 
     @Test
@@ -96,5 +109,54 @@ class WorkoutDomainTest {
         )
 
         assertEquals(600.0, workout.averagePaceSecondsPerMile!!, 1.0)
+    }
+
+    // --- activityLabel tests ---
+
+    @Test
+    fun `activityLabel returns Run for RUN`() {
+        val workout = createWorkout(activityType = ActivityType.RUN)
+
+        assertEquals("Run", workout.activityLabel)
+    }
+
+    @Test
+    fun `activityLabel returns Dog Walk for DOG_WALK`() {
+        val workout = createWorkout(activityType = ActivityType.DOG_WALK)
+
+        assertEquals("Dog Walk", workout.activityLabel)
+    }
+
+    // --- weatherSummary tests ---
+
+    @Test
+    fun `weatherSummary returns null when both weather fields null`() {
+        val workout = createWorkout(weatherCondition = null, weatherTemp = null)
+
+        assertNull(workout.weatherSummary)
+    }
+
+    @Test
+    fun `weatherSummary returns temp only when only temp set`() {
+        val workout = createWorkout(weatherTemp = WeatherTemp.MILD, weatherCondition = null)
+
+        assertEquals("Mild", workout.weatherSummary)
+    }
+
+    @Test
+    fun `weatherSummary returns condition only when only condition set`() {
+        val workout = createWorkout(weatherCondition = WeatherCondition.SUNNY, weatherTemp = null)
+
+        assertEquals("Sunny", workout.weatherSummary)
+    }
+
+    @Test
+    fun `weatherSummary returns both when both set`() {
+        val workout = createWorkout(
+            weatherTemp = WeatherTemp.MILD,
+            weatherCondition = WeatherCondition.SUNNY
+        )
+
+        assertEquals("Mild, Sunny", workout.weatherSummary)
     }
 }
