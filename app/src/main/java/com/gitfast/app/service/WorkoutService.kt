@@ -13,13 +13,9 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.gitfast.app.MainActivity
 import com.gitfast.app.R
-import com.gitfast.app.data.local.entity.GpsPointEntity
-import com.gitfast.app.data.local.entity.WorkoutEntity
-import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
-import com.gitfast.app.data.model.ActivityType
-import com.gitfast.app.data.model.PhaseType
-import com.gitfast.app.data.model.WorkoutStatus
+import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.repository.WorkoutRepository
+import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.location.GpsTracker
 import com.gitfast.app.util.DistanceCalculator
 import com.gitfast.app.util.formatElapsedTime
@@ -30,7 +26,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.Instant
-import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -39,6 +34,8 @@ class WorkoutService : LifecycleService() {
     @Inject lateinit var gpsTracker: GpsTracker
     @Inject lateinit var workoutStateManager: WorkoutStateManager
     @Inject lateinit var workoutRepository: WorkoutRepository
+    @Inject lateinit var workoutSaveManager: WorkoutSaveManager
+    @Inject lateinit var workoutStateStore: WorkoutStateStore
 
     private var gpsCollectionJob: Job? = null
     private var timerJob: Job? = null
@@ -52,6 +49,7 @@ class WorkoutService : LifecycleService() {
         const val ACTION_PAUSE = "com.gitfast.app.ACTION_PAUSE"
         const val ACTION_RESUME = "com.gitfast.app.ACTION_RESUME"
         const val ACTION_STOP = "com.gitfast.app.ACTION_STOP"
+        const val ACTION_DISCARD = "com.gitfast.app.ACTION_DISCARD"
     }
 
     override fun onCreate() {
@@ -67,6 +65,7 @@ class WorkoutService : LifecycleService() {
             ACTION_PAUSE -> pauseWorkout()
             ACTION_RESUME -> resumeWorkout()
             ACTION_STOP -> stopWorkout()
+            ACTION_DISCARD -> discardWorkout()
         }
 
         return START_REDELIVER_INTENT
@@ -75,30 +74,9 @@ class WorkoutService : LifecycleService() {
     private fun startWorkout() {
         val workoutId = workoutStateManager.startWorkout()
 
-        startForeground(NOTIFICATION_ID, buildNotification("Workout started"))
+        workoutStateStore.setActiveWorkout(workoutId, Instant.now().toEpochMilli())
 
-        lifecycleScope.launch {
-            workoutRepository.saveWorkout(
-                workout = WorkoutEntity(
-                    id = workoutId,
-                    startTime = Instant.now().toEpochMilli(),
-                    endTime = null,
-                    totalSteps = 0,
-                    distanceMeters = 0.0,
-                    status = WorkoutStatus.ACTIVE,
-                    activityType = ActivityType.RUN,
-                    dogName = null,
-                    notes = null,
-                    weatherCondition = null,
-                    weatherTemp = null,
-                    energyLevel = null,
-                    routeTag = null
-                ),
-                phases = emptyList(),
-                laps = emptyList(),
-                gpsPoints = emptyList()
-            )
-        }
+        startForeground(NOTIFICATION_ID, buildNotification("Workout started"))
 
         gpsCollectionJob = lifecycleScope.launch {
             gpsTracker.startTracking().collect { point ->
@@ -124,11 +102,6 @@ class WorkoutService : LifecycleService() {
         workoutStateManager.pauseWorkout()
         gpsCollectionJob?.cancel()
         updateNotification("Workout paused")
-
-        lifecycleScope.launch {
-            val existing = workoutRepository.getActiveWorkout() ?: return@launch
-            workoutRepository.updateWorkout(existing.copy(status = WorkoutStatus.PAUSED))
-        }
     }
 
     private fun resumeWorkout() {
@@ -141,11 +114,6 @@ class WorkoutService : LifecycleService() {
         }
 
         updateNotification("Tracking workout")
-
-        lifecycleScope.launch {
-            val existing = workoutRepository.getActiveWorkout() ?: return@launch
-            workoutRepository.updateWorkout(existing.copy(status = WorkoutStatus.ACTIVE))
-        }
     }
 
     private fun stopWorkout() {
@@ -155,43 +123,23 @@ class WorkoutService : LifecycleService() {
         val snapshot = workoutStateManager.stopWorkout()
 
         lifecycleScope.launch {
-            val existingWorkout = workoutRepository.getActiveWorkout()
-            if (existingWorkout != null) {
-                workoutRepository.updateWorkout(
-                    existingWorkout.copy(
-                        endTime = snapshot.endTime.toEpochMilli(),
-                        distanceMeters = snapshot.totalDistanceMeters,
-                        status = WorkoutStatus.COMPLETED
-                    )
-                )
-
-                val gpsEntities = snapshot.gpsPoints.mapIndexed { index, point ->
-                    GpsPointEntity(
-                        workoutId = snapshot.workoutId,
-                        latitude = point.latitude,
-                        longitude = point.longitude,
-                        timestamp = point.timestamp.toEpochMilli(),
-                        accuracy = point.accuracy,
-                        sortIndex = index
-                    )
-                }
-                workoutRepository.saveGpsPoints(gpsEntities)
-
-                val phase = WorkoutPhaseEntity(
-                    id = UUID.randomUUID().toString(),
-                    workoutId = snapshot.workoutId,
-                    type = PhaseType.WARMUP,
-                    startTime = snapshot.startTime.toEpochMilli(),
-                    endTime = snapshot.endTime.toEpochMilli(),
-                    distanceMeters = snapshot.totalDistanceMeters,
-                    steps = 0
-                )
-                workoutRepository.savePhase(phase)
-            }
+            workoutSaveManager.saveCompletedWorkout(snapshot)
+            workoutStateStore.clearActiveWorkout()
 
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
+    }
+
+    private fun discardWorkout() {
+        gpsCollectionJob?.cancel()
+        timerJob?.cancel()
+
+        workoutStateManager.stopWorkout()
+        workoutStateStore.clearActiveWorkout()
+
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     private fun createNotificationChannel() {

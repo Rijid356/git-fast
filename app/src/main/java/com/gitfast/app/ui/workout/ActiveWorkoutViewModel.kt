@@ -31,6 +31,14 @@ data class WorkoutUiState(
     val averagePaceFormatted: String? = null,
     val gpsPointCount: Int = 0,
     val isWorkoutComplete: Boolean = false,
+    val isDiscarded: Boolean = false,
+)
+
+data class WorkoutSummaryStats(
+    val time: String = "00:00",
+    val distance: String = "0.00 mi",
+    val pace: String = "-- /mi",
+    val points: String = "0",
 )
 
 @HiltViewModel
@@ -44,6 +52,11 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private val _permissionState = MutableStateFlow(permissionManager.checkPermissions())
     val permissionState: StateFlow<PermissionManager.PermissionState> = _permissionState.asStateFlow()
+
+    private var _lastSummaryStats = WorkoutSummaryStats()
+    val lastSummaryStats: WorkoutSummaryStats get() = _lastSummaryStats
+
+    private var _didDiscard = false
 
     private var stateManager: WorkoutStateManager? = null
     private var isBound = false
@@ -106,11 +119,31 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     fun stopWorkout() {
+        snapshotSummaryStats()
         val context = getApplication<Application>()
         val intent = Intent(context, WorkoutService::class.java).apply {
             action = WorkoutService.ACTION_STOP
         }
         context.startService(intent)
+    }
+
+    fun discardWorkout() {
+        _didDiscard = true
+        val context = getApplication<Application>()
+        val intent = Intent(context, WorkoutService::class.java).apply {
+            action = WorkoutService.ACTION_DISCARD
+        }
+        context.startService(intent)
+    }
+
+    private fun snapshotSummaryStats() {
+        val state = _uiState.value
+        _lastSummaryStats = WorkoutSummaryStats(
+            time = state.elapsedTimeFormatted,
+            distance = state.distanceFormatted,
+            pace = state.averagePaceFormatted ?: "-- /mi",
+            points = state.gpsPointCount.toString(),
+        )
     }
 
     private fun collectWorkoutState() {
@@ -120,6 +153,7 @@ class ActiveWorkoutViewModel @Inject constructor(
             manager.workoutState.collect { state ->
                 val wasActive = _uiState.value.isActive
                 val isNowInactive = !state.isActive && state.workoutId == null
+                val completed = wasActive && isNowInactive
 
                 _uiState.value = WorkoutUiState(
                     isActive = state.isActive,
@@ -130,7 +164,8 @@ class ActiveWorkoutViewModel @Inject constructor(
                     currentPaceFormatted = state.currentPaceSecondsPerMile?.let { formatPace(it) },
                     averagePaceFormatted = state.averagePaceSecondsPerMile?.let { formatPace(it) },
                     gpsPointCount = _uiState.value.gpsPointCount,
-                    isWorkoutComplete = wasActive && isNowInactive,
+                    isWorkoutComplete = completed && !_didDiscard,
+                    isDiscarded = completed && _didDiscard,
                 )
             }
         }
