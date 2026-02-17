@@ -24,6 +24,10 @@ fun WorkoutSummaryScreen(
     distance: String,
     pace: String,
     points: String,
+    lapCount: Int = 0,
+    bestLapTime: String? = null,
+    bestLapNumber: Int? = null,
+    trendLabel: String? = null,
     onViewDetails: () -> Unit,
     onDone: () -> Unit,
 ) {
@@ -66,6 +70,36 @@ fun WorkoutSummaryScreen(
                 averagePaceFormatted = pace,
                 gpsPointCount = points.toIntOrNull() ?: 0,
             )
+
+            if (lapCount > 0 && bestLapTime != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    val bestText = if (bestLapNumber != null) {
+                        "Best lap: $bestLapTime (lap $bestLapNumber) \u2605"
+                    } else {
+                        "Best lap: $bestLapTime \u2605"
+                    }
+                    Text(
+                        text = bestText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center,
+                    )
+
+                    if (trendLabel != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Trend: $trendLabel",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

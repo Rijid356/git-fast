@@ -123,6 +123,8 @@ fun DetailScreen(
             is DetailUiState.Loaded -> {
                 DetailContent(
                     detail = state.detail,
+                    phases = state.phases,
+                    lapAnalysis = state.lapAnalysis,
                     modifier = Modifier.padding(innerPadding),
                 )
             }
@@ -143,6 +145,8 @@ fun DetailScreen(
 @Composable
 private fun DetailContent(
     detail: WorkoutDetailItem,
+    phases: List<com.gitfast.app.util.PhaseAnalyzer.PhaseDisplayItem>,
+    lapAnalysis: LapAnalysis?,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -164,7 +168,20 @@ private fun DetailContent(
         // Stats card
         DetailStatsCard(detail = detail)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Phase breakdown (only shown for multi-phase workouts)
+        PhaseBreakdownSection(phases = phases)
+
+        if (phases.size > 1) {
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Lap analysis (only shown for workouts with laps)
+        lapAnalysis?.let {
+            LapAnalysisSection(analysis = it)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
         // Route map or no-route placeholder
         if (detail.routePoints.size >= 2) {

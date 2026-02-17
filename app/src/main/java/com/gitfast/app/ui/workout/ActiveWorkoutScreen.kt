@@ -21,7 +21,7 @@ import com.gitfast.app.ui.components.KeepScreenOn
 
 @Composable
 fun ActiveWorkoutScreen(
-    onWorkoutComplete: (time: String, distance: String, pace: String, points: String) -> Unit,
+    onWorkoutComplete: (stats: WorkoutSummaryStats) -> Unit,
     onWorkoutDiscarded: () -> Unit,
     viewModel: ActiveWorkoutViewModel = hiltViewModel(),
 ) {
@@ -41,8 +41,7 @@ fun ActiveWorkoutScreen(
     // Detect workout completion
     LaunchedEffect(uiState.isWorkoutComplete) {
         if (uiState.isWorkoutComplete) {
-            val stats = viewModel.lastSummaryStats
-            onWorkoutComplete(stats.time, stats.distance, stats.pace, stats.points)
+            onWorkoutComplete(viewModel.lastSummaryStats)
         }
     }
 
