@@ -20,10 +20,13 @@
 | 2026-02-17 | Checkpoint 8: Lap tracking with phase flow (warmup/laps/cooldown), lap UI, tests | 17 | 1 | +748/-79 |
 | 2026-02-17 | Checkpoint 9: Lap analysis with phase breakdown, trend chart, lap table, tests | 19 | 1 | +1084/-0 |
 | 2026-02-17 | Checkpoint 10: Dog walk activity type with post-walk metadata, route comparison, tests | 29 | 1 | +1536/-83 |
+| 2026-02-17 | Checkpoint 11: Auto-pause based on GPS speed for running workouts | 20 | 1 | +512/-26 |
+| 2026-02-17 | Checkpoint 12: Settings screen with distance unit, auto-pause, and keep-screen-on preferences | 13 | 1 | +501/-11 |
+| 2026-02-17 | Checkpoint 13: Post-workout flow fix — VIEW DETAILS button and dog walk navigation | 5 | 1 | +159/-19 |
 
 ## Totals
-- **Total Sessions:** 9
-- **Total Commits:** 12
-- **Total Files Changed:** 191
-- **Total Lines Added:** 11388
-- **Total Lines Removed:** 499
+- **Total Sessions:** 12
+- **Total Commits:** 15
+- **Total Files Changed:** 229
+- **Total Lines Added:** 12560
+- **Total Lines Removed:** 555
