@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.service.WorkoutService
@@ -29,6 +30,7 @@ data class WorkoutUiState(
     val isActive: Boolean = false,
     val isPaused: Boolean = false,
     val isAutoPaused: Boolean = false,
+    val keepScreenOn: Boolean = true,
     val workoutId: String? = null,
     val elapsedTimeFormatted: String = "00:00",
     val distanceFormatted: String = "0.00 mi",
@@ -67,6 +69,7 @@ data class WorkoutSummaryStats(
 class ActiveWorkoutViewModel @Inject constructor(
     application: Application,
     private val permissionManager: PermissionManager,
+    private val settingsStore: SettingsStore,
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(WorkoutUiState())
@@ -233,16 +236,18 @@ class ActiveWorkoutViewModel @Inject constructor(
                 val bestLap = stateManager?.getBestLapDuration()
                 val avgLap = stateManager?.getAverageLapDuration()
 
+                val unit = settingsStore.distanceUnit
                 _uiState.value = WorkoutUiState(
                     isActive = state.isActive,
                     isPaused = state.isPaused,
                     isAutoPaused = state.isAutoPaused,
+                    keepScreenOn = settingsStore.keepScreenOn,
                     workoutId = state.workoutId,
                     activityType = state.activityType,
                     elapsedTimeFormatted = formatElapsedTime(state.elapsedSeconds),
-                    distanceFormatted = formatDistance(state.distanceMeters),
-                    currentPaceFormatted = state.currentPaceSecondsPerMile?.let { formatPace(it) },
-                    averagePaceFormatted = state.averagePaceSecondsPerMile?.let { formatPace(it) },
+                    distanceFormatted = formatDistance(state.distanceMeters, unit),
+                    currentPaceFormatted = state.currentPaceSecondsPerMile?.let { formatPace(it, unit) },
+                    averagePaceFormatted = state.averagePaceSecondsPerMile?.let { formatPace(it, unit) },
                     gpsPointCount = _uiState.value.gpsPointCount,
                     isWorkoutComplete = completed && !_didDiscard,
                     isDiscarded = completed && _didDiscard,
