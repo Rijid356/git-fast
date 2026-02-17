@@ -28,6 +28,7 @@ fun WorkoutSummaryScreen(
     bestLapTime: String? = null,
     bestLapNumber: Int? = null,
     trendLabel: String? = null,
+    workoutId: String? = null,
     onViewDetails: () -> Unit,
     onDone: () -> Unit,
 ) {
@@ -116,19 +117,21 @@ fun WorkoutSummaryScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Button(
-                    onClick = onViewDetails,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
-                ) {
-                    Text(
-                        text = "VIEW DETAILS",
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(vertical = 8.dp),
-                    )
+                if (workoutId != null) {
+                    Button(
+                        onClick = onViewDetails,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                        ),
+                    ) {
+                        Text(
+                            text = "VIEW DETAILS",
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(vertical = 8.dp),
+                        )
+                    }
                 }
 
                 Button(
