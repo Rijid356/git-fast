@@ -204,6 +204,7 @@ private fun WorkoutCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = workout.distanceFormatted,
@@ -220,6 +221,13 @@ private fun WorkoutCard(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
+                if (workout.xpEarned > 0) {
+                    Text(
+                        text = "+${workout.xpEarned} XP",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
             }
         }
     }

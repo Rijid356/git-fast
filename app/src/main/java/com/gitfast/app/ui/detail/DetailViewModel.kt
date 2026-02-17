@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.gitfast.app.analysis.RouteComparisonAnalyzer
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.util.LapAnalyzer
 import com.gitfast.app.util.PhaseAnalyzer
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
+    private val characterRepository: CharacterRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -48,8 +50,14 @@ class DetailViewModel @Inject constructor(
                     emptyList()
                 }
 
+                // Fetch XP earned for this workout
+                val xpTransaction = characterRepository.getXpTransactionForWorkout(workoutId)
+
                 _uiState.value = DetailUiState.Loaded(
-                    detail = workout.toDetailItem(),
+                    detail = workout.toDetailItem().copy(
+                        xpEarned = xpTransaction?.xpAmount ?: 0,
+                        xpBreakdown = xpTransaction?.reason,
+                    ),
                     phases = PhaseAnalyzer.analyzePhases(workout.phases),
                     lapAnalysis = lapAnalysis,
                     routeComparison = routeComparison

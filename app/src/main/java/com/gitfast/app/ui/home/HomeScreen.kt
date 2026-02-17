@@ -5,14 +5,17 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -37,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.CharacterProfile
 
 @Composable
 fun HomeScreen(
@@ -44,11 +48,13 @@ fun HomeScreen(
     onViewHistory: () -> Unit,
     onWorkoutClick: (workoutId: String) -> Unit,
     onSettingsClick: () -> Unit,
+    onCharacterClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
     val recentRuns by viewModel.recentRuns.collectAsStateWithLifecycle()
     val recentDogWalks by viewModel.recentDogWalks.collectAsStateWithLifecycle()
+    val characterProfile by viewModel.characterProfile.collectAsStateWithLifecycle()
 
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
@@ -163,6 +169,13 @@ fun HomeScreen(
                 onViewAllClick = onViewHistory,
             )
             }
+            LevelBadge(
+                profile = characterProfile,
+                onClick = onCharacterClick,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(8.dp),
+            )
             IconButton(
                 onClick = onSettingsClick,
                 modifier = Modifier
@@ -193,6 +206,32 @@ fun HomeScreen(
                     Text("OK")
                 }
             },
+        )
+    }
+}
+
+@Composable
+private fun LevelBadge(
+    profile: CharacterProfile,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "LV",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "${profile.level}",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
         )
     }
 }

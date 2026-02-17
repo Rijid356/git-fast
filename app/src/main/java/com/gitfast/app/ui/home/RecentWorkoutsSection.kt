@@ -103,11 +103,23 @@ private fun CompactWorkoutCard(
                 )
             }
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = "Avg pace: ${workout.avgPaceFormatted}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = "Avg pace: ${workout.avgPaceFormatted}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (workout.xpEarned > 0) {
+                    Text(
+                        text = "+${workout.xpEarned} XP",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
+            }
         }
     }
 }
