@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gitfast.app.service.WorkoutService
+import com.gitfast.app.util.DistanceCalculator
+import com.gitfast.app.util.formatElapsedTime
+import com.gitfast.app.util.formatPace
 
 @Composable
 fun HomeScreen(
@@ -52,6 +56,9 @@ fun HomeScreen(
         ),
         label = "cursorAlpha",
     )
+
+    val workoutState by viewModel.workoutState.collectAsState()
+    val gpsPoints by viewModel.gpsPoints.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -167,6 +174,72 @@ fun HomeScreen(
             ) {
                 Text("Stop Tracking")
             }
+
+            // --- Debug Stats Display ---
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            HorizontalDivider()
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "git-fast (debug)",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            val status = when {
+                !workoutState.isActive -> "STOPPED"
+                workoutState.isPaused -> "PAUSED"
+                else -> "TRACKING"
+            }
+            val distanceMiles = DistanceCalculator.metersToMiles(workoutState.distanceMeters)
+            val currentPaceText = workoutState.currentPaceSecondsPerMile
+                ?.let { formatPace(it) } ?: "-- /mi"
+            val avgPaceText = workoutState.averagePaceSecondsPerMile
+                ?.let { formatPace(it) } ?: "-- /mi"
+
+            val debugTextColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+
+            Text(
+                text = "Status: $status",
+                style = MaterialTheme.typography.bodyMedium,
+                color = debugTextColor,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = "Time: ${formatElapsedTime(workoutState.elapsedSeconds)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = debugTextColor,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = "Distance: ${"%.2f".format(distanceMiles)} mi",
+                style = MaterialTheme.typography.bodyMedium,
+                color = debugTextColor,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = "Current Pace: $currentPaceText",
+                style = MaterialTheme.typography.bodyMedium,
+                color = debugTextColor,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = "Avg Pace: $avgPaceText",
+                style = MaterialTheme.typography.bodyMedium,
+                color = debugTextColor,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                text = "GPS Points: ${gpsPoints.size}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = debugTextColor,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
         }
