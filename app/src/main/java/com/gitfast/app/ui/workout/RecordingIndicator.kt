@@ -16,10 +16,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.gitfast.app.data.model.ActivityType
 
 @Composable
 fun RecordingIndicator(
     isPaused: Boolean,
+    activityType: ActivityType = ActivityType.RUN,
     modifier: Modifier = Modifier,
 ) {
     if (isPaused) {
@@ -27,6 +29,13 @@ fun RecordingIndicator(
             text = "\u23F8 PAUSE",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.tertiary,
+            modifier = modifier.padding(8.dp),
+        )
+    } else if (activityType == ActivityType.DOG_WALK) {
+        Text(
+            text = "WALKING",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = modifier.padding(8.dp),
         )
     } else {

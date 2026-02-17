@@ -6,7 +6,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.ui.detail.DetailScreen
+import com.gitfast.app.ui.dogwalk.DogWalkSummaryScreen
 import com.gitfast.app.ui.history.HistoryScreen
 import com.gitfast.app.ui.home.HomeScreen
 import com.gitfast.app.ui.workout.ActiveWorkoutScreen
@@ -17,10 +19,15 @@ import java.net.URLEncoder
 
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
-    data object Workout : Screen("workout")
+    data object Workout : Screen("workout?activityType={activityType}") {
+        fun createRoute(activityType: ActivityType): String = "workout?activityType=${activityType.name}"
+    }
     data object History : Screen("history")
     data object Detail : Screen("detail/{workoutId}") {
         fun createRoute(workoutId: String): String = "detail/$workoutId"
+    }
+    data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
+        fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
     }
     data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}") {
         fun createRoute(
@@ -54,8 +61,8 @@ fun GitFastNavGraph(navController: NavHostController) {
     ) {
         composable(Screen.Home.route) {
             HomeScreen(
-                onStartWorkout = {
-                    navController.navigate(Screen.Workout.route)
+                onStartWorkout = { activityType ->
+                    navController.navigate(Screen.Workout.createRoute(activityType))
                 },
                 onViewHistory = {
                     navController.navigate(Screen.History.route)
@@ -65,22 +72,37 @@ fun GitFastNavGraph(navController: NavHostController) {
                 },
             )
         }
-        composable(Screen.Workout.route) {
+        composable(
+            route = Screen.Workout.route,
+            arguments = listOf(
+                navArgument("activityType") { type = NavType.StringType; defaultValue = "RUN" },
+            ),
+        ) { backStackEntry ->
+            val activityTypeName = backStackEntry.arguments?.getString("activityType") ?: "RUN"
+            val activityType = try { ActivityType.valueOf(activityTypeName) } catch (e: Exception) { ActivityType.RUN }
+
             ActiveWorkoutScreen(
-                onWorkoutComplete = { stats ->
-                    navController.navigate(
-                        Screen.WorkoutSummary.createRoute(
-                            time = stats.time,
-                            distance = stats.distance,
-                            pace = stats.pace,
-                            points = stats.points,
-                            lapCount = stats.lapCount,
-                            bestLapTime = stats.bestLapTime,
-                            bestLapNumber = stats.bestLapNumber,
-                            trendLabel = stats.trendLabel,
-                        )
-                    ) {
-                        popUpTo(Screen.Home.route) { inclusive = false }
+                activityType = activityType,
+                onWorkoutComplete = { stats, workoutId ->
+                    if (activityType == ActivityType.DOG_WALK && workoutId != null) {
+                        navController.navigate(Screen.DogWalkSummary.createRoute(workoutId)) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                        }
+                    } else {
+                        navController.navigate(
+                            Screen.WorkoutSummary.createRoute(
+                                time = stats.time,
+                                distance = stats.distance,
+                                pace = stats.pace,
+                                points = stats.points,
+                                lapCount = stats.lapCount,
+                                bestLapTime = stats.bestLapTime,
+                                bestLapNumber = stats.bestLapNumber,
+                                trendLabel = stats.trendLabel,
+                            )
+                        ) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                        }
                     }
                 },
                 onWorkoutDiscarded = {
@@ -132,6 +154,21 @@ fun GitFastNavGraph(navController: NavHostController) {
                         route = Screen.Home.route,
                         inclusive = false,
                     )
+                },
+            )
+        }
+        composable(
+            route = Screen.DogWalkSummary.route,
+            arguments = listOf(
+                navArgument("workoutId") { type = NavType.StringType },
+            ),
+        ) {
+            DogWalkSummaryScreen(
+                onSaved = {
+                    navController.popBackStack(route = Screen.Home.route, inclusive = false)
+                },
+                onDiscarded = {
+                    navController.popBackStack(route = Screen.Home.route, inclusive = false)
                 },
             )
         }

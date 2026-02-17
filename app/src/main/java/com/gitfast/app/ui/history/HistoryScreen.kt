@@ -33,6 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.ui.components.ActivityFilter
+import com.gitfast.app.ui.components.ActivityTypeChips
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -42,13 +45,14 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.workouts.collectAsStateWithLifecycle()
+    val currentFilter by viewModel.filter.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Run History",
+                        text = "History",
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
@@ -91,7 +95,7 @@ fun HistoryScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "No runs yet",
+                        text = "No workouts yet",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -105,6 +109,12 @@ fun HistoryScreen(
                         .padding(innerPadding)
                         .padding(horizontal = 16.dp),
                 ) {
+                    item {
+                        ActivityTypeChips(
+                            selectedFilter = currentFilter,
+                            onFilterSelected = { viewModel.setFilter(it) },
+                        )
+                    }
                     state.groupedWorkouts.forEach { (month, workouts) ->
                         stickyHeader(key = month) {
                             MonthHeader(month = month)
@@ -169,6 +179,24 @@ private fun WorkoutCard(
                 Text(
                     text = workout.timeFormatted,
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            // Activity type label
+            Text(
+                text = workout.activityType.let {
+                    if (it == ActivityType.DOG_WALK) "Dog Walk" else "Run"
+                },
+                style = MaterialTheme.typography.labelSmall,
+                color = if (workout.activityType == ActivityType.DOG_WALK)
+                    MaterialTheme.colorScheme.secondary
+                else MaterialTheme.colorScheme.primary,
+            )
+            // Subtitle (dog name + route for walks)
+            workout.subtitle?.let { sub ->
+                Text(
+                    text = sub,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

@@ -1,5 +1,6 @@
 package com.gitfast.app.service
 
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.util.DistanceCalculator
@@ -31,6 +32,9 @@ class WorkoutStateManager @Inject constructor() {
     private var phaseStartTime: Instant? = null
     private var phaseStartDistance: Double = 0.0
     private var phaseStartSteps: Int = 0
+
+    // Activity type
+    private var activityType: ActivityType = ActivityType.RUN
 
     // Lap tracking
     private var laps: MutableList<LapData> = mutableListOf()
@@ -68,10 +72,11 @@ class WorkoutStateManager @Inject constructor() {
         val laps: List<LapData>
     )
 
-    fun startWorkout(): String {
+    fun startWorkout(activityType: ActivityType = ActivityType.RUN): String {
         val id = UUID.randomUUID().toString()
         val now = Instant.now()
         workoutId = id
+        this.activityType = activityType
         workoutStartTime = now
         totalPausedDuration = 0L
         gpsPointIndex = 0
@@ -94,6 +99,7 @@ class WorkoutStateManager @Inject constructor() {
             distanceMeters = 0.0,
             currentPaceSecondsPerMile = null,
             averagePaceSecondsPerMile = null,
+            activityType = activityType,
             phase = PhaseType.WARMUP,
             lapCount = 0,
             currentLapNumber = 0,
@@ -307,7 +313,8 @@ class WorkoutStateManager @Inject constructor() {
             gpsPoints = _gpsPoints.value,
             totalDistanceMeters = currentDistance,
             totalPausedDurationMillis = totalPausedDuration,
-            phases = completedPhases.toList()
+            phases = completedPhases.toList(),
+            activityType = activityType
         )
 
         // Reset all state
@@ -316,6 +323,7 @@ class WorkoutStateManager @Inject constructor() {
         pauseStartTime = null
         totalPausedDuration = 0L
         gpsPointIndex = 0
+        activityType = ActivityType.RUN
         currentPhase = PhaseType.WARMUP
         phaseStartTime = null
         laps.clear()
@@ -385,7 +393,7 @@ data class WorkoutTrackingState(
     val distanceMeters: Double = 0.0,
     val currentPaceSecondsPerMile: Int? = null,
     val averagePaceSecondsPerMile: Int? = null,
-    // New fields for lap tracking
+    val activityType: ActivityType = ActivityType.RUN,
     val phase: PhaseType = PhaseType.WARMUP,
     val lapCount: Int = 0,
     val currentLapNumber: Int = 0,
@@ -401,5 +409,6 @@ data class WorkoutSnapshot(
     val gpsPoints: List<GpsPoint>,
     val totalDistanceMeters: Double,
     val totalPausedDurationMillis: Long,
-    val phases: List<WorkoutStateManager.PhaseData>
+    val phases: List<WorkoutStateManager.PhaseData>,
+    val activityType: ActivityType
 )

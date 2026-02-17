@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
 
 @Composable
@@ -27,6 +28,7 @@ fun WorkoutControls(
     isActive: Boolean,
     isPaused: Boolean,
     phase: PhaseType,
+    activityType: ActivityType = ActivityType.RUN,
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -50,12 +52,54 @@ fun WorkoutControls(
                 ),
             ) {
                 Text(
-                    text = "START RUN",
+                    text = if (activityType == ActivityType.DOG_WALK) "START WALK" else "START RUN",
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             }
         } else {
+            if (activityType == ActivityType.DOG_WALK) {
+                // Dog walk: simple Pause/Stop controls only
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    if (isPaused) {
+                        Button(
+                            onClick = onResume,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                                contentColor = MaterialTheme.colorScheme.onSecondary,
+                            ),
+                        ) {
+                            Text("RESUME", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 8.dp))
+                        }
+                    } else {
+                        Button(
+                            onClick = onPause,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
+                                contentColor = MaterialTheme.colorScheme.onTertiary,
+                            ),
+                        ) {
+                            Text("PAUSE", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 8.dp))
+                        }
+                    }
+
+                    Button(
+                        onClick = { showStopConfirmation = true },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                        ),
+                    ) {
+                        Text("STOP", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 8.dp))
+                    }
+                }
+            } else {
             when (phase) {
                 PhaseType.WARMUP -> {
                     // Pause/Stop row
@@ -257,6 +301,7 @@ fun WorkoutControls(
                         }
                     }
                 }
+            }
             }
         }
     }

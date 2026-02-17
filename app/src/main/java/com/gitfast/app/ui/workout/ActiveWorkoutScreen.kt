@@ -17,11 +17,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.ui.components.KeepScreenOn
 
 @Composable
 fun ActiveWorkoutScreen(
-    onWorkoutComplete: (stats: WorkoutSummaryStats) -> Unit,
+    activityType: ActivityType = ActivityType.RUN,
+    onWorkoutComplete: (stats: WorkoutSummaryStats, workoutId: String?) -> Unit,
     onWorkoutDiscarded: () -> Unit,
     viewModel: ActiveWorkoutViewModel = hiltViewModel(),
 ) {
@@ -29,6 +31,11 @@ fun ActiveWorkoutScreen(
     val permissionState by viewModel.permissionState.collectAsStateWithLifecycle()
 
     var showBackConfirmation by remember { mutableStateOf(false) }
+
+    // Set activity type on viewModel
+    LaunchedEffect(activityType) {
+        viewModel.setActivityType(activityType)
+    }
 
     // Bind/unbind service
     DisposableEffect(Unit) {
@@ -41,7 +48,7 @@ fun ActiveWorkoutScreen(
     // Detect workout completion
     LaunchedEffect(uiState.isWorkoutComplete) {
         if (uiState.isWorkoutComplete) {
-            onWorkoutComplete(viewModel.lastSummaryStats)
+            onWorkoutComplete(viewModel.lastSummaryStats, viewModel.lastWorkoutId)
         }
     }
 
