@@ -80,6 +80,9 @@ fun ActiveWorkoutScreen(
                 onResume = { viewModel.resumeWorkout() },
                 onStop = { viewModel.stopWorkout() },
                 onDiscard = { viewModel.discardWorkout() },
+                onStartLaps = { viewModel.startLaps() },
+                onMarkLap = { viewModel.markLap() },
+                onEndLaps = { viewModel.endLaps() },
             )
         }
     }
