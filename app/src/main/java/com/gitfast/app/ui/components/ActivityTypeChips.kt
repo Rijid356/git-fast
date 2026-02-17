@@ -31,7 +31,7 @@ fun ActivityTypeChips(
         val filters = listOf(
             ActivityFilter.ALL to "All",
             ActivityFilter.RUNS to "Runs",
-            ActivityFilter.WALKS to "Walks",
+            ActivityFilter.WALKS to "Dog Walks",
         )
         filters.forEach { (filter, label) ->
             FilterChip(
