@@ -82,6 +82,9 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:6.2.1")
     implementation("com.google.android.gms:play-services-maps:19.0.0")
 
+    // Lifecycle Service
+    implementation("androidx.lifecycle:lifecycle-service:2.8.7")
+
     // Core
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
