@@ -3,7 +3,10 @@ package com.gitfast.app.ui.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.repository.WorkoutRepository
+import com.gitfast.app.util.LapAnalyzer
+import com.gitfast.app.util.PhaseAnalyzer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,10 +31,17 @@ class DetailViewModel @Inject constructor(
     private fun loadWorkout() {
         viewModelScope.launch {
             val workout = workoutRepository.getWorkoutWithDetails(workoutId)
-            _uiState.value = if (workout != null) {
-                DetailUiState.Loaded(workout.toDetailItem())
+            if (workout == null) {
+                _uiState.value = DetailUiState.NotFound
             } else {
-                DetailUiState.NotFound
+                val lapsPhase = workout.phases.find { it.type == PhaseType.LAPS }
+                val lapAnalysis = lapsPhase?.laps?.let { LapAnalyzer.analyze(it) }
+
+                _uiState.value = DetailUiState.Loaded(
+                    detail = workout.toDetailItem(),
+                    phases = PhaseAnalyzer.analyzePhases(workout.phases),
+                    lapAnalysis = lapAnalysis
+                )
             }
         }
     }
@@ -48,5 +58,9 @@ sealed class DetailUiState {
     data object Loading : DetailUiState()
     data object NotFound : DetailUiState()
     data object Deleted : DetailUiState()
-    data class Loaded(val detail: WorkoutDetailItem) : DetailUiState()
+    data class Loaded(
+        val detail: WorkoutDetailItem,
+        val phases: List<PhaseAnalyzer.PhaseDisplayItem>,
+        val lapAnalysis: LapAnalysis?
+    ) : DetailUiState()
 }

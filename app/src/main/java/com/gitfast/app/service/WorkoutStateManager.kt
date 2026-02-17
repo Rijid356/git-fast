@@ -271,6 +271,19 @@ class WorkoutStateManager @Inject constructor() {
         return totalSeconds / laps.size
     }
 
+    fun getBestLapNumber(): Int? {
+        if (laps.isEmpty()) return null
+        return laps.minByOrNull {
+            it.endTime.toEpochMilli() - it.startTime.toEpochMilli()
+        }?.lapNumber
+    }
+
+    fun getLapDurations(): List<Int> {
+        return laps.map {
+            ((it.endTime.toEpochMilli() - it.startTime.toEpochMilli()) / 1000).toInt()
+        }
+    }
+
     fun stopWorkout(): WorkoutSnapshot {
         val endTime = Instant.now()
         val currentDistance = _workoutState.value.distanceMeters
