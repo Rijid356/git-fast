@@ -7,4 +7,7 @@ data class CharacterProfile(
     val xpForNextLevel: Int = 100,
     val xpProgressInLevel: Int = 0,
     val xpProgress: Float = 0f,
+    val speedStat: Int = 1,
+    val enduranceStat: Int = 1,
+    val consistencyStat: Int = 1,
 )

@@ -13,6 +13,7 @@ import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.service.WorkoutSnapshot
+import com.gitfast.app.util.StatsCalculator
 import com.gitfast.app.util.XpCalculator
 import java.util.UUID
 import javax.inject.Inject
@@ -25,6 +26,7 @@ data class SaveResult(
 class WorkoutSaveManager @Inject constructor(
     private val workoutDao: WorkoutDao,
     private val characterRepository: CharacterRepository,
+    private val workoutRepository: WorkoutRepository,
 ) {
 
     suspend fun saveCompletedWorkout(snapshot: WorkoutSnapshot): SaveResult? {
@@ -75,6 +77,8 @@ class WorkoutSaveManager @Inject constructor(
                 reason = xpResult.breakdown.joinToString("; "),
             )
 
+            recalculateStats()
+
             Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}, awarded $xpAwarded XP")
             SaveResult(workoutId = snapshot.workoutId, xpEarned = xpAwarded)
         } catch (e: Exception) {
@@ -111,6 +115,17 @@ class WorkoutSaveManager @Inject constructor(
                 accuracy = point.accuracy,
                 sortIndex = index
             )
+        }
+    }
+
+    private suspend fun recalculateStats() {
+        try {
+            val allWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
+            val recentRuns = workoutRepository.getRecentCompletedRuns(20)
+            val stats = StatsCalculator.calculateAll(allWorkouts, recentRuns)
+            characterRepository.updateStats(stats)
+        } catch (e: Exception) {
+            Log.e("WorkoutSaveManager", "Failed to recalculate stats", e)
         }
     }
 
