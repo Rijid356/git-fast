@@ -34,7 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun DogWalkSummaryScreen(
-    onSaved: () -> Unit,
+    onSaved: (workoutId: String) -> Unit,
     onDiscarded: () -> Unit,
     viewModel: DogWalkSummaryViewModel = hiltViewModel(),
 ) {
@@ -42,7 +42,7 @@ fun DogWalkSummaryScreen(
     var showDiscardDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isSaved) {
-        if (uiState.isSaved) onSaved()
+        if (uiState.isSaved) onSaved(viewModel.workoutId)
     }
     LaunchedEffect(uiState.isDiscarded) {
         if (uiState.isDiscarded) onDiscarded()
