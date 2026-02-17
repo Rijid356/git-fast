@@ -36,9 +36,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun HomeScreen(
     onStartWorkout: () -> Unit,
     onViewHistory: () -> Unit,
+    onWorkoutClick: (workoutId: String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
+    val recentWorkouts by viewModel.recentWorkouts.collectAsStateWithLifecycle()
 
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
@@ -115,6 +117,12 @@ fun HomeScreen(
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             }
+
+            RecentWorkoutsSection(
+                recentWorkouts = recentWorkouts,
+                onWorkoutClick = onWorkoutClick,
+                onViewAllClick = onViewHistory,
+            )
         }
     }
 
