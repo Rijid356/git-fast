@@ -13,10 +13,11 @@
 |------|---------|--------------|---------|-------------|
 | 2026-02-17 | Checkpoints 0-3: Project skeleton, data layer, GPS service, real-time calculations | 52 | 4 | +3965/-0 |
 | 2026-02-17 | Schema update: Add dog walk activity type, enums, RouteTagEntity, metadata fields, tests | 19 | 1 | +811/-17 |
+| 2026-02-17 | Checkpoint 4: Active workout screen with live stats, permissions, navigation | 16 | 1 | +1020/-150 |
 
 ## Totals
-- **Total Sessions:** 2
-- **Total Commits:** 5
-- **Total Files Changed:** 71
-- **Total Lines Added:** 4776
-- **Total Lines Removed:** 17
+- **Total Sessions:** 3
+- **Total Commits:** 6
+- **Total Files Changed:** 87
+- **Total Lines Added:** 5796
+- **Total Lines Removed:** 167

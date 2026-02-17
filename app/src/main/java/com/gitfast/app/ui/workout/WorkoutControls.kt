@@ -29,6 +29,7 @@ fun WorkoutControls(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onStop: () -> Unit,
+    onDiscard: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showStopConfirmation by remember { mutableStateOf(false) }
@@ -106,9 +107,13 @@ fun WorkoutControls(
 
     if (showStopConfirmation) {
         StopConfirmationDialog(
-            onConfirm = {
+            onSaveAndStop = {
                 showStopConfirmation = false
                 onStop()
+            },
+            onDiscard = {
+                showStopConfirmation = false
+                onDiscard()
             },
             onDismiss = { showStopConfirmation = false },
         )
@@ -117,7 +122,8 @@ fun WorkoutControls(
 
 @Composable
 private fun StopConfirmationDialog(
-    onConfirm: () -> Unit,
+    onSaveAndStop: () -> Unit,
+    onDiscard: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
@@ -126,21 +132,31 @@ private fun StopConfirmationDialog(
             Text(text = "Stop Workout?")
         },
         text = {
-            Text(text = "Are you sure you want to stop this workout? Your progress will be saved.")
+            Text(text = "Save your workout or discard it?")
         },
         confirmButton = {
             TextButton(
-                onClick = onConfirm,
+                onClick = onSaveAndStop,
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.primary,
                 ),
             ) {
-                Text("Stop")
+                Text("SAVE & STOP")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
+            Row {
+                TextButton(
+                    onClick = onDiscard,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) {
+                    Text("DISCARD")
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("KEEP GOING")
+                }
             }
         },
     )
