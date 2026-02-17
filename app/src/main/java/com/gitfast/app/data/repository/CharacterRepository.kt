@@ -22,6 +22,16 @@ class CharacterRepository @Inject constructor(
         }
     }
 
+    fun getXpByWorkout(): Flow<Map<String, Int>> {
+        return characterDao.getAllXpTransactions().map { list ->
+            list.associate { it.workoutId to it.xpAmount }
+        }
+    }
+
+    suspend fun getXpTransactionForWorkout(workoutId: String): XpTransaction? {
+        return characterDao.getXpTransactionForWorkout(workoutId)?.toDomain()
+    }
+
     fun getRecentXpTransactions(limit: Int = 10): Flow<List<XpTransaction>> {
         return characterDao.getRecentXpTransactions(limit).map { list ->
             list.map { it.toDomain() }

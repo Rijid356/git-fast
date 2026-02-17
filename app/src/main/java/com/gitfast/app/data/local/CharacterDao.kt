@@ -35,4 +35,7 @@ interface CharacterDao {
 
     @Query("SELECT COUNT(*) FROM xp_transactions")
     fun getTotalTransactionCount(): Flow<Int>
+
+    @Query("SELECT * FROM xp_transactions")
+    fun getAllXpTransactions(): Flow<List<XpTransactionEntity>>
 }

@@ -26,7 +26,9 @@ data class WorkoutDetailItem(
     val routeTag: String?,
     val weatherSummary: String?,
     val energyLevel: EnergyLevel?,
-    val notes: String?
+    val notes: String?,
+    val xpEarned: Int = 0,
+    val xpBreakdown: String? = null,
 )
 
 data class LatLngPoint(
