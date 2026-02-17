@@ -34,6 +34,7 @@ import com.gitfast.app.util.XpCalculator
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterSheetScreen(
     onBackClick: () -> Unit,
