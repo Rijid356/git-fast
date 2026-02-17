@@ -20,8 +20,15 @@ fun WorkoutEntity.toDomain(
     totalSteps = totalSteps,
     distanceMeters = distanceMeters,
     status = status,
+    activityType = activityType,
     phases = phases,
-    gpsPoints = gpsPoints
+    gpsPoints = gpsPoints,
+    dogName = dogName,
+    notes = notes,
+    weatherCondition = weatherCondition,
+    weatherTemp = weatherTemp,
+    energyLevel = energyLevel,
+    routeTag = routeTag
 )
 
 fun Workout.toEntity() = WorkoutEntity(
@@ -30,7 +37,14 @@ fun Workout.toEntity() = WorkoutEntity(
     endTime = endTime?.toEpochMilli(),
     totalSteps = totalSteps,
     distanceMeters = distanceMeters,
-    status = status
+    status = status,
+    activityType = activityType,
+    dogName = dogName,
+    notes = notes,
+    weatherCondition = weatherCondition,
+    weatherTemp = weatherTemp,
+    energyLevel = energyLevel,
+    routeTag = routeTag
 )
 
 fun WorkoutPhaseEntity.toDomain(laps: List<Lap>) = WorkoutPhase(

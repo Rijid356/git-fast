@@ -6,9 +6,13 @@ import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.local.mappers.toDomain
 import com.gitfast.app.data.local.mappers.toEntity
+import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.Lap
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.data.model.WeatherCondition
+import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.model.WorkoutPhase
 import com.gitfast.app.data.model.WorkoutStatus
@@ -27,7 +31,14 @@ class WorkoutMapperTest {
             endTime = 2000L,
             totalSteps = 500,
             distanceMeters = 1609.34,
-            status = WorkoutStatus.COMPLETED
+            status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.RUN,
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null
         )
         val phases = listOf(
             WorkoutPhase(
@@ -57,8 +68,15 @@ class WorkoutMapperTest {
         assertEquals(500, workout.totalSteps)
         assertEquals(1609.34, workout.distanceMeters, 0.001)
         assertEquals(WorkoutStatus.COMPLETED, workout.status)
+        assertEquals(ActivityType.RUN, workout.activityType)
         assertEquals(1, workout.phases.size)
         assertEquals(1, workout.gpsPoints.size)
+        assertNull(workout.dogName)
+        assertNull(workout.notes)
+        assertNull(workout.weatherCondition)
+        assertNull(workout.weatherTemp)
+        assertNull(workout.energyLevel)
+        assertNull(workout.routeTag)
     }
 
     @Test
@@ -70,8 +88,15 @@ class WorkoutMapperTest {
             totalSteps = 500,
             distanceMeters = 1609.34,
             status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.RUN,
             phases = emptyList(),
-            gpsPoints = emptyList()
+            gpsPoints = emptyList(),
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null
         )
 
         val entity = workout.toEntity()
@@ -82,6 +107,7 @@ class WorkoutMapperTest {
         assertEquals(500, entity.totalSteps)
         assertEquals(1609.34, entity.distanceMeters, 0.001)
         assertEquals(WorkoutStatus.COMPLETED, entity.status)
+        assertEquals(ActivityType.RUN, entity.activityType)
     }
 
     @Test
@@ -92,7 +118,14 @@ class WorkoutMapperTest {
             endTime = null,
             totalSteps = 100,
             distanceMeters = 200.0,
-            status = WorkoutStatus.ACTIVE
+            status = WorkoutStatus.ACTIVE,
+            activityType = ActivityType.RUN,
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null
         )
 
         val workout = entity.toDomain(emptyList(), emptyList())
@@ -103,6 +136,104 @@ class WorkoutMapperTest {
         // Round-trip back to entity
         val roundTripped = workout.toEntity()
         assertNull(roundTripped.endTime)
+    }
+
+    @Test
+    fun `map dog walk entity with all metadata fields`() {
+        val entity = WorkoutEntity(
+            id = "w-3",
+            startTime = 1000L,
+            endTime = 2000L,
+            totalSteps = 300,
+            distanceMeters = 800.0,
+            status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.DOG_WALK,
+            dogName = "Buddy",
+            notes = "Great walk",
+            weatherCondition = WeatherCondition.SUNNY,
+            weatherTemp = WeatherTemp.MILD,
+            energyLevel = EnergyLevel.NORMAL,
+            routeTag = "park-loop"
+        )
+
+        val workout = entity.toDomain(emptyList(), emptyList())
+
+        assertEquals(ActivityType.DOG_WALK, workout.activityType)
+        assertEquals("Buddy", workout.dogName)
+        assertEquals("Great walk", workout.notes)
+        assertEquals(WeatherCondition.SUNNY, workout.weatherCondition)
+        assertEquals(WeatherTemp.MILD, workout.weatherTemp)
+        assertEquals(EnergyLevel.NORMAL, workout.energyLevel)
+        assertEquals("park-loop", workout.routeTag)
+    }
+
+    @Test
+    fun `map dog walk domain back to entity preserves all metadata`() {
+        val workout = Workout(
+            id = "w-3",
+            startTime = Instant.ofEpochMilli(1000),
+            endTime = Instant.ofEpochMilli(2000),
+            totalSteps = 300,
+            distanceMeters = 800.0,
+            status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.DOG_WALK,
+            phases = emptyList(),
+            gpsPoints = emptyList(),
+            dogName = "Rex",
+            notes = "Evening stroll",
+            weatherCondition = WeatherCondition.CLOUDY,
+            weatherTemp = WeatherTemp.COOL,
+            energyLevel = EnergyLevel.LOW,
+            routeTag = "neighborhood"
+        )
+
+        val entity = workout.toEntity()
+
+        assertEquals(ActivityType.DOG_WALK, entity.activityType)
+        assertEquals("Rex", entity.dogName)
+        assertEquals("Evening stroll", entity.notes)
+        assertEquals(WeatherCondition.CLOUDY, entity.weatherCondition)
+        assertEquals(WeatherTemp.COOL, entity.weatherTemp)
+        assertEquals(EnergyLevel.LOW, entity.energyLevel)
+        assertEquals("neighborhood", entity.routeTag)
+    }
+
+    @Test
+    fun `map run entity with null dog walk metadata`() {
+        val entity = WorkoutEntity(
+            id = "w-4",
+            startTime = 1000L,
+            endTime = 2000L,
+            totalSteps = 500,
+            distanceMeters = 1609.34,
+            status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.RUN,
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null
+        )
+
+        val workout = entity.toDomain(emptyList(), emptyList())
+
+        assertEquals(ActivityType.RUN, workout.activityType)
+        assertNull(workout.dogName)
+        assertNull(workout.notes)
+        assertNull(workout.weatherCondition)
+        assertNull(workout.weatherTemp)
+        assertNull(workout.energyLevel)
+        assertNull(workout.routeTag)
+
+        // Round-trip preserves nulls
+        val roundTripped = workout.toEntity()
+        assertNull(roundTripped.dogName)
+        assertNull(roundTripped.notes)
+        assertNull(roundTripped.weatherCondition)
+        assertNull(roundTripped.weatherTemp)
+        assertNull(roundTripped.energyLevel)
+        assertNull(roundTripped.routeTag)
     }
 
     @Test
