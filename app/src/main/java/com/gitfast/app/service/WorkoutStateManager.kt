@@ -1,6 +1,8 @@
 package com.gitfast.app.service
 
 import com.gitfast.app.data.model.GpsPoint
+import com.gitfast.app.util.DistanceCalculator
+import com.gitfast.app.util.PaceCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -84,7 +86,28 @@ class WorkoutStateManager @Inject constructor() {
         _gpsPoints.value = updatedPoints
         gpsPointIndex++
 
-        _workoutState.value = _workoutState.value.copy()
+        // Calculate running distance by adding the distance from
+        // the previous point to the new point.
+        val distanceMeters = if (updatedPoints.size >= 2) {
+            val prev = updatedPoints[updatedPoints.size - 2]
+            val segmentDistance = DistanceCalculator.haversineMeters(
+                prev.latitude, prev.longitude,
+                point.latitude, point.longitude
+            )
+            _workoutState.value.distanceMeters + segmentDistance
+        } else {
+            0.0
+        }
+
+        val elapsedSeconds = _workoutState.value.elapsedSeconds
+
+        _workoutState.value = _workoutState.value.copy(
+            distanceMeters = distanceMeters,
+            currentPaceSecondsPerMile = PaceCalculator.currentPace(updatedPoints),
+            averagePaceSecondsPerMile = PaceCalculator.averagePace(
+                elapsedSeconds, distanceMeters
+            )
+        )
     }
 
     fun updateElapsedTime() {

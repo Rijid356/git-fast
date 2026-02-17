@@ -20,7 +20,9 @@ import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.location.GpsTracker
+import com.gitfast.app.util.DistanceCalculator
 import com.gitfast.app.util.formatElapsedTime
+import com.gitfast.app.util.formatPace
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -217,7 +219,17 @@ class WorkoutService : LifecycleService() {
     private fun updateNotification(text: String? = null) {
         val state = workoutStateManager.workoutState.value
         val elapsed = formatElapsedTime(state.elapsedSeconds)
-        val content = text ?: "Tracking workout \u2022 $elapsed"
+
+        val content = text ?: run {
+            val distanceMiles = DistanceCalculator.metersToMiles(state.distanceMeters)
+            val paceText = state.currentPaceSecondsPerMile?.let { formatPace(it) }
+
+            if (distanceMiles >= 0.01 && paceText != null) {
+                "${"%.2f".format(distanceMiles)} mi \u2022 $paceText"
+            } else {
+                "Tracking workout \u2022 $elapsed"
+            }
+        }
 
         val manager = getSystemService(NotificationManager::class.java)
         manager.notify(NOTIFICATION_ID, buildNotification(content))
