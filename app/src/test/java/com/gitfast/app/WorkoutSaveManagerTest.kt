@@ -280,4 +280,5 @@ class FakeCharacterDao : CharacterDao {
     override fun getRecentXpTransactions(limit: Int): Flow<List<XpTransactionEntity>> = flowOf(transactions.take(limit))
     override suspend fun getXpTransactionForWorkout(workoutId: String): XpTransactionEntity? = transactions.find { it.workoutId == workoutId }
     override fun getTotalTransactionCount(): Flow<Int> = flowOf(transactions.size)
+    override fun getAllXpTransactions(): Flow<List<XpTransactionEntity>> = flowOf(transactions.toList())
 }

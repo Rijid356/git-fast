@@ -19,6 +19,7 @@ data class WorkoutHistoryItem(
     val avgPaceFormatted: String,
     val activityType: ActivityType,
     val subtitle: String?,
+    val xpEarned: Int = 0,
 )
 
 fun Workout.toHistoryItem(): WorkoutHistoryItem {
