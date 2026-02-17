@@ -6,6 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.gitfast.app.ui.detail.PlaceholderDetailScreen
+import com.gitfast.app.ui.history.HistoryScreen
 import com.gitfast.app.ui.home.HomeScreen
 import com.gitfast.app.ui.workout.ActiveWorkoutScreen
 import com.gitfast.app.ui.workout.WorkoutSummaryScreen
@@ -17,7 +19,7 @@ sealed class Screen(val route: String) {
     data object Workout : Screen("workout")
     data object History : Screen("history")
     data object Detail : Screen("detail/{workoutId}") {
-        fun createRoute(workoutId: Long): String = "detail/$workoutId"
+        fun createRoute(workoutId: String): String = "detail/$workoutId"
     }
     data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}") {
         fun createRoute(time: String, distance: String, pace: String, points: String): String {
@@ -40,6 +42,9 @@ fun GitFastNavGraph(navController: NavHostController) {
                 },
                 onViewHistory = {
                     navController.navigate(Screen.History.route)
+                },
+                onWorkoutClick = { workoutId ->
+                    navController.navigate(Screen.Detail.createRoute(workoutId))
                 },
             )
         }
@@ -92,10 +97,28 @@ fun GitFastNavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.History.route) {
-            // TODO: HistoryScreen - Checkpoint 2
+            HistoryScreen(
+                onWorkoutClick = { workoutId ->
+                    navController.navigate(Screen.Detail.createRoute(workoutId))
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                },
+            )
         }
-        composable(Screen.Detail.route) {
-            // TODO: DetailScreen - Checkpoint 2
+        composable(
+            route = Screen.Detail.route,
+            arguments = listOf(
+                navArgument("workoutId") { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            val workoutId = backStackEntry.arguments?.getString("workoutId") ?: ""
+            PlaceholderDetailScreen(
+                workoutId = workoutId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+            )
         }
     }
 }
