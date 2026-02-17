@@ -14,6 +14,7 @@ import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.data.repository.CharacterRepository
+import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.service.WorkoutSnapshot
 import com.gitfast.app.service.WorkoutStateManager
@@ -38,7 +39,7 @@ class WorkoutSaveManagerTest {
     fun setUp() {
         fakeDao = FakeWorkoutDao()
         fakeCharacterDao = FakeCharacterDao()
-        saveManager = WorkoutSaveManager(fakeDao, CharacterRepository(fakeCharacterDao))
+        saveManager = WorkoutSaveManager(fakeDao, CharacterRepository(fakeCharacterDao), WorkoutRepository(fakeDao))
     }
 
     private fun createSnapshot(
@@ -258,6 +259,8 @@ class FakeWorkoutDao : WorkoutDao {
     override suspend fun getLapsForPhase(phaseId: String): List<LapEntity> = emptyList()
     override suspend fun getGpsPointsForWorkout(workoutId: String): List<GpsPointEntity> = emptyList()
     override fun getAllCompletedWorkouts(): Flow<List<WorkoutEntity>> = flowOf(emptyList())
+    override suspend fun getAllCompletedWorkoutsOnce(): List<WorkoutEntity> = emptyList()
+    override suspend fun getRecentCompletedRuns(limit: Int): List<WorkoutEntity> = emptyList()
     override fun getCompletedWorkoutsByType(activityType: String): Flow<List<WorkoutEntity>> = flowOf(emptyList())
     override fun getDogWalksByRoute(routeTag: String): Flow<List<WorkoutEntity>> = flowOf(emptyList())
     override suspend fun getCompletedWorkoutCount(): Int = 0
