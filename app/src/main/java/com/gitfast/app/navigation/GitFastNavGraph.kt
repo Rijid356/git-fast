@@ -6,7 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.gitfast.app.ui.detail.PlaceholderDetailScreen
+import com.gitfast.app.ui.detail.DetailScreen
 import com.gitfast.app.ui.history.HistoryScreen
 import com.gitfast.app.ui.home.HomeScreen
 import com.gitfast.app.ui.workout.ActiveWorkoutScreen
@@ -111,10 +111,8 @@ fun GitFastNavGraph(navController: NavHostController) {
             arguments = listOf(
                 navArgument("workoutId") { type = NavType.StringType },
             ),
-        ) { backStackEntry ->
-            val workoutId = backStackEntry.arguments?.getString("workoutId") ?: ""
-            PlaceholderDetailScreen(
-                workoutId = workoutId,
+        ) {
+            DetailScreen(
                 onBackClick = {
                     navController.popBackStack()
                 },
