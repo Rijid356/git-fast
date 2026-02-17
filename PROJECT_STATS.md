@@ -18,10 +18,12 @@
 | 2026-02-17 | Checkpoint 6: Workout history screen, date formatting, home preview, tests | 12 | 1 | +706/-9 |
 | 2026-02-17 | Checkpoint 7: Workout detail screen with Google Maps route display, tests | 10 | 1 | +700/-70 |
 | 2026-02-17 | Checkpoint 8: Lap tracking with phase flow (warmup/laps/cooldown), lap UI, tests | 17 | 1 | +748/-79 |
+| 2026-02-17 | Checkpoint 9: Lap analysis with phase breakdown, trend chart, lap table, tests | 19 | 1 | +1084/-0 |
+| 2026-02-17 | Checkpoint 10: Dog walk activity type with post-walk metadata, route comparison, tests | 29 | 1 | +1536/-83 |
 
 ## Totals
-- **Total Sessions:** 7
-- **Total Commits:** 10
-- **Total Files Changed:** 143
-- **Total Lines Added:** 8768
-- **Total Lines Removed:** 416
+- **Total Sessions:** 9
+- **Total Commits:** 12
+- **Total Files Changed:** 191
+- **Total Lines Added:** 11388
+- **Total Lines Removed:** 499

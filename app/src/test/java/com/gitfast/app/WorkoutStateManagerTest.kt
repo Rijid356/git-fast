@@ -175,6 +175,54 @@ class WorkoutStateManagerTest {
         assertFalse(manager.workoutState.value.isPaused)
     }
 
+    // --- Checkpoint 11: Auto-pause tests ---
+
+    @Test
+    fun `autoPauseWorkout sets both isPaused and isAutoPaused`() {
+        manager.startWorkout()
+        manager.autoPauseWorkout()
+
+        val state = manager.workoutState.value
+        assertTrue(state.isPaused)
+        assertTrue(state.isAutoPaused)
+    }
+
+    @Test
+    fun `autoResumeWorkout clears both flags and accumulates pause duration`() {
+        manager.startWorkout()
+        manager.autoPauseWorkout()
+        Thread.sleep(50)
+        manager.autoResumeWorkout()
+
+        val state = manager.workoutState.value
+        assertFalse(state.isPaused)
+        assertFalse(state.isAutoPaused)
+    }
+
+    @Test
+    fun `manual pauseWorkout clears isAutoPaused`() {
+        manager.startWorkout()
+        manager.autoPauseWorkout()
+
+        // Manual pause overrides auto-pause
+        manager.pauseWorkout()
+
+        val state = manager.workoutState.value
+        assertTrue(state.isPaused)
+        assertFalse("Manual pause should clear isAutoPaused", state.isAutoPaused)
+    }
+
+    @Test
+    fun `stopWorkout resets auto-pause state`() {
+        manager.startWorkout()
+        manager.autoPauseWorkout()
+        manager.stopWorkout()
+
+        val state = manager.workoutState.value
+        assertFalse(state.isPaused)
+        assertFalse(state.isAutoPaused)
+    }
+
     // --- Checkpoint 3: Distance and Pace calculation tests ---
 
     private fun generateLinearGpsPoints(

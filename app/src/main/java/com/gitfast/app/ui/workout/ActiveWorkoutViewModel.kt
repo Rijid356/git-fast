@@ -28,6 +28,7 @@ import javax.inject.Inject
 data class WorkoutUiState(
     val isActive: Boolean = false,
     val isPaused: Boolean = false,
+    val isAutoPaused: Boolean = false,
     val workoutId: String? = null,
     val elapsedTimeFormatted: String = "00:00",
     val distanceFormatted: String = "0.00 mi",
@@ -235,6 +236,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                 _uiState.value = WorkoutUiState(
                     isActive = state.isActive,
                     isPaused = state.isPaused,
+                    isAutoPaused = state.isAutoPaused,
                     workoutId = state.workoutId,
                     activityType = state.activityType,
                     elapsedTimeFormatted = formatElapsedTime(state.elapsedSeconds),

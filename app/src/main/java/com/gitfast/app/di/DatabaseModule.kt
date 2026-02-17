@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.gitfast.app.data.local.GitFastDatabase
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.WorkoutStateStore
+import com.gitfast.app.data.local.migrations.MIGRATION_1_2
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import dagger.Module
@@ -25,7 +26,8 @@ object DatabaseModule {
             context,
             GitFastDatabase::class.java,
             "gitfast-database"
-        ).build()
+        ).addMigrations(MIGRATION_1_2)
+         .build()
     }
 
     @Provides

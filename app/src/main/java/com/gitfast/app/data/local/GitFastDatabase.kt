@@ -17,7 +17,7 @@ import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
         GpsPointEntity::class,
         RouteTagEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

@@ -90,7 +90,8 @@ fun GpsPointEntity.toDomain() = GpsPoint(
     latitude = latitude,
     longitude = longitude,
     timestamp = Instant.ofEpochMilli(timestamp),
-    accuracy = accuracy
+    accuracy = accuracy,
+    speed = speed
 )
 
 fun GpsPoint.toEntity(workoutId: String, sortIndex: Int) = GpsPointEntity(
@@ -99,5 +100,6 @@ fun GpsPoint.toEntity(workoutId: String, sortIndex: Int) = GpsPointEntity(
     longitude = longitude,
     timestamp = timestamp.toEpochMilli(),
     accuracy = accuracy,
-    sortIndex = sortIndex
+    sortIndex = sortIndex,
+    speed = speed
 )

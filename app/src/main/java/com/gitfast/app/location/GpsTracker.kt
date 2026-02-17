@@ -45,7 +45,8 @@ class GpsTracker @Inject constructor(
                             latitude = location.latitude,
                             longitude = location.longitude,
                             timestamp = Instant.ofEpochMilli(location.time),
-                            accuracy = location.accuracy
+                            accuracy = location.accuracy,
+                            speed = if (location.hasSpeed()) location.speed else null
                         )
                         trySend(point)
                     }

@@ -139,6 +139,7 @@ fun WorkoutContent(
             WorkoutControls(
                 isActive = uiState.isActive,
                 isPaused = uiState.isPaused,
+                isAutoPaused = uiState.isAutoPaused,
                 phase = uiState.phase,
                 activityType = uiState.activityType,
                 onStart = onStart,
