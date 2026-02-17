@@ -177,6 +177,15 @@ private fun DetailContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // XP earned section
+        if (detail.xpEarned > 0) {
+            XpEarnedSection(
+                xpEarned = detail.xpEarned,
+                xpBreakdown = detail.xpBreakdown,
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
         // Dog walk metadata (only for dog walks)
         if (detail.activityType == ActivityType.DOG_WALK) {
             DogWalkMetadataSection(detail = detail)
@@ -327,6 +336,50 @@ private fun StatCell(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
         )
+    }
+}
+
+@Composable
+private fun XpEarnedSection(
+    xpEarned: Int,
+    xpBreakdown: String?,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "XP EARNED",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "+$xpEarned XP",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                )
+            }
+            xpBreakdown?.let { breakdown ->
+                Spacer(modifier = Modifier.height(8.dp))
+                breakdown.split(";").forEach { entry ->
+                    val trimmed = entry.trim()
+                    if (trimmed.isNotEmpty()) {
+                        Text(
+                            text = trimmed,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
