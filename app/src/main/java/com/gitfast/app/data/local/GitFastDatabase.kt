@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
+import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 
@@ -13,7 +14,8 @@ import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
         WorkoutEntity::class,
         WorkoutPhaseEntity::class,
         LapEntity::class,
-        GpsPointEntity::class
+        GpsPointEntity::class,
+        RouteTagEntity::class
     ],
     version = 1,
     exportSchema = true

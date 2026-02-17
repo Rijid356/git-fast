@@ -2,10 +2,12 @@ package com.gitfast.app.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
+import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import kotlinx.coroutines.flow.Flow
@@ -60,6 +62,12 @@ interface WorkoutDao {
     @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' ORDER BY startTime DESC")
     fun getAllCompletedWorkouts(): Flow<List<WorkoutEntity>>
 
+    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = :activityType ORDER BY startTime DESC")
+    fun getCompletedWorkoutsByType(activityType: String): Flow<List<WorkoutEntity>>
+
+    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK' AND routeTag = :routeTag ORDER BY startTime DESC")
+    fun getDogWalksByRoute(routeTag: String): Flow<List<WorkoutEntity>>
+
     @Query("SELECT COUNT(*) FROM workouts WHERE status = 'COMPLETED'")
     suspend fun getCompletedWorkoutCount(): Int
 
@@ -67,6 +75,17 @@ interface WorkoutDao {
 
     @Query("SELECT * FROM workouts WHERE status IN ('ACTIVE', 'PAUSED') LIMIT 1")
     suspend fun getActiveWorkout(): WorkoutEntity?
+
+    // --- Route Tags ---
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRouteTag(tag: RouteTagEntity)
+
+    @Query("SELECT * FROM route_tags ORDER BY lastUsed DESC")
+    suspend fun getAllRouteTags(): List<RouteTagEntity>
+
+    @Query("UPDATE route_tags SET lastUsed = :timestamp WHERE name = :name")
+    suspend fun updateRouteTagLastUsed(name: String, timestamp: Long)
 
     // --- Deletes ---
 
