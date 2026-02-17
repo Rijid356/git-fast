@@ -25,10 +25,12 @@
 | 2026-02-17 | Checkpoint 13: Post-workout flow fix — VIEW DETAILS button and dog walk navigation | 5 | 1 | +159/-19 |
 | 2026-02-17 | Checkpoint 14: Post-test-walk bug fixes — crash recovery, active workout resume, split home sections, map hardening | 7 | 1 | +65/-10 |
 | 2026-02-17 | Checkpoint 15: Derived character stats (SPD/END/CON) with bracket interpolation, Room migration v3→v4, stat bars UI, 20 unit tests | 14 | 1 | +758/-3 |
+| 2026-02-17 | Add 32 ViewModel unit tests (MockK), fix XpCalculatorTest distance precision, CI fixes | 10 | 5 | +727/-11 |
+| 2026-02-17 | Final XpCalculatorTest fix: use 1610.0m for reliable mile conversion, merge PR #25 | 1 | 1 | +9/-9 |
 
 ## Totals
-- **Total Sessions:** 14
-- **Total Commits:** 17
-- **Total Files Changed:** 250
-- **Total Lines Added:** 13383
-- **Total Lines Removed:** 568
+- **Total Sessions:** 16
+- **Total Commits:** 23
+- **Total Files Changed:** 261
+- **Total Lines Added:** 14119
+- **Total Lines Removed:** 588
