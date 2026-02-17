@@ -31,10 +31,11 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gitfast.app.data.model.ActivityType
 
 @Composable
 fun HomeScreen(
-    onStartWorkout: () -> Unit,
+    onStartWorkout: (ActivityType) -> Unit,
     onViewHistory: () -> Unit,
     onWorkoutClick: (workoutId: String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -75,7 +76,7 @@ fun HomeScreen(
 
             Text(
                 text = buildAnnotatedString {
-                    append("> ready to run")
+                    append("> ready_")
                     withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary.copy(alpha = cursorAlpha))) {
                         append("_")
                     }
@@ -87,7 +88,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(48.dp))
 
             Button(
-                onClick = onStartWorkout,
+                onClick = { onStartWorkout(ActivityType.RUN) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -96,6 +97,23 @@ fun HomeScreen(
             ) {
                 Text(
                     text = "START RUN",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = { onStartWorkout(ActivityType.DOG_WALK) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
+            ) {
+                Text(
+                    text = "DOG WALK",
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )

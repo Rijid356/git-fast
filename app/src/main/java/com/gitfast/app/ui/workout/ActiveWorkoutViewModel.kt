@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.service.WorkoutService
 import com.gitfast.app.service.WorkoutStateManager
@@ -35,6 +36,7 @@ data class WorkoutUiState(
     val gpsPointCount: Int = 0,
     val isWorkoutComplete: Boolean = false,
     val isDiscarded: Boolean = false,
+    val activityType: ActivityType = ActivityType.RUN,
     // Phase tracking
     val phase: PhaseType = PhaseType.WARMUP,
     val phaseLabel: String = "WARMUP",
@@ -75,7 +77,16 @@ class ActiveWorkoutViewModel @Inject constructor(
     private var _lastSummaryStats = WorkoutSummaryStats()
     val lastSummaryStats: WorkoutSummaryStats get() = _lastSummaryStats
 
+    private var _lastWorkoutId: String? = null
+    val lastWorkoutId: String? get() = _lastWorkoutId
+
     private var _didDiscard = false
+
+    private var activityType: ActivityType = ActivityType.RUN
+
+    fun setActivityType(type: ActivityType) {
+        activityType = type
+    }
 
     private var stateManager: WorkoutStateManager? = null
     private var isBound = false
@@ -117,6 +128,7 @@ class ActiveWorkoutViewModel @Inject constructor(
         val context = getApplication<Application>()
         val intent = Intent(context, WorkoutService::class.java).apply {
             action = WorkoutService.ACTION_START
+            putExtra(WorkoutService.EXTRA_ACTIVITY_TYPE, activityType.name)
         }
         context.startForegroundService(intent)
     }
@@ -181,6 +193,7 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun snapshotSummaryStats() {
         val state = _uiState.value
+        _lastWorkoutId = state.workoutId
         val manager = stateManager
 
         val lapDurations = manager?.getLapDurations() ?: emptyList()
@@ -223,6 +236,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                     isActive = state.isActive,
                     isPaused = state.isPaused,
                     workoutId = state.workoutId,
+                    activityType = state.activityType,
                     elapsedTimeFormatted = formatElapsedTime(state.elapsedSeconds),
                     distanceFormatted = formatDistance(state.distanceMeters),
                     currentPaceFormatted = state.currentPaceSecondsPerMile?.let { formatPace(it) },

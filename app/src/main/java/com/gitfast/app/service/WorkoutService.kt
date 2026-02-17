@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.gitfast.app.MainActivity
 import com.gitfast.app.R
 import com.gitfast.app.data.local.WorkoutStateStore
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.location.GpsTracker
@@ -50,6 +51,7 @@ class WorkoutService : LifecycleService() {
         const val ACTION_RESUME = "com.gitfast.app.ACTION_RESUME"
         const val ACTION_STOP = "com.gitfast.app.ACTION_STOP"
         const val ACTION_DISCARD = "com.gitfast.app.ACTION_DISCARD"
+        const val EXTRA_ACTIVITY_TYPE = "extra_activity_type"
         const val ACTION_START_LAPS = "com.gitfast.app.ACTION_START_LAPS"
         const val ACTION_MARK_LAP = "com.gitfast.app.ACTION_MARK_LAP"
         const val ACTION_END_LAPS = "com.gitfast.app.ACTION_END_LAPS"
@@ -64,7 +66,7 @@ class WorkoutService : LifecycleService() {
         super.onStartCommand(intent, flags, startId)
 
         when (intent?.action) {
-            ACTION_START -> startWorkout()
+            ACTION_START -> startWorkout(intent)
             ACTION_PAUSE -> pauseWorkout()
             ACTION_RESUME -> resumeWorkout()
             ACTION_STOP -> stopWorkout()
@@ -77,8 +79,13 @@ class WorkoutService : LifecycleService() {
         return START_REDELIVER_INTENT
     }
 
-    private fun startWorkout() {
-        val workoutId = workoutStateManager.startWorkout()
+    private fun startWorkout(intent: Intent? = null) {
+        val activityTypeName = intent?.getStringExtra(EXTRA_ACTIVITY_TYPE)
+        val activityType = activityTypeName?.let {
+            try { ActivityType.valueOf(it) } catch (e: Exception) { ActivityType.RUN }
+        } ?: ActivityType.RUN
+
+        val workoutId = workoutStateManager.startWorkout(activityType)
 
         workoutStateStore.setActiveWorkout(workoutId, Instant.now().toEpochMilli())
 
@@ -181,6 +188,7 @@ class WorkoutService : LifecycleService() {
     private fun updateNotification(text: String? = null) {
         val state = workoutStateManager.workoutState.value
         val elapsed = formatElapsedTime(state.elapsedSeconds)
+        val isDogWalk = state.activityType == ActivityType.DOG_WALK
 
         val content = text ?: run {
             val distanceMiles = DistanceCalculator.metersToMiles(state.distanceMeters)
@@ -189,7 +197,8 @@ class WorkoutService : LifecycleService() {
             if (distanceMiles >= 0.01 && paceText != null) {
                 "${"%.2f".format(distanceMiles)} mi \u2022 $paceText"
             } else {
-                "Tracking workout \u2022 $elapsed"
+                val label = if (isDogWalk) "Dog walk" else "Tracking workout"
+                "$label \u2022 $elapsed"
             }
         }
 

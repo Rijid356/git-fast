@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -38,6 +39,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gitfast.app.analysis.RouteComparisonAnalyzer
+import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.EnergyLevel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +57,8 @@ fun DetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Run Details",
+                        text = if ((uiState as? DetailUiState.Loaded)?.detail?.activityType == ActivityType.DOG_WALK)
+                            "Dog Walk" else "Run Details",
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
@@ -125,6 +130,7 @@ fun DetailScreen(
                     detail = state.detail,
                     phases = state.phases,
                     lapAnalysis = state.lapAnalysis,
+                    routeComparison = state.routeComparison,
                     modifier = Modifier.padding(innerPadding),
                 )
             }
@@ -147,6 +153,7 @@ private fun DetailContent(
     detail: WorkoutDetailItem,
     phases: List<com.gitfast.app.util.PhaseAnalyzer.PhaseDisplayItem>,
     lapAnalysis: LapAnalysis?,
+    routeComparison: List<RouteComparisonAnalyzer.RouteComparisonItem>,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -170,17 +177,23 @@ private fun DetailContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Phase breakdown (only shown for multi-phase workouts)
-        PhaseBreakdownSection(phases = phases)
-
-        if (phases.size > 1) {
+        // Dog walk metadata (only for dog walks)
+        if (detail.activityType == ActivityType.DOG_WALK) {
+            DogWalkMetadataSection(detail = detail)
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Lap analysis (only shown for workouts with laps)
-        lapAnalysis?.let {
-            LapAnalysisSection(analysis = it)
-            Spacer(modifier = Modifier.height(24.dp))
+        // Phase breakdown (only for runs with multiple phases)
+        if (detail.activityType == ActivityType.RUN) {
+            PhaseBreakdownSection(phases = phases)
+            if (phases.size > 1) {
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            lapAnalysis?.let {
+                LapAnalysisSection(analysis = it)
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
 
         // Route map or no-route placeholder
@@ -191,6 +204,22 @@ private fun DetailContent(
             )
         } else {
             NoRouteContent()
+        }
+
+        // Route comparison (only for dog walks with route tag)
+        if (detail.activityType == ActivityType.DOG_WALK && routeComparison.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            RouteComparisonSection(items = routeComparison)
+        }
+
+        // Notes (only for dog walks with notes)
+        detail.notes?.let { notes ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = notes,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
         // GPS quality footer
@@ -337,6 +366,39 @@ private fun GpsQualityFooter(
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+}
+
+@Composable
+private fun DogWalkMetadataSection(detail: WorkoutDetailItem) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            detail.dogName?.let {
+                MetadataRow(icon = "\uD83D\uDC15", text = it)
+            }
+            detail.routeTag?.let {
+                MetadataRow(icon = "\uD83D\uDCCD", text = it)
+            }
+            detail.weatherSummary?.let {
+                MetadataRow(icon = "\uD83C\uDF24", text = it)
+            }
+            detail.energyLevel?.let {
+                MetadataRow(icon = "\u26A1", text = "${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} energy")
+            }
+        }
+    }
+}
+
+@Composable
+private fun MetadataRow(icon: String, text: String) {
+    Row(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(text = icon, style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+    }
 }
 
 @Composable
