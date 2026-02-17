@@ -23,5 +23,6 @@ data class GpsPointEntity(
     val longitude: Double,
     val timestamp: Long,
     val accuracy: Float,
-    val sortIndex: Int
+    val sortIndex: Int,
+    val speed: Float? = null
 )

@@ -112,7 +112,7 @@ class WorkoutStateManager @Inject constructor() {
 
     fun pauseWorkout() {
         pauseStartTime = Instant.now()
-        _workoutState.value = _workoutState.value.copy(isPaused = true)
+        _workoutState.value = _workoutState.value.copy(isPaused = true, isAutoPaused = false)
     }
 
     fun resumeWorkout() {
@@ -120,7 +120,20 @@ class WorkoutStateManager @Inject constructor() {
             totalPausedDuration += Instant.now().toEpochMilli() - pauseStart.toEpochMilli()
         }
         pauseStartTime = null
-        _workoutState.value = _workoutState.value.copy(isPaused = false)
+        _workoutState.value = _workoutState.value.copy(isPaused = false, isAutoPaused = false)
+    }
+
+    fun autoPauseWorkout() {
+        pauseStartTime = Instant.now()
+        _workoutState.value = _workoutState.value.copy(isPaused = true, isAutoPaused = true)
+    }
+
+    fun autoResumeWorkout() {
+        pauseStartTime?.let { pauseStart ->
+            totalPausedDuration += Instant.now().toEpochMilli() - pauseStart.toEpochMilli()
+        }
+        pauseStartTime = null
+        _workoutState.value = _workoutState.value.copy(isPaused = false, isAutoPaused = false)
     }
 
     /**
@@ -388,6 +401,7 @@ class WorkoutStateManager @Inject constructor() {
 data class WorkoutTrackingState(
     val isActive: Boolean = false,
     val isPaused: Boolean = false,
+    val isAutoPaused: Boolean = false,
     val workoutId: String? = null,
     val elapsedSeconds: Int = 0,
     val distanceMeters: Double = 0.0,

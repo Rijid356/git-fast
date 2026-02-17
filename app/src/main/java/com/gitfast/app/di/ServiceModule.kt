@@ -1,7 +1,9 @@
 package com.gitfast.app.di
 
 import android.content.Context
+import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.location.GpsTracker
+import com.gitfast.app.service.AutoPauseDetector
 import com.gitfast.app.service.WorkoutStateManager
 import com.gitfast.app.util.PermissionManager
 import dagger.Module
@@ -31,5 +33,17 @@ object ServiceModule {
     @Singleton
     fun providePermissionManager(@ApplicationContext context: Context): PermissionManager {
         return PermissionManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAutoPauseDetector(): AutoPauseDetector {
+        return AutoPauseDetector()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSettingsStore(@ApplicationContext context: Context): SettingsStore {
+        return SettingsStore(context)
     }
 }
