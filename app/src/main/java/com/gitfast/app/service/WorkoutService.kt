@@ -13,8 +13,10 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.gitfast.app.MainActivity
 import com.gitfast.app.R
+import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.location.GpsTracker
@@ -37,6 +39,8 @@ class WorkoutService : LifecycleService() {
     @Inject lateinit var workoutRepository: WorkoutRepository
     @Inject lateinit var workoutSaveManager: WorkoutSaveManager
     @Inject lateinit var workoutStateStore: WorkoutStateStore
+    @Inject lateinit var autoPauseDetector: AutoPauseDetector
+    @Inject lateinit var settingsStore: SettingsStore
 
     private var gpsCollectionJob: Job? = null
     private var timerJob: Job? = null
@@ -91,13 +95,16 @@ class WorkoutService : LifecycleService() {
 
         startForeground(NOTIFICATION_ID, buildNotification("Workout started"))
 
+        autoPauseDetector.reset()
+
         gpsCollectionJob = lifecycleScope.launch {
             gpsTracker.startTracking().collect { point ->
+                handleAutoPause(point, activityType)
                 workoutStateManager.addGpsPoint(point)
                 Log.d(
                     "WorkoutService",
                     "GPS: ${point.latitude}, ${point.longitude} " +
-                        "accuracy=${point.accuracy}m"
+                        "accuracy=${point.accuracy}m speed=${point.speed}"
                 )
             }
         }
@@ -112,16 +119,19 @@ class WorkoutService : LifecycleService() {
     }
 
     private fun pauseWorkout() {
+        autoPauseDetector.reset()
         workoutStateManager.pauseWorkout()
         gpsCollectionJob?.cancel()
         updateNotification("Workout paused")
     }
 
     private fun resumeWorkout() {
+        autoPauseDetector.reset()
         workoutStateManager.resumeWorkout()
 
         gpsCollectionJob = lifecycleScope.launch {
             gpsTracker.startTracking().collect { point ->
+                handleAutoPause(point, workoutStateManager.workoutState.value.activityType)
                 workoutStateManager.addGpsPoint(point)
             }
         }
@@ -153,6 +163,23 @@ class WorkoutService : LifecycleService() {
 
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
+    }
+
+    private fun handleAutoPause(point: GpsPoint, activityType: ActivityType) {
+        if (!settingsStore.autoPauseEnabled) return
+        if (activityType != ActivityType.RUN) return
+
+        val state = workoutStateManager.workoutState.value
+        val result = autoPauseDetector.analyzePoint(point, state.isAutoPaused)
+
+        if (result.shouldAutoPause && !state.isPaused) {
+            workoutStateManager.autoPauseWorkout()
+            updateNotification("[AUTO-PAUSED]")
+        }
+        if (result.shouldAutoResume && state.isAutoPaused) {
+            workoutStateManager.autoResumeWorkout()
+            updateNotification("Tracking workout")
+        }
     }
 
     private fun createNotificationChannel() {
@@ -191,14 +218,18 @@ class WorkoutService : LifecycleService() {
         val isDogWalk = state.activityType == ActivityType.DOG_WALK
 
         val content = text ?: run {
-            val distanceMiles = DistanceCalculator.metersToMiles(state.distanceMeters)
-            val paceText = state.currentPaceSecondsPerMile?.let { formatPace(it) }
-
-            if (distanceMiles >= 0.01 && paceText != null) {
-                "${"%.2f".format(distanceMiles)} mi \u2022 $paceText"
+            if (state.isAutoPaused) {
+                "[AUTO-PAUSED] \u2022 $elapsed"
             } else {
-                val label = if (isDogWalk) "Dog walk" else "Tracking workout"
-                "$label \u2022 $elapsed"
+                val distanceMiles = DistanceCalculator.metersToMiles(state.distanceMeters)
+                val paceText = state.currentPaceSecondsPerMile?.let { formatPace(it) }
+
+                if (distanceMiles >= 0.01 && paceText != null) {
+                    "${"%.2f".format(distanceMiles)} mi \u2022 $paceText"
+                } else {
+                    val label = if (isDogWalk) "Dog walk" else "Tracking workout"
+                    "$label \u2022 $elapsed"
+                }
             }
         }
 

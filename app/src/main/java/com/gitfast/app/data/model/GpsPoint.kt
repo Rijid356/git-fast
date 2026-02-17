@@ -6,5 +6,6 @@ data class GpsPoint(
     val latitude: Double,
     val longitude: Double,
     val timestamp: Instant,
-    val accuracy: Float
+    val accuracy: Float,
+    val speed: Float? = null
 )
