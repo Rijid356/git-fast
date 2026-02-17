@@ -29,6 +29,7 @@ fun WorkoutSummaryScreen(
     bestLapNumber: Int? = null,
     trendLabel: String? = null,
     workoutId: String? = null,
+    xpEarned: Int = 0,
     onViewDetails: () -> Unit,
     onDone: () -> Unit,
 ) {
@@ -61,6 +62,16 @@ fun WorkoutSummaryScreen(
                     color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                 )
+
+                if (xpEarned > 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "+$xpEarned XP",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))

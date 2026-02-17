@@ -16,6 +16,7 @@ import com.gitfast.app.service.WorkoutStateManager
 import com.gitfast.app.ui.detail.LapTrend
 import com.gitfast.app.util.LapAnalyzer
 import com.gitfast.app.util.PermissionManager
+import com.gitfast.app.util.XpCalculator
 import com.gitfast.app.util.formatDistance
 import com.gitfast.app.util.formatElapsedTime
 import com.gitfast.app.util.formatPace
@@ -63,6 +64,7 @@ data class WorkoutSummaryStats(
     val bestLapTime: String? = null,
     val bestLapNumber: Int? = null,
     val trendLabel: String? = null,
+    val xpEarned: Int = 0,
 )
 
 @HiltViewModel
@@ -205,6 +207,20 @@ class ActiveWorkoutViewModel @Inject constructor(
             LapAnalyzer.calculateTrend(lapDurations)
         } else null
 
+        // Calculate XP preview from current state
+        val trackingState = manager?.workoutState?.value
+        val xpEarned = if (trackingState != null) {
+            XpCalculator.calculateXp(
+                distanceMeters = trackingState.distanceMeters,
+                durationMillis = trackingState.elapsedSeconds * 1000L,
+                activityType = trackingState.activityType,
+                lapCount = trackingState.lapCount,
+                hasWarmup = true,
+                hasCooldown = trackingState.phase == PhaseType.COOLDOWN,
+                hasLaps = trackingState.lapCount > 0,
+            ).totalXp
+        } else 0
+
         _lastSummaryStats = WorkoutSummaryStats(
             time = state.elapsedTimeFormatted,
             distance = state.distanceFormatted,
@@ -221,6 +237,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                     LapTrend.TOO_FEW_LAPS -> null
                 }
             },
+            xpEarned = xpEarned,
         )
     }
 
