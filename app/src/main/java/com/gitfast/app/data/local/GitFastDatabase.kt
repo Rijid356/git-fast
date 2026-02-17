@@ -21,7 +21,7 @@ import com.gitfast.app.data.local.entity.XpTransactionEntity
         CharacterProfileEntity::class,
         XpTransactionEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

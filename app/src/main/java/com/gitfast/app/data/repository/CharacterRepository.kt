@@ -4,6 +4,7 @@ import com.gitfast.app.data.local.CharacterDao
 import com.gitfast.app.data.local.entity.CharacterProfileEntity
 import com.gitfast.app.data.local.entity.XpTransactionEntity
 import com.gitfast.app.data.model.CharacterProfile
+import com.gitfast.app.data.model.CharacterStats
 import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.util.XpCalculator
 import kotlinx.coroutines.flow.Flow
@@ -71,6 +72,20 @@ class CharacterRepository @Inject constructor(
         return xpAmount
     }
 
+    suspend fun updateStats(stats: CharacterStats) {
+        val profile = characterDao.getProfileOnce()
+            ?: CharacterProfileEntity(id = 1).also {
+                characterDao.insertProfile(it)
+            }
+        characterDao.updateProfile(
+            profile.copy(
+                speedStat = stats.speed,
+                enduranceStat = stats.endurance,
+                consistencyStat = stats.consistency,
+            )
+        )
+    }
+
     private fun CharacterProfileEntity.toCharacterProfile(): CharacterProfile {
         val currentLevelXp = XpCalculator.xpForLevel(level)
         val nextLevelXp = XpCalculator.xpForLevel(level + 1)
@@ -83,6 +98,9 @@ class CharacterRepository @Inject constructor(
             xpForNextLevel = nextLevelXp,
             xpProgressInLevel = xpInLevel,
             xpProgress = if (xpNeeded > 0) xpInLevel.toFloat() / xpNeeded else 0f,
+            speedStat = speedStat,
+            enduranceStat = enduranceStat,
+            consistencyStat = consistencyStat,
         )
     }
 
