@@ -1,7 +1,5 @@
 package com.gitfast.app.ui.home
 
-import android.content.Context
-import android.content.Intent
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -18,26 +16,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.gitfast.app.service.WorkoutService
-import com.gitfast.app.util.DistanceCalculator
-import com.gitfast.app.util.formatElapsedTime
-import com.gitfast.app.util.formatPace
 
 @Composable
 fun HomeScreen(
@@ -45,7 +35,6 @@ fun HomeScreen(
     onViewHistory: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -56,9 +45,6 @@ fun HomeScreen(
         ),
         label = "cursorAlpha",
     )
-
-    val workoutState by viewModel.workoutState.collectAsState()
-    val gpsPoints by viewModel.gpsPoints.collectAsState()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -82,7 +68,7 @@ fun HomeScreen(
 
             Text(
                 text = buildAnnotatedString {
-                    append("track runs like commits")
+                    append("> ready to run")
                     withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary.copy(alpha = cursorAlpha))) {
                         append("_")
                     }
@@ -102,7 +88,7 @@ fun HomeScreen(
                 ),
             ) {
                 Text(
-                    text = "Start Workout",
+                    text = "START RUN",
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
@@ -124,131 +110,6 @@ fun HomeScreen(
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             }
-
-            // --- Debug Section (temporary, removed in Checkpoint 4) ---
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            HorizontalDivider()
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Debug Controls",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedButton(
-                onClick = { sendServiceAction(context, WorkoutService.ACTION_START) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Start Tracking")
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = { sendServiceAction(context, WorkoutService.ACTION_PAUSE) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Pause Tracking")
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = { sendServiceAction(context, WorkoutService.ACTION_RESUME) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Resume Tracking")
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = { sendServiceAction(context, WorkoutService.ACTION_STOP) },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Stop Tracking")
-            }
-
-            // --- Debug Stats Display ---
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            HorizontalDivider()
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "git-fast (debug)",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            val status = when {
-                !workoutState.isActive -> "STOPPED"
-                workoutState.isPaused -> "PAUSED"
-                else -> "TRACKING"
-            }
-            val distanceMiles = DistanceCalculator.metersToMiles(workoutState.distanceMeters)
-            val currentPaceText = workoutState.currentPaceSecondsPerMile
-                ?.let { formatPace(it) } ?: "-- /mi"
-            val avgPaceText = workoutState.averagePaceSecondsPerMile
-                ?.let { formatPace(it) } ?: "-- /mi"
-
-            val debugTextColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
-
-            Text(
-                text = "Status: $status",
-                style = MaterialTheme.typography.bodyMedium,
-                color = debugTextColor,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                text = "Time: ${formatElapsedTime(workoutState.elapsedSeconds)}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = debugTextColor,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                text = "Distance: ${"%.2f".format(distanceMiles)} mi",
-                style = MaterialTheme.typography.bodyMedium,
-                color = debugTextColor,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                text = "Current Pace: $currentPaceText",
-                style = MaterialTheme.typography.bodyMedium,
-                color = debugTextColor,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                text = "Avg Pace: $avgPaceText",
-                style = MaterialTheme.typography.bodyMedium,
-                color = debugTextColor,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                text = "GPS Points: ${gpsPoints.size}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = debugTextColor,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
-}
-
-private fun sendServiceAction(context: Context, action: String) {
-    val intent = Intent(context, WorkoutService::class.java).apply {
-        this.action = action
-    }
-    context.startForegroundService(intent)
 }
