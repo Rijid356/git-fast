@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,6 +30,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun HomeScreen(
@@ -35,6 +38,8 @@ fun HomeScreen(
     onViewHistory: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
+    val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
+
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -111,5 +116,23 @@ fun HomeScreen(
                 )
             }
         }
+    }
+
+    if (showRecoveryDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissRecoveryDialog() },
+            title = { Text("Incomplete Workout Found") },
+            text = {
+                Text(
+                    "It looks like your last workout didn't finish properly. " +
+                        "The incomplete data has been cleared."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dismissRecoveryDialog() }) {
+                    Text("OK")
+                }
+            },
+        )
     }
 }

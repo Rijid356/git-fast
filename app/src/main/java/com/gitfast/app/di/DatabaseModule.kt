@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import com.gitfast.app.data.local.GitFastDatabase
 import com.gitfast.app.data.local.WorkoutDao
+import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.repository.WorkoutRepository
+import com.gitfast.app.data.repository.WorkoutSaveManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,5 +37,17 @@ object DatabaseModule {
     @Singleton
     fun provideWorkoutRepository(workoutDao: WorkoutDao): WorkoutRepository {
         return WorkoutRepository(workoutDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkoutSaveManager(workoutDao: WorkoutDao): WorkoutSaveManager {
+        return WorkoutSaveManager(workoutDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkoutStateStore(@ApplicationContext context: Context): WorkoutStateStore {
+        return WorkoutStateStore(context)
     }
 }
