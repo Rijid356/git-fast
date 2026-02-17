@@ -11,6 +11,8 @@ import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.service.WorkoutService
 import com.gitfast.app.service.WorkoutStateManager
+import com.gitfast.app.ui.detail.LapTrend
+import com.gitfast.app.util.LapAnalyzer
 import com.gitfast.app.util.PermissionManager
 import com.gitfast.app.util.formatDistance
 import com.gitfast.app.util.formatElapsedTime
@@ -52,6 +54,10 @@ data class WorkoutSummaryStats(
     val distance: String = "0.00 mi",
     val pace: String = "-- /mi",
     val points: String = "0",
+    val lapCount: Int = 0,
+    val bestLapTime: String? = null,
+    val bestLapNumber: Int? = null,
+    val trendLabel: String? = null,
 )
 
 @HiltViewModel
@@ -175,11 +181,29 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private fun snapshotSummaryStats() {
         val state = _uiState.value
+        val manager = stateManager
+
+        val lapDurations = manager?.getLapDurations() ?: emptyList()
+        val trend = if (lapDurations.size >= 3) {
+            LapAnalyzer.calculateTrend(lapDurations)
+        } else null
+
         _lastSummaryStats = WorkoutSummaryStats(
             time = state.elapsedTimeFormatted,
             distance = state.distanceFormatted,
             pace = state.averagePaceFormatted ?: "-- /mi",
             points = state.gpsPointCount.toString(),
+            lapCount = state.lapCount,
+            bestLapTime = state.bestLapTimeFormatted,
+            bestLapNumber = manager?.getBestLapNumber(),
+            trendLabel = trend?.let {
+                when (it) {
+                    LapTrend.GETTING_FASTER -> "Getting faster \u25B2"
+                    LapTrend.GETTING_SLOWER -> "Getting slower \u25BC"
+                    LapTrend.CONSISTENT -> "Consistent pace \u2500"
+                    LapTrend.TOO_FEW_LAPS -> null
+                }
+            },
         )
     }
 

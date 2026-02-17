@@ -11,6 +11,7 @@ import com.gitfast.app.ui.history.HistoryScreen
 import com.gitfast.app.ui.home.HomeScreen
 import com.gitfast.app.ui.workout.ActiveWorkoutScreen
 import com.gitfast.app.ui.workout.WorkoutSummaryScreen
+import com.gitfast.app.ui.workout.WorkoutSummaryStats
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -21,10 +22,26 @@ sealed class Screen(val route: String) {
     data object Detail : Screen("detail/{workoutId}") {
         fun createRoute(workoutId: String): String = "detail/$workoutId"
     }
-    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}") {
-        fun createRoute(time: String, distance: String, pace: String, points: String): String {
+    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}") {
+        fun createRoute(
+            time: String,
+            distance: String,
+            pace: String,
+            points: String,
+            lapCount: Int = 0,
+            bestLapTime: String? = null,
+            bestLapNumber: Int? = null,
+            trendLabel: String? = null,
+        ): String {
             val enc = { s: String -> URLEncoder.encode(s, "UTF-8") }
-            return "workout_summary/${enc(time)}/${enc(distance)}/${enc(pace)}/${enc(points)}"
+            val base = "workout_summary/${enc(time)}/${enc(distance)}/${enc(pace)}/${enc(points)}"
+            val params = buildString {
+                append("?lapCount=$lapCount")
+                bestLapTime?.let { append("&bestLapTime=${enc(it)}") }
+                bestLapNumber?.let { append("&bestLapNumber=$it") }
+                trendLabel?.let { append("&trendLabel=${enc(it)}") }
+            }
+            return base + params
         }
     }
 }
@@ -50,9 +67,18 @@ fun GitFastNavGraph(navController: NavHostController) {
         }
         composable(Screen.Workout.route) {
             ActiveWorkoutScreen(
-                onWorkoutComplete = { time, distance, pace, points ->
+                onWorkoutComplete = { stats ->
                     navController.navigate(
-                        Screen.WorkoutSummary.createRoute(time, distance, pace, points)
+                        Screen.WorkoutSummary.createRoute(
+                            time = stats.time,
+                            distance = stats.distance,
+                            pace = stats.pace,
+                            points = stats.points,
+                            lapCount = stats.lapCount,
+                            bestLapTime = stats.bestLapTime,
+                            bestLapNumber = stats.bestLapNumber,
+                            trendLabel = stats.trendLabel,
+                        )
                     ) {
                         popUpTo(Screen.Home.route) { inclusive = false }
                     }
@@ -72,6 +98,10 @@ fun GitFastNavGraph(navController: NavHostController) {
                 navArgument("distance") { type = NavType.StringType },
                 navArgument("pace") { type = NavType.StringType },
                 navArgument("points") { type = NavType.StringType },
+                navArgument("lapCount") { type = NavType.StringType; defaultValue = "0" },
+                navArgument("bestLapTime") { type = NavType.StringType; defaultValue = "" },
+                navArgument("bestLapNumber") { type = NavType.StringType; defaultValue = "" },
+                navArgument("trendLabel") { type = NavType.StringType; defaultValue = "" },
             ),
         ) { backStackEntry ->
             val dec = { key: String ->
@@ -80,11 +110,20 @@ fun GitFastNavGraph(navController: NavHostController) {
                     "UTF-8",
                 )
             }
+            val lapCount = dec("lapCount").toIntOrNull() ?: 0
+            val bestLapTime = dec("bestLapTime").ifEmpty { null }
+            val bestLapNumber = dec("bestLapNumber").toIntOrNull()
+            val trendLabel = dec("trendLabel").ifEmpty { null }
+
             WorkoutSummaryScreen(
                 time = dec("time"),
                 distance = dec("distance"),
                 pace = dec("pace"),
                 points = dec("points"),
+                lapCount = lapCount,
+                bestLapTime = bestLapTime,
+                bestLapNumber = bestLapNumber,
+                trendLabel = trendLabel,
                 onViewDetails = {
                     // TODO: Navigate to detail screen when available
                 },
