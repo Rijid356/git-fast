@@ -1,0 +1,66 @@
+package com.gitfast.app.data.repository
+
+import com.gitfast.app.data.local.WorkoutDao
+import com.gitfast.app.data.local.entity.GpsPointEntity
+import com.gitfast.app.data.local.entity.LapEntity
+import com.gitfast.app.data.local.entity.WorkoutEntity
+import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
+import com.gitfast.app.data.local.mappers.toDomain
+import com.gitfast.app.data.model.Workout
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+
+class WorkoutRepository @Inject constructor(
+    private val workoutDao: WorkoutDao
+) {
+    fun getCompletedWorkouts(): Flow<List<Workout>> {
+        return workoutDao.getAllCompletedWorkouts().map { entities ->
+            entities.map { entity ->
+                val phases = workoutDao.getPhasesForWorkout(entity.id)
+                    .map { it.toDomain(emptyList()) }
+                entity.toDomain(phases, emptyList())
+            }
+        }
+    }
+
+    suspend fun getWorkoutWithDetails(workoutId: String): Workout? {
+        val entity = workoutDao.getWorkoutById(workoutId) ?: return null
+        val gpsPoints = workoutDao.getGpsPointsForWorkout(workoutId)
+            .map { it.toDomain() }
+        val phases = workoutDao.getPhasesForWorkout(workoutId).map { phase ->
+            val laps = workoutDao.getLapsForPhase(phase.id)
+                .map { it.toDomain() }
+            phase.toDomain(laps)
+        }
+        return entity.toDomain(phases, gpsPoints)
+    }
+
+    suspend fun saveWorkout(
+        workout: WorkoutEntity,
+        phases: List<WorkoutPhaseEntity>,
+        laps: List<LapEntity>,
+        gpsPoints: List<GpsPointEntity>
+    ) {
+        workout.let { workoutDao.insertWorkout(it) }
+        phases.forEach { workoutDao.insertPhase(it) }
+        laps.forEach { workoutDao.insertLap(it) }
+        workoutDao.insertGpsPoints(gpsPoints)
+    }
+
+    suspend fun updateWorkout(workout: WorkoutEntity) {
+        workoutDao.updateWorkout(workout)
+    }
+
+    suspend fun getActiveWorkout(): WorkoutEntity? {
+        return workoutDao.getActiveWorkout()
+    }
+
+    suspend fun deleteWorkout(workoutId: String) {
+        workoutDao.deleteWorkout(workoutId)
+    }
+
+    suspend fun getCompletedWorkoutCount(): Int {
+        return workoutDao.getCompletedWorkoutCount()
+    }
+}
