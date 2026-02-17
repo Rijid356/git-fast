@@ -27,6 +27,7 @@ import com.gitfast.app.data.model.PhaseType
 fun WorkoutControls(
     isActive: Boolean,
     isPaused: Boolean,
+    isAutoPaused: Boolean = false,
     phase: PhaseType,
     activityType: ActivityType = ActivityType.RUN,
     onStart: () -> Unit,
@@ -40,6 +41,7 @@ fun WorkoutControls(
     modifier: Modifier = Modifier,
 ) {
     var showStopConfirmation by remember { mutableStateOf(false) }
+    val resumeButtonText = if (isAutoPaused) "AUTO-PAUSED" else "RESUME"
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (!isActive) {
@@ -117,7 +119,7 @@ fun WorkoutControls(
                                 ),
                             ) {
                                 Text(
-                                    text = "RESUME",
+                                    text = resumeButtonText,
                                     style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(vertical = 8.dp),
                                 )
@@ -208,7 +210,7 @@ fun WorkoutControls(
                                 ),
                             ) {
                                 Text(
-                                    text = "RESUME",
+                                    text = resumeButtonText,
                                     style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(vertical = 8.dp),
                                 )
@@ -263,7 +265,7 @@ fun WorkoutControls(
                                 ),
                             ) {
                                 Text(
-                                    text = "RESUME",
+                                    text = resumeButtonText,
                                     style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(vertical = 8.dp),
                                 )
