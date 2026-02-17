@@ -5,7 +5,7 @@
 - **Started:** 2026-02-17
 - **Last Active:** 2026-02-17
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
-- **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3
+- **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose
 
 ## Activity Log
 
@@ -23,10 +23,11 @@
 | 2026-02-17 | Checkpoint 11: Auto-pause based on GPS speed for running workouts | 20 | 1 | +512/-26 |
 | 2026-02-17 | Checkpoint 12: Settings screen with distance unit, auto-pause, and keep-screen-on preferences | 13 | 1 | +501/-11 |
 | 2026-02-17 | Checkpoint 13: Post-workout flow fix — VIEW DETAILS button and dog walk navigation | 5 | 1 | +159/-19 |
+| 2026-02-17 | Checkpoint 14: Post-test-walk bug fixes — crash recovery, active workout resume, split home sections, map hardening | 7 | 1 | +65/-10 |
 
 ## Totals
-- **Total Sessions:** 12
-- **Total Commits:** 15
-- **Total Files Changed:** 229
-- **Total Lines Added:** 12560
-- **Total Lines Removed:** 555
+- **Total Sessions:** 13
+- **Total Commits:** 16
+- **Total Files Changed:** 236
+- **Total Lines Added:** 12625
+- **Total Lines Removed:** 565
