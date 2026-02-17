@@ -31,7 +31,7 @@ sealed class Screen(val route: String) {
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
         fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
     }
-    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}") {
+    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}&workoutId={workoutId}") {
         fun createRoute(
             time: String,
             distance: String,
@@ -41,6 +41,7 @@ sealed class Screen(val route: String) {
             bestLapTime: String? = null,
             bestLapNumber: Int? = null,
             trendLabel: String? = null,
+            workoutId: String? = null,
         ): String {
             val enc = { s: String -> URLEncoder.encode(s, "UTF-8") }
             val base = "workout_summary/${enc(time)}/${enc(distance)}/${enc(pace)}/${enc(points)}"
@@ -49,6 +50,7 @@ sealed class Screen(val route: String) {
                 bestLapTime?.let { append("&bestLapTime=${enc(it)}") }
                 bestLapNumber?.let { append("&bestLapNumber=$it") }
                 trendLabel?.let { append("&trendLabel=${enc(it)}") }
+                workoutId?.let { append("&workoutId=${enc(it)}") }
             }
             return base + params
         }
@@ -111,6 +113,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                                 bestLapTime = stats.bestLapTime,
                                 bestLapNumber = stats.bestLapNumber,
                                 trendLabel = stats.trendLabel,
+                                workoutId = workoutId,
                             )
                         ) {
                             popUpTo(Screen.Home.route) { inclusive = false }
@@ -136,6 +139,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                 navArgument("bestLapTime") { type = NavType.StringType; defaultValue = "" },
                 navArgument("bestLapNumber") { type = NavType.StringType; defaultValue = "" },
                 navArgument("trendLabel") { type = NavType.StringType; defaultValue = "" },
+                navArgument("workoutId") { type = NavType.StringType; defaultValue = "" },
             ),
         ) { backStackEntry ->
             val dec = { key: String ->
@@ -148,6 +152,7 @@ fun GitFastNavGraph(navController: NavHostController) {
             val bestLapTime = dec("bestLapTime").ifEmpty { null }
             val bestLapNumber = dec("bestLapNumber").toIntOrNull()
             val trendLabel = dec("trendLabel").ifEmpty { null }
+            val workoutId = dec("workoutId").ifEmpty { null }
 
             WorkoutSummaryScreen(
                 time = dec("time"),
@@ -158,8 +163,13 @@ fun GitFastNavGraph(navController: NavHostController) {
                 bestLapTime = bestLapTime,
                 bestLapNumber = bestLapNumber,
                 trendLabel = trendLabel,
+                workoutId = workoutId,
                 onViewDetails = {
-                    // TODO: Navigate to detail screen when available
+                    workoutId?.let { id ->
+                        navController.navigate(Screen.Detail.createRoute(id)) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                        }
+                    }
                 },
                 onDone = {
                     navController.popBackStack(
@@ -176,8 +186,10 @@ fun GitFastNavGraph(navController: NavHostController) {
             ),
         ) {
             DogWalkSummaryScreen(
-                onSaved = {
-                    navController.popBackStack(route = Screen.Home.route, inclusive = false)
+                onSaved = { workoutId ->
+                    navController.navigate(Screen.Detail.createRoute(workoutId)) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
                 },
                 onDiscarded = {
                     navController.popBackStack(route = Screen.Home.route, inclusive = false)
