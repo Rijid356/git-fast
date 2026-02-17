@@ -1,0 +1,43 @@
+{
+  "name": "git-fast",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
+          "zsh": {
+            "path": "zsh"
+          }
+        }
+      }
+    }
+  },
+  "remoteUser": "node",
+  "mounts": [
+    "source=gitfast-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=${localEnv:USERPROFILE}/.claude,target=/home/node/.claude,type=bind,consistency=cached",
+    "source=${localEnv:USERPROFILE}/claude-config/claude,target=/mnt/host/c/Users/Ryan/claude-config/claude,type=bind,consistency=cached"
+  ],
+  "containerEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+  },
+  "postCreateCommand": "sudo bash .devcontainer/init-firewall.sh && echo 'Container ready!'",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  }
+}
