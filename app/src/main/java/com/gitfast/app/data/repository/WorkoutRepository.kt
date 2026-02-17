@@ -63,4 +63,12 @@ class WorkoutRepository @Inject constructor(
     suspend fun getCompletedWorkoutCount(): Int {
         return workoutDao.getCompletedWorkoutCount()
     }
+
+    suspend fun saveGpsPoints(points: List<GpsPointEntity>) {
+        workoutDao.insertGpsPoints(points)
+    }
+
+    suspend fun savePhase(phase: WorkoutPhaseEntity) {
+        workoutDao.insertPhase(phase)
+    }
 }
