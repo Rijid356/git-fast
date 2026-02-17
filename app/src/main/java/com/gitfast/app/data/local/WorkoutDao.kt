@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
@@ -86,6 +87,28 @@ interface WorkoutDao {
 
     @Query("UPDATE route_tags SET lastUsed = :timestamp WHERE name = :name")
     suspend fun updateRouteTagLastUsed(name: String, timestamp: Long)
+
+    // --- Transactions ---
+
+    @Transaction
+    suspend fun saveWorkoutTransaction(
+        workout: WorkoutEntity,
+        phases: List<WorkoutPhaseEntity>,
+        laps: List<LapEntity>,
+        gpsPoints: List<GpsPointEntity>
+    ) {
+        val existing = getWorkoutById(workout.id)
+        if (existing != null) {
+            updateWorkout(workout)
+        } else {
+            insertWorkout(workout)
+        }
+        phases.forEach { insertPhase(it) }
+        laps.forEach { insertLap(it) }
+        if (gpsPoints.isNotEmpty()) {
+            insertGpsPoints(gpsPoints)
+        }
+    }
 
     // --- Deletes ---
 

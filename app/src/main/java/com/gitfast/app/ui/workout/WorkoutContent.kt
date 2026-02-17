@@ -20,6 +20,7 @@ fun WorkoutContent(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onStop: () -> Unit,
+    onDiscard: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -68,6 +69,7 @@ fun WorkoutContent(
                 onPause = onPause,
                 onResume = onResume,
                 onStop = onStop,
+                onDiscard = onDiscard,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
