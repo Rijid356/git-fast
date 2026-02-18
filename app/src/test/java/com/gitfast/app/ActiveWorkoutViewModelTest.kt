@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.service.WorkoutService
 import com.gitfast.app.ui.workout.ActiveWorkoutViewModel
 import com.gitfast.app.ui.workout.WorkoutUiState
@@ -28,6 +29,7 @@ class ActiveWorkoutViewModelTest {
     private lateinit var application: Application
     private lateinit var permissionManager: PermissionManager
     private lateinit var settingsStore: SettingsStore
+    private lateinit var workoutRepository: WorkoutRepository
     private lateinit var viewModel: ActiveWorkoutViewModel
 
     @Before
@@ -35,6 +37,7 @@ class ActiveWorkoutViewModelTest {
         application = ApplicationProvider.getApplicationContext()
         permissionManager = mockk()
         settingsStore = mockk(relaxed = true)
+        workoutRepository = mockk(relaxed = true)
 
         every { permissionManager.checkPermissions() } returns PermissionManager.PermissionState(
             fineLocation = false,
@@ -42,7 +45,7 @@ class ActiveWorkoutViewModelTest {
             notifications = false,
         )
 
-        viewModel = ActiveWorkoutViewModel(application, permissionManager, settingsStore)
+        viewModel = ActiveWorkoutViewModel(application, permissionManager, settingsStore, workoutRepository)
     }
 
     @After
