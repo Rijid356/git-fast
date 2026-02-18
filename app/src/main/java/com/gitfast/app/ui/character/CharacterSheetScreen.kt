@@ -302,7 +302,7 @@ private fun AchievementRow(achievement: AchievementDef, isUnlocked: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(6.dp))
+            .clip(RectangleShape)
             .background(
                 if (isUnlocked) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
