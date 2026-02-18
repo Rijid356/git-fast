@@ -1,6 +1,9 @@
 package com.gitfast.app.util
 
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.EnergyLevel
+import com.gitfast.app.data.model.WeatherCondition
+import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.model.WorkoutStatus
 import org.junit.Assert.assertEquals
@@ -19,11 +22,18 @@ class StreakCalculatorTest {
             id = "w-${date}",
             startTime = instant,
             endTime = instant.plusSeconds(1800),
+            totalSteps = 0,
             distanceMeters = 5000.0,
             status = WorkoutStatus.COMPLETED,
             activityType = ActivityType.RUN,
             phases = emptyList(),
             gpsPoints = emptyList(),
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null,
         )
     }
 
