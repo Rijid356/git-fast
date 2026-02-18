@@ -3,6 +3,7 @@ package com.gitfast.app.service
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.util.AchievementDef
 import com.gitfast.app.util.DistanceCalculator
 import com.gitfast.app.util.PaceCalculator
 import com.gitfast.app.util.formatElapsedTime
@@ -20,6 +21,13 @@ class WorkoutStateManager @Inject constructor() {
 
     private val _gpsPoints = MutableStateFlow<List<GpsPoint>>(emptyList())
     val gpsPoints: StateFlow<List<GpsPoint>> = _gpsPoints.asStateFlow()
+
+    private val _lastUnlockedAchievements = MutableStateFlow<List<AchievementDef>>(emptyList())
+    val lastUnlockedAchievements: StateFlow<List<AchievementDef>> = _lastUnlockedAchievements.asStateFlow()
+
+    fun setUnlockedAchievements(achievements: List<AchievementDef>) {
+        _lastUnlockedAchievements.value = achievements
+    }
 
     private var workoutId: String? = null
     private var workoutStartTime: Instant? = null

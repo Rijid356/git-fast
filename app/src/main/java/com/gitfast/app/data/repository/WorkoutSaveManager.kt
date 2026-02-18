@@ -13,6 +13,9 @@ import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.service.WorkoutSnapshot
+import com.gitfast.app.util.AchievementChecker
+import com.gitfast.app.util.AchievementDef
+import com.gitfast.app.util.AchievementSnapshot
 import com.gitfast.app.util.StatsCalculator
 import com.gitfast.app.util.XpCalculator
 import java.util.UUID
@@ -21,6 +24,7 @@ import javax.inject.Inject
 data class SaveResult(
     val workoutId: String,
     val xpEarned: Int,
+    val achievementsUnlocked: List<AchievementDef> = emptyList(),
 )
 
 class WorkoutSaveManager @Inject constructor(
@@ -79,8 +83,15 @@ class WorkoutSaveManager @Inject constructor(
 
             recalculateStats()
 
-            Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}, awarded $xpAwarded XP")
-            SaveResult(workoutId = snapshot.workoutId, xpEarned = xpAwarded)
+            // Check for newly unlocked achievements
+            val newAchievements = checkAchievements()
+
+            Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}, awarded $xpAwarded XP, ${newAchievements.size} achievements unlocked")
+            SaveResult(
+                workoutId = snapshot.workoutId,
+                xpEarned = xpAwarded,
+                achievementsUnlocked = newAchievements,
+            )
         } catch (e: Exception) {
             Log.e("WorkoutSaveManager", "Failed to save workout", e)
             null
@@ -115,6 +126,33 @@ class WorkoutSaveManager @Inject constructor(
                 accuracy = point.accuracy,
                 sortIndex = index
             )
+        }
+    }
+
+    private suspend fun checkAchievements(): List<AchievementDef> {
+        return try {
+            val allWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
+            val unlockedIds = characterRepository.getUnlockedAchievementIds()
+            val characterLevel = characterRepository.getProfileLevel()
+            val totalLaps = workoutRepository.getTotalLapCount()
+            val dogWalkCount = workoutRepository.getCompletedDogWalkCount()
+
+            val snapshot = AchievementSnapshot(
+                allWorkouts = allWorkouts,
+                totalLapCount = totalLaps,
+                dogWalkCount = dogWalkCount,
+                characterLevel = characterLevel,
+                unlockedIds = unlockedIds,
+            )
+
+            val newAchievements = AchievementChecker.checkNewAchievements(snapshot)
+            for (achievement in newAchievements) {
+                characterRepository.unlockAchievement(achievement)
+            }
+            newAchievements
+        } catch (e: Exception) {
+            Log.e("WorkoutSaveManager", "Failed to check achievements", e)
+            emptyList()
         }
     }
 

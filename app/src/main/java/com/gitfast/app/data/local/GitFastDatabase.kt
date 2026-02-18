@@ -9,6 +9,7 @@ import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
+import com.gitfast.app.data.local.entity.UnlockedAchievementEntity
 import com.gitfast.app.data.local.entity.XpTransactionEntity
 
 @Database(
@@ -20,8 +21,9 @@ import com.gitfast.app.data.local.entity.XpTransactionEntity
         RouteTagEntity::class,
         CharacterProfileEntity::class,
         XpTransactionEntity::class,
+        UnlockedAchievementEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
