@@ -23,5 +23,7 @@ data class LapEntity(
     val startTime: Long,
     val endTime: Long?,
     val distanceMeters: Double,
-    val steps: Int
+    val steps: Int,
+    val splitLatitude: Double? = null,
+    val splitLongitude: Double? = null
 )

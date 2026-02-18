@@ -35,10 +35,24 @@ class SettingsStore @Inject constructor(
             prefs.edit().putBoolean(KEY_KEEP_SCREEN_ON, value).apply()
         }
 
+    var autoLapEnabled: Boolean
+        get() = prefs.getBoolean(KEY_AUTO_LAP_ENABLED, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_AUTO_LAP_ENABLED, value).apply()
+        }
+
+    var autoLapDistanceMeters: Int
+        get() = prefs.getInt(KEY_AUTO_LAP_DISTANCE, 400)
+        set(value) {
+            prefs.edit().putInt(KEY_AUTO_LAP_DISTANCE, value).apply()
+        }
+
     companion object {
         private const val PREFS_NAME = "gitfast_settings"
         private const val KEY_AUTO_PAUSE_ENABLED = "auto_pause_enabled"
         private const val KEY_DISTANCE_UNIT = "distance_unit"
         private const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
+        private const val KEY_AUTO_LAP_ENABLED = "auto_lap_enabled"
+        private const val KEY_AUTO_LAP_DISTANCE = "auto_lap_distance"
     }
 }

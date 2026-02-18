@@ -75,6 +75,24 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
+            SwitchSettingItem(
+                title = "Auto Lap",
+                subtitle = "Automatically mark laps at a set distance",
+                checked = uiState.autoLapEnabled,
+                onCheckedChange = { viewModel.setAutoLapEnabled(it) },
+            )
+
+            if (uiState.autoLapEnabled) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                AutoLapDistanceItem(
+                    selectedMeters = uiState.autoLapDistanceMeters,
+                    onSelect = { viewModel.setAutoLapDistanceMeters(it) },
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
             DistanceUnitItem(
                 selected = uiState.distanceUnit,
                 onSelect = { viewModel.setDistanceUnit(it) },
@@ -175,6 +193,41 @@ private fun DistanceUnitItem(
                 DistanceUnit.MILES -> "Miles"
                 DistanceUnit.KILOMETERS -> "Kilometers"
             },
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@Composable
+private fun AutoLapDistanceItem(
+    selectedMeters: Int,
+    onSelect: (Int) -> Unit,
+) {
+    val options = listOf(200 to "200m", 400 to "400m", 800 to "800m", 1000 to "1 km", 1609 to "1 mile")
+    val currentLabel = options.find { it.first == selectedMeters }?.second ?: "${selectedMeters}m"
+    val nextIndex = (options.indexOfFirst { it.first == selectedMeters } + 1) % options.size
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelect(options[nextIndex].first) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Auto Lap Distance",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Text(
+                text = "Tap to cycle: 200m, 400m, 800m, 1km, 1mi",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            )
+        }
+        Text(
+            text = currentLabel,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.primary,
         )
