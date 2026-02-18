@@ -23,4 +23,5 @@ data class XpTransactionEntity(
     val xpAmount: Int,
     val reason: String,
     val timestamp: Long,
+    val profileId: Int = 1,
 )

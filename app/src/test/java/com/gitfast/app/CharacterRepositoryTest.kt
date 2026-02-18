@@ -47,7 +47,7 @@ class CharacterRepositoryTest {
 
     @Test
     fun `getProfile returns default when dao returns null`() = runTest {
-        every { characterDao.getProfile() } returns flowOf(null)
+        every { characterDao.getProfile(1) } returns flowOf(null)
 
         val profile = repository.getProfile().first()
 
@@ -57,7 +57,7 @@ class CharacterRepositoryTest {
     @Test
     fun `getProfile maps entity to domain with level progress`() = runTest {
         val entity = CharacterProfileEntity(id = 1, totalXp = 75, level = 2)
-        every { characterDao.getProfile() } returns flowOf(entity)
+        every { characterDao.getProfile(1) } returns flowOf(entity)
 
         val profile = repository.getProfile().first()
 
@@ -76,7 +76,7 @@ class CharacterRepositoryTest {
             id = 1, totalXp = 0, level = 1,
             speedStat = 5, enduranceStat = 3, consistencyStat = 7,
         )
-        every { characterDao.getProfile() } returns flowOf(entity)
+        every { characterDao.getProfile(1) } returns flowOf(entity)
 
         val profile = repository.getProfile().first()
 
@@ -89,7 +89,7 @@ class CharacterRepositoryTest {
 
     @Test
     fun `getXpByWorkout returns empty map when no transactions`() = runTest {
-        every { characterDao.getAllXpTransactions() } returns flowOf(emptyList())
+        every { characterDao.getAllXpTransactions(1) } returns flowOf(emptyList())
 
         val map = repository.getXpByWorkout().first()
 
@@ -102,7 +102,7 @@ class CharacterRepositoryTest {
             XpTransactionEntity("t1", "w1", 50, "Run", 1000L),
             XpTransactionEntity("t2", "w2", 30, "Walk", 2000L),
         )
-        every { characterDao.getAllXpTransactions() } returns flowOf(txs)
+        every { characterDao.getAllXpTransactions(1) } returns flowOf(txs)
 
         val map = repository.getXpByWorkout().first()
 
@@ -114,7 +114,7 @@ class CharacterRepositoryTest {
 
     @Test
     fun `getXpTransactionForWorkout returns null when not found`() = runTest {
-        coEvery { characterDao.getXpTransactionForWorkout("w1") } returns null
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 1) } returns null
 
         val result = repository.getXpTransactionForWorkout("w1")
 
@@ -124,7 +124,7 @@ class CharacterRepositoryTest {
     @Test
     fun `getXpTransactionForWorkout maps entity to domain`() = runTest {
         val entity = XpTransactionEntity("t1", "w1", 50, "Run completed", 1000L)
-        coEvery { characterDao.getXpTransactionForWorkout("w1") } returns entity
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 1) } returns entity
 
         val result = repository.getXpTransactionForWorkout("w1")!!
 
@@ -143,9 +143,9 @@ class CharacterRepositoryTest {
             XpTransactionEntity("t1", "w1", 50, "Run", 2000L),
             XpTransactionEntity("t2", "w2", 30, "Walk", 1000L),
         )
-        every { characterDao.getRecentXpTransactions(10) } returns flowOf(entities)
+        every { characterDao.getRecentXpTransactions(1, 10) } returns flowOf(entities)
 
-        val result = repository.getRecentXpTransactions(10).first()
+        val result = repository.getRecentXpTransactions(limit = 10).first()
 
         assertEquals(2, result.size)
         assertEquals("t1", result[0].id)
@@ -157,9 +157,9 @@ class CharacterRepositoryTest {
     @Test
     fun `awardXp returns 0 when already awarded for workout`() = runTest {
         val existing = XpTransactionEntity("t1", "w1", 50, "Run", 1000L)
-        coEvery { characterDao.getXpTransactionForWorkout("w1") } returns existing
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 1) } returns existing
 
-        val result = repository.awardXp("w1", 50, "Run completed")
+        val result = repository.awardXp(workoutId = "w1", xpAmount = 50, reason = "Run completed")
 
         assertEquals(0, result)
         coVerify(exactly = 0) { characterDao.insertXpTransaction(any()) }
@@ -167,11 +167,11 @@ class CharacterRepositoryTest {
 
     @Test
     fun `awardXp inserts transaction and updates profile`() = runTest {
-        coEvery { characterDao.getXpTransactionForWorkout("w1") } returns null
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 1) } returns null
         val existingProfile = CharacterProfileEntity(id = 1, totalXp = 40, level = 1)
-        coEvery { characterDao.getProfileOnce() } returns existingProfile
+        coEvery { characterDao.getProfileOnce(1) } returns existingProfile
 
-        val result = repository.awardXp("w1", 50, "Run completed")
+        val result = repository.awardXp(workoutId = "w1", xpAmount = 50, reason = "Run completed")
 
         assertEquals(50, result)
         coVerify { characterDao.insertXpTransaction(any()) }
@@ -184,10 +184,10 @@ class CharacterRepositoryTest {
 
     @Test
     fun `awardXp creates new profile when none exists`() = runTest {
-        coEvery { characterDao.getXpTransactionForWorkout("w1") } returns null
-        coEvery { characterDao.getProfileOnce() } returns null
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 1) } returns null
+        coEvery { characterDao.getProfileOnce(1) } returns null
 
-        val result = repository.awardXp("w1", 100, "First run")
+        val result = repository.awardXp(workoutId = "w1", xpAmount = 100, reason = "First run")
 
         assertEquals(100, result)
         coVerify { characterDao.insertProfile(any()) }
@@ -198,18 +198,53 @@ class CharacterRepositoryTest {
 
     @Test
     fun `awardXp calculates level correctly after XP increase`() = runTest {
-        coEvery { characterDao.getXpTransactionForWorkout("w1") } returns null
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 1) } returns null
         // At 140 XP, level 2 (needs 150 for level 3)
         val existingProfile = CharacterProfileEntity(id = 1, totalXp = 140, level = 2)
-        coEvery { characterDao.getProfileOnce() } returns existingProfile
+        coEvery { characterDao.getProfileOnce(1) } returns existingProfile
 
-        repository.awardXp("w1", 20, "Run completed")
+        repository.awardXp(workoutId = "w1", xpAmount = 20, reason = "Run completed")
 
         val profileSlot = slot<CharacterProfileEntity>()
         coVerify { characterDao.updateProfile(capture(profileSlot)) }
         assertEquals(160, profileSlot.captured.totalXp)
-        // 160 XP → level 3 (level 3 starts at 150)
+        // 160 XP -> level 3 (level 3 starts at 150)
         assertEquals(3, profileSlot.captured.level)
+    }
+
+    // --- awardXp with profileId=2 (Juniper) ---
+
+    @Test
+    fun `awardXp with profileId 2 uses Juniper profile`() = runTest {
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 2) } returns null
+        val juniperProfile = CharacterProfileEntity(id = 2, totalXp = 10, level = 1)
+        coEvery { characterDao.getProfileOnce(2) } returns juniperProfile
+
+        val result = repository.awardXp(profileId = 2, workoutId = "w1", xpAmount = 30, reason = "Walk")
+
+        assertEquals(30, result)
+        coVerify { characterDao.insertXpTransaction(match { it.profileId == 2 }) }
+        val profileSlot = slot<CharacterProfileEntity>()
+        coVerify { characterDao.updateProfile(capture(profileSlot)) }
+        assertEquals(2, profileSlot.captured.id)
+        assertEquals(40, profileSlot.captured.totalXp)
+    }
+
+    @Test
+    fun `awardXp idempotent across different profiles`() = runTest {
+        // User already has XP for w1
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 1) } returns
+            XpTransactionEntity("t1", "w1", 50, "Run", 1000L)
+        // Juniper does NOT have XP for w1
+        coEvery { characterDao.getXpTransactionForWorkout("w1", 2) } returns null
+        coEvery { characterDao.getProfileOnce(2) } returns
+            CharacterProfileEntity(id = 2, totalXp = 0, level = 1)
+
+        val userResult = repository.awardXp(profileId = 1, workoutId = "w1", xpAmount = 50, reason = "Run")
+        val juniperResult = repository.awardXp(profileId = 2, workoutId = "w1", xpAmount = 50, reason = "Run")
+
+        assertEquals(0, userResult) // already awarded
+        assertEquals(50, juniperResult) // fresh award
     }
 
     // --- updateStats ---
@@ -220,9 +255,9 @@ class CharacterRepositoryTest {
             id = 1, totalXp = 100, level = 2,
             speedStat = 1, enduranceStat = 1, consistencyStat = 1,
         )
-        coEvery { characterDao.getProfileOnce() } returns existingProfile
+        coEvery { characterDao.getProfileOnce(1) } returns existingProfile
 
-        repository.updateStats(CharacterStats(speed = 5, endurance = 3, consistency = 7))
+        repository.updateStats(stats = CharacterStats(speed = 5, endurance = 3, consistency = 7))
 
         val profileSlot = slot<CharacterProfileEntity>()
         coVerify { characterDao.updateProfile(capture(profileSlot)) }
@@ -236,9 +271,9 @@ class CharacterRepositoryTest {
 
     @Test
     fun `updateStats creates new profile when none exists`() = runTest {
-        coEvery { characterDao.getProfileOnce() } returns null
+        coEvery { characterDao.getProfileOnce(1) } returns null
 
-        repository.updateStats(CharacterStats(speed = 3, endurance = 4, consistency = 5))
+        repository.updateStats(stats = CharacterStats(speed = 3, endurance = 4, consistency = 5))
 
         coVerify { characterDao.insertProfile(any()) }
         val profileSlot = slot<CharacterProfileEntity>()

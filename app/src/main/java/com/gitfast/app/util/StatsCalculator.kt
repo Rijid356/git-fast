@@ -24,6 +24,14 @@ object StatsCalculator {
         )
     }
 
+    fun calculateDogStats(dogWalks: List<Workout>): CharacterStats {
+        return CharacterStats(
+            speed = calculateWalkSpeed(dogWalks),
+            endurance = calculateEndurance(dogWalks),
+            consistency = calculateConsistency(dogWalks),
+        )
+    }
+
     fun calculateSpeed(recentRuns: List<Workout>): Int {
         val validPaces = recentRuns.mapNotNull { it.averagePaceSecondsPerMile }
             .filter { it > 0 }
@@ -70,6 +78,19 @@ object StatsCalculator {
         return ((frequencyStat * 0.5 + streakStat * 0.5).roundToInt()).coerceIn(MIN_STAT, MAX_STAT)
     }
 
+    fun calculateWalkSpeed(recentWalks: List<Workout>): Int {
+        val validPaces = recentWalks.mapNotNull { it.averagePaceSecondsPerMile }
+            .filter { it > 0 }
+        if (validPaces.isEmpty()) return MIN_STAT
+
+        val best = validPaces.min()
+        val sorted = validPaces.sorted()
+        val median = sorted[sorted.size / 2]
+        val effectivePace = best * 0.6 + median * 0.4
+
+        return walkPaceToStat(effectivePace)
+    }
+
     // --- Speed bracket mapping ---
 
     private fun paceToStat(paceSeconds: Double): Int {
@@ -85,6 +106,21 @@ object StatsCalculator {
                 960.0 to 1,
             ),
             inverted = true, // lower pace = higher stat
+        )
+    }
+
+    private fun walkPaceToStat(paceSeconds: Double): Int {
+        // Walk pace brackets: sub-12:00 (720s) → 99, ~15:00 (900s) → 75, ~18:00 (1080s) → 50, ~22:00 (1320s) → 25, 30:00+ (1800s) → 1
+        return interpolateBrackets(
+            value = paceSeconds,
+            brackets = listOf(
+                720.0 to 99,
+                900.0 to 75,
+                1080.0 to 50,
+                1320.0 to 25,
+                1800.0 to 1,
+            ),
+            inverted = true,
         )
     }
 
