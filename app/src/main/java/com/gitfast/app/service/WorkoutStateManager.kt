@@ -50,6 +50,10 @@ class WorkoutStateManager @Inject constructor() {
     private var currentLapStartDistance: Double = 0.0
     private var currentLapNumber: Int = 0
 
+    // Ghost runner
+    private var externalGhostLapDuration: Int? = null
+    private var useExternalGhost: Boolean = false
+
     // Phase history (for building entities at save time)
     private var completedPhases: MutableList<PhaseData> = mutableListOf()
 
@@ -79,6 +83,15 @@ class WorkoutStateManager @Inject constructor() {
         val steps: Int,
         val laps: List<LapData>
     )
+
+    fun setGhostLap(durationSeconds: Int?) {
+        externalGhostLapDuration = durationSeconds
+        useExternalGhost = durationSeconds != null
+        _workoutState.value = _workoutState.value.copy(
+            ghostLapDurationSeconds = durationSeconds,
+            ghostDeltaSeconds = null,
+        )
+    }
 
     fun startWorkout(activityType: ActivityType = ActivityType.RUN): String {
         val id = UUID.randomUUID().toString()
@@ -221,6 +234,11 @@ class WorkoutStateManager @Inject constructor() {
             ((thisDuration - prevDuration) / 1000).toInt()
         } else null
 
+        // Update auto-ghost (best lap so far) if no external ghost is set
+        if (!useExternalGhost) {
+            externalGhostLapDuration = getBestLapDuration()
+        }
+
         // Start next lap
         currentLapNumber++
         currentLapStartTime = now
@@ -233,7 +251,9 @@ class WorkoutStateManager @Inject constructor() {
             lastLapDeltaSeconds = deltaSeconds,
             lastLapDurationFormatted = formatElapsedTime(
                 ((completedLap.endTime.toEpochMilli() - completedLap.startTime.toEpochMilli()) / 1000).toInt()
-            )
+            ),
+            ghostLapDurationSeconds = externalGhostLapDuration,
+            ghostDeltaSeconds = null,
         )
     }
 
@@ -349,6 +369,8 @@ class WorkoutStateManager @Inject constructor() {
         phaseStartTime = null
         laps.clear()
         completedPhases.clear()
+        externalGhostLapDuration = null
+        useExternalGhost = false
         _gpsPoints.value = emptyList()
         _workoutState.value = WorkoutTrackingState()
 
@@ -399,9 +421,15 @@ class WorkoutStateManager @Inject constructor() {
             ((now.toEpochMilli() - currentLapStartTime!!.toEpochMilli()) / 1000).toInt()
         } else 0
 
+        // Compute ghost delta (positive = behind ghost, negative = ahead)
+        val ghostDelta = if (currentPhase == PhaseType.LAPS && externalGhostLapDuration != null) {
+            lapElapsed - externalGhostLapDuration!!
+        } else null
+
         _workoutState.value = _workoutState.value.copy(
             elapsedSeconds = (activeElapsed / 1000).toInt(),
-            currentLapElapsedSeconds = lapElapsed
+            currentLapElapsedSeconds = lapElapsed,
+            ghostDeltaSeconds = ghostDelta,
         )
     }
 }
@@ -421,7 +449,9 @@ data class WorkoutTrackingState(
     val currentLapNumber: Int = 0,
     val currentLapElapsedSeconds: Int = 0,
     val lastLapDeltaSeconds: Int? = null,
-    val lastLapDurationFormatted: String? = null
+    val lastLapDurationFormatted: String? = null,
+    val ghostLapDurationSeconds: Int? = null,
+    val ghostDeltaSeconds: Int? = null,
 )
 
 data class WorkoutSnapshot(
