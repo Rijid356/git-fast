@@ -1,6 +1,7 @@
 package com.gitfast.app
 
 import com.gitfast.app.data.model.CharacterProfile
+import com.gitfast.app.data.model.UnlockedAchievement
 import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.ui.character.CharacterSheetViewModel
@@ -38,6 +39,7 @@ class CharacterSheetViewModelTest {
         val repo = mockk<CharacterRepository>()
         every { repo.getProfile() } returns flowOf(CharacterProfile())
         every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
+        every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
 
         val viewModel = CharacterSheetViewModel(repo)
 
@@ -54,6 +56,7 @@ class CharacterSheetViewModelTest {
         val repo = mockk<CharacterRepository>()
         every { repo.getProfile() } returns flowOf(profile)
         every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
+        every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
 
         val viewModel = CharacterSheetViewModel(repo)
 
@@ -74,6 +77,7 @@ class CharacterSheetViewModelTest {
         val repo = mockk<CharacterRepository>()
         every { repo.getProfile() } returns flowOf(CharacterProfile())
         every { repo.getRecentXpTransactions(20) } returns flowOf(transactions)
+        every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
 
         val viewModel = CharacterSheetViewModel(repo)
 
@@ -90,6 +94,7 @@ class CharacterSheetViewModelTest {
         val repo = mockk<CharacterRepository>()
         every { repo.getProfile() } returns flowOf(CharacterProfile())
         every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
+        every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
 
         val viewModel = CharacterSheetViewModel(repo)
 
