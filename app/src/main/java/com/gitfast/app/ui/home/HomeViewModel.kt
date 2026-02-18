@@ -10,6 +10,7 @@ import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.service.WorkoutService
 import com.gitfast.app.ui.history.WorkoutHistoryItem
 import com.gitfast.app.ui.history.toHistoryItem
+import com.gitfast.app.util.StreakCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,8 +32,16 @@ class HomeViewModel @Inject constructor(
     val showRecoveryDialog: StateFlow<Boolean> = _showRecoveryDialog.asStateFlow()
 
     val characterProfile: StateFlow<CharacterProfile> =
-        characterRepository.getProfile()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CharacterProfile())
+        combine(
+            characterRepository.getProfile(),
+            workoutRepository.getCompletedWorkouts(),
+        ) { profile, workouts ->
+            val streak = StreakCalculator.getCurrentStreak(workouts)
+            profile.copy(
+                currentStreak = streak,
+                streakMultiplier = StreakCalculator.getMultiplier(streak),
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CharacterProfile())
 
     private val xpByWorkout = characterRepository.getXpByWorkout()
 

@@ -12,6 +12,8 @@ import kotlin.math.sqrt
 data class XpResult(
     val totalXp: Int,
     val breakdown: List<String>,
+    val streakDays: Int = 0,
+    val streakMultiplier: Double = 1.0,
 )
 
 object XpCalculator {
@@ -36,6 +38,7 @@ object XpCalculator {
         hasLaps: Boolean,
         weatherCondition: WeatherCondition? = null,
         weatherTemp: WeatherTemp? = null,
+        streakDays: Int = 0,
     ): XpResult {
         val breakdown = mutableListOf<String>()
         var rawXp = 0
@@ -87,8 +90,23 @@ object XpCalculator {
             rawXp = (rawXp * weatherMultiplier).toInt()
         }
 
+        // Streak multiplier
+        val streakMultiplier = StreakCalculator.getMultiplier(streakDays)
+        if (streakMultiplier > 1.0) {
+            val bonusXp = ((rawXp * streakMultiplier) - rawXp).toInt()
+            if (bonusXp > 0) {
+                breakdown.add("+$bonusXp XP: $streakDays-day streak (${StreakCalculator.getMultiplierLabel(streakDays)})")
+            }
+            rawXp = (rawXp * streakMultiplier).toInt()
+        }
+
         val finalXp = max(rawXp, MINIMUM_XP)
-        return XpResult(totalXp = finalXp, breakdown = breakdown)
+        return XpResult(
+            totalXp = finalXp,
+            breakdown = breakdown,
+            streakDays = streakDays,
+            streakMultiplier = streakMultiplier,
+        )
     }
 
     /**
@@ -98,6 +116,7 @@ object XpCalculator {
         snapshot: WorkoutSnapshot,
         weatherCondition: WeatherCondition? = null,
         weatherTemp: WeatherTemp? = null,
+        streakDays: Int = 0,
     ): XpResult {
         val durationMillis = snapshot.endTime.toEpochMilli() - snapshot.startTime.toEpochMilli() - snapshot.totalPausedDurationMillis
         val lapsPhase = snapshot.phases.find { it.type == PhaseType.LAPS }
@@ -111,6 +130,7 @@ object XpCalculator {
             hasLaps = lapsPhase != null,
             weatherCondition = weatherCondition,
             weatherTemp = weatherTemp,
+            streakDays = streakDays,
         )
     }
 

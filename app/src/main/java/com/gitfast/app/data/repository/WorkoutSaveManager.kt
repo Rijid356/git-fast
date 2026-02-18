@@ -17,6 +17,7 @@ import com.gitfast.app.util.AchievementChecker
 import com.gitfast.app.util.AchievementDef
 import com.gitfast.app.util.AchievementSnapshot
 import com.gitfast.app.util.StatsCalculator
+import com.gitfast.app.util.StreakCalculator
 import com.gitfast.app.util.XpCalculator
 import java.util.UUID
 import javax.inject.Inject
@@ -25,6 +26,8 @@ data class SaveResult(
     val workoutId: String,
     val xpEarned: Int,
     val achievementsUnlocked: List<AchievementDef> = emptyList(),
+    val streakDays: Int = 0,
+    val streakMultiplier: Double = 1.0,
 )
 
 class WorkoutSaveManager @Inject constructor(
@@ -73,8 +76,12 @@ class WorkoutSaveManager @Inject constructor(
                 gpsPoints = buildGpsPointEntities(snapshot)
             )
 
-            // Calculate and award XP
-            val xpResult = XpCalculator.calculateXp(snapshot)
+            // Calculate current streak (includes the just-saved workout)
+            val allWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
+            val streakDays = StreakCalculator.getCurrentStreak(allWorkouts)
+
+            // Calculate and award XP (with streak multiplier)
+            val xpResult = XpCalculator.calculateXp(snapshot, streakDays = streakDays)
             val xpAwarded = characterRepository.awardXp(
                 workoutId = snapshot.workoutId,
                 xpAmount = xpResult.totalXp,
@@ -86,11 +93,13 @@ class WorkoutSaveManager @Inject constructor(
             // Check for newly unlocked achievements
             val newAchievements = checkAchievements()
 
-            Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}, awarded $xpAwarded XP, ${newAchievements.size} achievements unlocked")
+            Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}, awarded $xpAwarded XP, streak=$streakDays, ${newAchievements.size} achievements unlocked")
             SaveResult(
                 workoutId = snapshot.workoutId,
                 xpEarned = xpAwarded,
                 achievementsUnlocked = newAchievements,
+                streakDays = streakDays,
+                streakMultiplier = xpResult.streakMultiplier,
             )
         } catch (e: Exception) {
             Log.e("WorkoutSaveManager", "Failed to save workout", e)

@@ -29,6 +29,17 @@ class WorkoutStateManager @Inject constructor() {
         _lastUnlockedAchievements.value = achievements
     }
 
+    private val _lastSaveStreakDays = MutableStateFlow(0)
+    val lastSaveStreakDays: StateFlow<Int> = _lastSaveStreakDays.asStateFlow()
+
+    private val _lastSaveStreakMultiplier = MutableStateFlow(1.0)
+    val lastSaveStreakMultiplier: StateFlow<Double> = _lastSaveStreakMultiplier.asStateFlow()
+
+    fun setSaveStreakInfo(streakDays: Int, multiplier: Double) {
+        _lastSaveStreakDays.value = streakDays
+        _lastSaveStreakMultiplier.value = multiplier
+    }
+
     private var workoutId: String? = null
     private var workoutStartTime: Instant? = null
     private var pauseStartTime: Instant? = null

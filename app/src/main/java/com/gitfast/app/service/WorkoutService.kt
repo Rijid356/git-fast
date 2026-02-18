@@ -156,8 +156,11 @@ class WorkoutService : LifecycleService() {
 
         lifecycleScope.launch {
             val saveResult = workoutSaveManager.saveCompletedWorkout(snapshot)
-            if (saveResult != null && saveResult.achievementsUnlocked.isNotEmpty()) {
-                workoutStateManager.setUnlockedAchievements(saveResult.achievementsUnlocked)
+            if (saveResult != null) {
+                if (saveResult.achievementsUnlocked.isNotEmpty()) {
+                    workoutStateManager.setUnlockedAchievements(saveResult.achievementsUnlocked)
+                }
+                workoutStateManager.setSaveStreakInfo(saveResult.streakDays, saveResult.streakMultiplier)
             }
             workoutStateStore.clearActiveWorkout()
 
