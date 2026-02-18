@@ -78,6 +78,12 @@ interface WorkoutDao {
     @Query("SELECT COUNT(*) FROM workouts WHERE status = 'COMPLETED'")
     suspend fun getCompletedWorkoutCount(): Int
 
+    @Query("SELECT COUNT(*) FROM laps")
+    suspend fun getTotalLapCount(): Int
+
+    @Query("SELECT COUNT(*) FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK'")
+    suspend fun getCompletedDogWalkCount(): Int
+
     // --- Queries: Active workout recovery ---
 
     @Query("SELECT * FROM workouts WHERE status IN ('ACTIVE', 'PAUSED') LIMIT 1")

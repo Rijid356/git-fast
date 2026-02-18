@@ -125,4 +125,12 @@ class WorkoutRepository @Inject constructor(
             entity.toDomain(emptyList(), emptyList())
         }
     }
+
+    suspend fun getTotalLapCount(): Int {
+        return workoutDao.getTotalLapCount()
+    }
+
+    suspend fun getCompletedDogWalkCount(): Int {
+        return workoutDao.getCompletedDogWalkCount()
+    }
 }
