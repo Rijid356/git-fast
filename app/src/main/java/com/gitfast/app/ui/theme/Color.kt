@@ -26,3 +26,6 @@ val ErrorRed = Color(0xFFF85149)
 
 // Outline / Divider
 val OutlineGray = Color(0xFF30363D)
+
+// High-contrast text for outdoor/sunlight readability
+val HighContrastText = Color.White
