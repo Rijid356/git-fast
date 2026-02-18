@@ -20,37 +20,37 @@ class CharacterRepository @Inject constructor(
     private val characterDao: CharacterDao,
 ) {
 
-    fun getProfile(): Flow<CharacterProfile> {
-        return characterDao.getProfile().map { entity ->
+    fun getProfile(profileId: Int = 1): Flow<CharacterProfile> {
+        return characterDao.getProfile(profileId).map { entity ->
             entity?.toCharacterProfile() ?: CharacterProfile()
         }
     }
 
-    fun getXpByWorkout(): Flow<Map<String, Int>> {
-        return characterDao.getAllXpTransactions().map { list ->
+    fun getXpByWorkout(profileId: Int = 1): Flow<Map<String, Int>> {
+        return characterDao.getAllXpTransactions(profileId).map { list ->
             list.associate { it.workoutId to it.xpAmount }
         }
     }
 
-    suspend fun getXpTransactionForWorkout(workoutId: String): XpTransaction? {
-        return characterDao.getXpTransactionForWorkout(workoutId)?.toDomain()
+    suspend fun getXpTransactionForWorkout(workoutId: String, profileId: Int = 1): XpTransaction? {
+        return characterDao.getXpTransactionForWorkout(workoutId, profileId)?.toDomain()
     }
 
-    fun getRecentXpTransactions(limit: Int = 10): Flow<List<XpTransaction>> {
-        return characterDao.getRecentXpTransactions(limit).map { list ->
+    fun getRecentXpTransactions(profileId: Int = 1, limit: Int = 10): Flow<List<XpTransaction>> {
+        return characterDao.getRecentXpTransactions(profileId, limit).map { list ->
             list.map { it.toDomain() }
         }
     }
 
     /**
      * Award XP for a workout. Idempotent — won't double-award if called again
-     * for the same workoutId.
+     * for the same workoutId + profileId.
      *
      * @return the XP amount awarded, or 0 if already awarded
      */
-    suspend fun awardXp(workoutId: String, xpAmount: Int, reason: String): Int {
-        // Prevent double-award
-        val existing = characterDao.getXpTransactionForWorkout(workoutId)
+    suspend fun awardXp(profileId: Int = 1, workoutId: String, xpAmount: Int, reason: String): Int {
+        // Prevent double-award per profile
+        val existing = characterDao.getXpTransactionForWorkout(workoutId, profileId)
         if (existing != null) return 0
 
         // Insert transaction
@@ -60,12 +60,13 @@ class CharacterRepository @Inject constructor(
             xpAmount = xpAmount,
             reason = reason,
             timestamp = System.currentTimeMillis(),
+            profileId = profileId,
         )
         characterDao.insertXpTransaction(tx)
 
         // Update profile
-        val profile = characterDao.getProfileOnce()
-            ?: CharacterProfileEntity(id = 1, totalXp = 0, level = 1).also {
+        val profile = characterDao.getProfileOnce(profileId)
+            ?: CharacterProfileEntity(id = profileId, totalXp = 0, level = 1).also {
                 characterDao.insertProfile(it)
             }
         val newTotalXp = profile.totalXp + xpAmount
@@ -75,9 +76,9 @@ class CharacterRepository @Inject constructor(
         return xpAmount
     }
 
-    suspend fun updateStats(stats: CharacterStats) {
-        val profile = characterDao.getProfileOnce()
-            ?: CharacterProfileEntity(id = 1).also {
+    suspend fun updateStats(profileId: Int = 1, stats: CharacterStats) {
+        val profile = characterDao.getProfileOnce(profileId)
+            ?: CharacterProfileEntity(id = profileId).also {
                 characterDao.insertProfile(it)
             }
         characterDao.updateProfile(
@@ -107,20 +108,20 @@ class CharacterRepository @Inject constructor(
         )
     }
 
-    suspend fun getProfileLevel(): Int {
-        return characterDao.getProfileOnce()?.level ?: 1
+    suspend fun getProfileLevel(profileId: Int = 1): Int {
+        return characterDao.getProfileOnce(profileId)?.level ?: 1
     }
 
     // --- Achievements ---
 
-    fun getUnlockedAchievements(): Flow<List<UnlockedAchievement>> {
-        return characterDao.getUnlockedAchievements().map { list ->
+    fun getUnlockedAchievements(profileId: Int = 1): Flow<List<UnlockedAchievement>> {
+        return characterDao.getUnlockedAchievements(profileId).map { list ->
             list.map { it.toDomain() }
         }
     }
 
-    suspend fun getUnlockedAchievementIds(): Set<String> {
-        return characterDao.getUnlockedAchievementIds().toSet()
+    suspend fun getUnlockedAchievementIds(profileId: Int = 1): Set<String> {
+        return characterDao.getUnlockedAchievementIds(profileId).toSet()
     }
 
     /**
@@ -129,8 +130,8 @@ class CharacterRepository @Inject constructor(
      *
      * @return the XP awarded, or 0 if already unlocked
      */
-    suspend fun unlockAchievement(def: AchievementDef): Int {
-        val existing = characterDao.getUnlockedAchievementIds()
+    suspend fun unlockAchievement(profileId: Int = 1, def: AchievementDef): Int {
+        val existing = characterDao.getUnlockedAchievementIds(profileId)
         if (def.id in existing) return 0
 
         characterDao.insertUnlockedAchievement(
@@ -138,10 +139,12 @@ class CharacterRepository @Inject constructor(
                 achievementId = def.id,
                 unlockedAt = System.currentTimeMillis(),
                 xpAwarded = def.xpReward,
+                profileId = profileId,
             )
         )
 
         return awardXp(
+            profileId = profileId,
             workoutId = "achievement:${def.id}",
             xpAmount = def.xpReward,
             reason = "Achievement: ${def.title}",
