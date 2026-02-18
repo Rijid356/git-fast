@@ -63,7 +63,9 @@ class WorkoutSaveManager @Inject constructor(
                         startTime = lapData.startTime.toEpochMilli(),
                         endTime = lapData.endTime.toEpochMilli(),
                         distanceMeters = lapData.distanceMeters,
-                        steps = lapData.steps
+                        steps = lapData.steps,
+                        splitLatitude = lapData.splitLatitude,
+                        splitLongitude = lapData.splitLongitude
                     )
                 } ?: emptyList()
             } else {
