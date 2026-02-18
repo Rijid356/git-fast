@@ -8,6 +8,7 @@ import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
+import com.gitfast.app.data.local.entity.UnlockedAchievementEntity
 import com.gitfast.app.data.local.entity.XpTransactionEntity
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.GpsPoint
@@ -264,6 +265,8 @@ class FakeWorkoutDao : WorkoutDao {
     override fun getCompletedWorkoutsByType(activityType: String): Flow<List<WorkoutEntity>> = flowOf(emptyList())
     override fun getDogWalksByRoute(routeTag: String): Flow<List<WorkoutEntity>> = flowOf(emptyList())
     override suspend fun getCompletedWorkoutCount(): Int = 0
+    override suspend fun getTotalLapCount(): Int = 0
+    override suspend fun getCompletedDogWalkCount(): Int = 0
     override suspend fun getActiveWorkout(): WorkoutEntity? = null
     override suspend fun insertRouteTag(tag: RouteTagEntity) {}
     override suspend fun getAllRouteTags(): List<RouteTagEntity> = emptyList()
@@ -284,4 +287,7 @@ class FakeCharacterDao : CharacterDao {
     override suspend fun getXpTransactionForWorkout(workoutId: String): XpTransactionEntity? = transactions.find { it.workoutId == workoutId }
     override fun getTotalTransactionCount(): Flow<Int> = flowOf(transactions.size)
     override fun getAllXpTransactions(): Flow<List<XpTransactionEntity>> = flowOf(transactions.toList())
+    override fun getUnlockedAchievements(): Flow<List<UnlockedAchievementEntity>> = flowOf(emptyList())
+    override suspend fun getUnlockedAchievementIds(): List<String> = emptyList()
+    override suspend fun insertUnlockedAchievement(entity: UnlockedAchievementEntity) {}
 }
