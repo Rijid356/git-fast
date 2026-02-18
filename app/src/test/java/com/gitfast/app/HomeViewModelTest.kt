@@ -44,6 +44,7 @@ class HomeViewModelTest {
 
         every { workoutStateStore.hasActiveWorkout() } returns false
         every { workoutRepository.getCompletedWorkoutsByType(any()) } returns flowOf(emptyList())
+        every { workoutRepository.getCompletedWorkouts() } returns flowOf(emptyList())
         every { characterRepository.getProfile() } returns flowOf(CharacterProfile())
         every { characterRepository.getXpByWorkout() } returns flowOf(emptyMap())
         WorkoutService.isRunning = false
