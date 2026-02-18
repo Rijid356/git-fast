@@ -72,6 +72,8 @@ data class WorkoutSummaryStats(
     val trendLabel: String? = null,
     val xpEarned: Int = 0,
     val achievementNames: List<String> = emptyList(),
+    val streakDays: Int = 0,
+    val streakMultiplier: Double = 1.0,
 )
 
 data class GhostSource(
@@ -300,11 +302,13 @@ class ActiveWorkoutViewModel @Inject constructor(
 
                 if (completed) {
                     val achievements = stateManager?.lastUnlockedAchievements?.value ?: emptyList()
-                    if (achievements.isNotEmpty()) {
-                        _lastSummaryStats = _lastSummaryStats.copy(
-                            achievementNames = achievements.map { "${it.title} (+${it.xpReward} XP)" },
-                        )
-                    }
+                    val streakDays = stateManager?.lastSaveStreakDays?.value ?: 0
+                    val streakMultiplier = stateManager?.lastSaveStreakMultiplier?.value ?: 1.0
+                    _lastSummaryStats = _lastSummaryStats.copy(
+                        achievementNames = achievements.map { "${it.title} (+${it.xpReward} XP)" },
+                        streakDays = streakDays,
+                        streakMultiplier = streakMultiplier,
+                    )
                 }
 
                 val bestLap = stateManager?.getBestLapDuration()

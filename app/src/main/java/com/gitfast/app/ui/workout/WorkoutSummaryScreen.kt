@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gitfast.app.ui.theme.AmberAccent
 import com.gitfast.app.ui.theme.NeonGreen
+import com.gitfast.app.util.StreakCalculator
 
 @Composable
 fun WorkoutSummaryScreen(
@@ -33,6 +34,7 @@ fun WorkoutSummaryScreen(
     workoutId: String? = null,
     xpEarned: Int = 0,
     achievements: List<String> = emptyList(),
+    streakDays: Int = 0,
     onViewDetails: () -> Unit,
     onDone: () -> Unit,
 ) {
@@ -72,6 +74,16 @@ fun WorkoutSummaryScreen(
                         text = "+$xpEarned XP",
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
+                if (streakDays >= 2) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$streakDays-day streak! ${StreakCalculator.getMultiplierLabel(streakDays)} multiplier",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = AmberAccent,
                         textAlign = TextAlign.Center,
                     )
                 }

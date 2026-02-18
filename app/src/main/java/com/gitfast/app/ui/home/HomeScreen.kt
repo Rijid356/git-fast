@@ -43,6 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.CharacterProfile
+import com.gitfast.app.ui.theme.AmberAccent
 
 @Composable
 fun HomeScreen(
@@ -240,5 +241,13 @@ private fun LevelBadge(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
         )
+        if (profile.currentStreak >= 2) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "*${profile.currentStreak}",
+                style = MaterialTheme.typography.labelMedium,
+                color = AmberAccent,
+            )
+        }
     }
 }
