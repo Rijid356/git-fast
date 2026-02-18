@@ -41,6 +41,7 @@ import com.gitfast.app.ui.theme.CyanAccent
 import com.gitfast.app.ui.theme.NeonGreen
 import com.gitfast.app.util.AchievementCategory
 import com.gitfast.app.util.AchievementDef
+import com.gitfast.app.util.StreakCalculator
 import com.gitfast.app.util.XpCalculator
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -98,6 +99,10 @@ fun CharacterSheetScreen(
 
             item {
                 StatsSection(profile = profile)
+            }
+
+            item {
+                StreakSection(profile = profile)
             }
 
             item {
@@ -250,6 +255,84 @@ private fun StatBar(label: String, value: Int, color: Color) {
                     .clip(RectangleShape)
                     .background(color),
             )
+        }
+    }
+}
+
+@Composable
+private fun StreakSection(profile: CharacterProfile) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "> Streak",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RectangleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                if (profile.currentStreak >= 2) {
+                    Text(
+                        text = "${profile.currentStreak}-day streak",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = AmberAccent,
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "${StreakCalculator.getMultiplierLabel(profile.currentStreak)} XP multiplier",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                } else if (profile.currentStreak == 1) {
+                    Text(
+                        text = "1-day streak",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Work out tomorrow for 1.1x XP!",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    Text(
+                        text = "No active streak",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Complete a workout to start!",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            if (profile.currentStreak >= 2) {
+                val daysToMax = if (profile.currentStreak >= 6) 0 else 6 - profile.currentStreak
+                if (daysToMax > 0) {
+                    Text(
+                        text = "$daysToMax to max",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    Text(
+                        text = "MAX",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = NeonGreen,
+                    )
+                }
+            }
         }
     }
 }

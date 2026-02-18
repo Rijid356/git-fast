@@ -3,7 +3,9 @@ package com.gitfast.app
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.UnlockedAchievement
 import com.gitfast.app.data.model.XpTransaction
+import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.repository.CharacterRepository
+import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.ui.character.CharacterSheetViewModel
 import io.mockk.every
 import io.mockk.mockk
@@ -41,7 +43,9 @@ class CharacterSheetViewModelTest {
         every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
         every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
 
-        val viewModel = CharacterSheetViewModel(repo)
+        val workoutRepo = mockk<WorkoutRepository>()
+        every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.profile.collect {}
@@ -58,7 +62,9 @@ class CharacterSheetViewModelTest {
         every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
         every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
 
-        val viewModel = CharacterSheetViewModel(repo)
+        val workoutRepo = mockk<WorkoutRepository>()
+        every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.profile.collect {}
@@ -79,7 +85,9 @@ class CharacterSheetViewModelTest {
         every { repo.getRecentXpTransactions(20) } returns flowOf(transactions)
         every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
 
-        val viewModel = CharacterSheetViewModel(repo)
+        val workoutRepo = mockk<WorkoutRepository>()
+        every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentXpTransactions.collect {}
@@ -96,7 +104,9 @@ class CharacterSheetViewModelTest {
         every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
         every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
 
-        val viewModel = CharacterSheetViewModel(repo)
+        val workoutRepo = mockk<WorkoutRepository>()
+        every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentXpTransactions.collect {}
