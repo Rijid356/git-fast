@@ -133,4 +133,14 @@ class WorkoutRepository @Inject constructor(
     suspend fun getCompletedDogWalkCount(): Int {
         return workoutDao.getCompletedDogWalkCount()
     }
+
+    suspend fun getRecentWorkoutsWithLaps(limit: Int): List<Workout> {
+        return workoutDao.getRecentWorkoutsWithLaps(limit).map { entity ->
+            val phases = workoutDao.getPhasesForWorkout(entity.id).map { phase ->
+                val laps = workoutDao.getLapsForPhase(phase.id).map { it.toDomain() }
+                phase.toDomain(laps)
+            }
+            entity.toDomain(phases, emptyList())
+        }
+    }
 }

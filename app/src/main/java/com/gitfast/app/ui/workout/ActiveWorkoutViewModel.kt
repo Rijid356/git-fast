@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.service.WorkoutService
 import com.gitfast.app.service.WorkoutStateManager
 import com.gitfast.app.ui.detail.LapTrend
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.Instant
 import javax.inject.Inject
 
 data class WorkoutUiState(
@@ -53,6 +55,10 @@ data class WorkoutUiState(
     val lastLapDeltaFormatted: String? = null,
     val bestLapTimeFormatted: String? = null,
     val averageLapTimeFormatted: String? = null,
+    // Ghost runner
+    val ghostLapTimeFormatted: String? = null,
+    val ghostDeltaSeconds: Int? = null,
+    val ghostDeltaFormatted: String? = null,
 )
 
 data class WorkoutSummaryStats(
@@ -68,11 +74,19 @@ data class WorkoutSummaryStats(
     val achievementNames: List<String> = emptyList(),
 )
 
+data class GhostSource(
+    val workoutId: String,
+    val date: Instant,
+    val bestLapSeconds: Int,
+    val lapCount: Int,
+)
+
 @HiltViewModel
 class ActiveWorkoutViewModel @Inject constructor(
     application: Application,
     private val permissionManager: PermissionManager,
     private val settingsStore: SettingsStore,
+    private val workoutRepository: WorkoutRepository,
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(WorkoutUiState())
@@ -91,8 +105,41 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     private var activityType: ActivityType = ActivityType.RUN
 
+    private val _ghostSources = MutableStateFlow<List<GhostSource>>(emptyList())
+    val ghostSources: StateFlow<List<GhostSource>> = _ghostSources.asStateFlow()
+
     fun setActivityType(type: ActivityType) {
         activityType = type
+        if (type == ActivityType.RUN) loadGhostSources()
+    }
+
+    fun loadGhostSources() {
+        viewModelScope.launch {
+            val workouts = workoutRepository.getRecentWorkoutsWithLaps(5)
+            _ghostSources.value = workouts.mapNotNull { workout ->
+                val lapsPhase = workout.phases.find { it.type == PhaseType.LAPS }
+                val laps = lapsPhase?.laps ?: return@mapNotNull null
+                if (laps.isEmpty()) return@mapNotNull null
+                val bestLap = laps.minByOrNull { it.durationMillis ?: Long.MAX_VALUE } ?: return@mapNotNull null
+                val bestSeconds = ((bestLap.durationMillis ?: 0L) / 1000).toInt()
+                if (bestSeconds <= 0) return@mapNotNull null
+                GhostSource(
+                    workoutId = workout.id,
+                    date = workout.startTime,
+                    bestLapSeconds = bestSeconds,
+                    lapCount = laps.size,
+                )
+            }
+        }
+    }
+
+    fun selectGhost(workoutId: String?) {
+        if (workoutId == null) {
+            stateManager?.setGhostLap(null)
+            return
+        }
+        val source = _ghostSources.value.find { it.workoutId == workoutId } ?: return
+        stateManager?.setGhostLap(source.bestLapSeconds)
     }
 
     private var stateManager: WorkoutStateManager? = null
@@ -296,6 +343,13 @@ class ActiveWorkoutViewModel @Inject constructor(
                     },
                     bestLapTimeFormatted = bestLap?.let { formatElapsedTime(it) },
                     averageLapTimeFormatted = avgLap?.let { formatElapsedTime(it) },
+                    ghostLapTimeFormatted = state.ghostLapDurationSeconds?.let { formatElapsedTime(it) },
+                    ghostDeltaSeconds = state.ghostDeltaSeconds,
+                    ghostDeltaFormatted = state.ghostDeltaSeconds?.let { delta ->
+                        if (delta < 0) "\u25B2 ${delta}s"
+                        else if (delta > 0) "\u25BC +${delta}s"
+                        else "= 0s"
+                    },
                 )
             }
         }

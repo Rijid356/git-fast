@@ -1,5 +1,6 @@
 package com.gitfast.app.ui.workout
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,18 +10,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.util.formatElapsedTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun WorkoutContent(
     uiState: WorkoutUiState,
+    ghostSources: List<GhostSource> = emptyList(),
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -29,6 +40,7 @@ fun WorkoutContent(
     onStartLaps: () -> Unit,
     onMarkLap: () -> Unit,
     onEndLaps: () -> Unit,
+    onSelectGhost: (String?) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -87,6 +99,9 @@ fun WorkoutContent(
                 uiState.phase == PhaseType.LAPS && uiState.isActive -> {
                     LapPhaseContent(
                         currentLapTimeFormatted = uiState.currentLapTimeFormatted,
+                        ghostLapTimeFormatted = uiState.ghostLapTimeFormatted,
+                        ghostDeltaSeconds = uiState.ghostDeltaSeconds,
+                        ghostDeltaFormatted = uiState.ghostDeltaFormatted,
                     )
                 }
                 else -> {
@@ -109,12 +124,22 @@ fun WorkoutContent(
                     )
                 }
                 uiState.phase == PhaseType.WARMUP -> {
-                    StatGrid(
-                        elapsedTimeFormatted = uiState.elapsedTimeFormatted,
-                        distanceFormatted = uiState.distanceFormatted,
-                        averagePaceFormatted = uiState.averagePaceFormatted,
-                        gpsPointCount = uiState.gpsPointCount,
-                    )
+                    Column {
+                        StatGrid(
+                            elapsedTimeFormatted = uiState.elapsedTimeFormatted,
+                            distanceFormatted = uiState.distanceFormatted,
+                            averagePaceFormatted = uiState.averagePaceFormatted,
+                            gpsPointCount = uiState.gpsPointCount,
+                        )
+                        if (ghostSources.isNotEmpty() && uiState.isActive && uiState.activityType == ActivityType.RUN) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            GhostSelector(
+                                ghostSources = ghostSources,
+                                selectedGhostTime = uiState.ghostLapTimeFormatted,
+                                onSelectGhost = onSelectGhost,
+                            )
+                        }
+                    }
                 }
                 uiState.phase == PhaseType.LAPS -> {
                     LapStatGrid(
@@ -122,6 +147,7 @@ fun WorkoutContent(
                         distanceFormatted = uiState.distanceFormatted,
                         lapCount = uiState.lapCount,
                         averageLapTimeFormatted = uiState.averageLapTimeFormatted,
+                        ghostLapTimeFormatted = uiState.ghostLapTimeFormatted,
                     )
                 }
                 uiState.phase == PhaseType.COOLDOWN -> {
@@ -152,6 +178,64 @@ fun WorkoutContent(
                 onEndLaps = onEndLaps,
                 modifier = Modifier.fillMaxWidth(),
             )
+        }
+    }
+}
+
+@Composable
+private fun GhostSelector(
+    ghostSources: List<GhostSource>,
+    selectedGhostTime: String?,
+    onSelectGhost: (String?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("MMM d") }
+
+    Box {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "Ghost",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = selectedGhostTime ?: "Auto (best lap)",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("Auto (best lap)") },
+                onClick = {
+                    onSelectGhost(null)
+                    expanded = false
+                },
+            )
+            ghostSources.forEach { source ->
+                val dateStr = source.date
+                    .atZone(ZoneId.systemDefault())
+                    .format(dateFormatter)
+                val lapTime = formatElapsedTime(source.bestLapSeconds)
+                DropdownMenuItem(
+                    text = { Text("$dateStr - $lapTime (${source.lapCount} laps)") },
+                    onClick = {
+                        onSelectGhost(source.workoutId)
+                        expanded = false
+                    },
+                )
+            }
         }
     }
 }

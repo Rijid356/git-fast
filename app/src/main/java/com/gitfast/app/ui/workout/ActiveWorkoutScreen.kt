@@ -29,6 +29,7 @@ fun ActiveWorkoutScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionState by viewModel.permissionState.collectAsStateWithLifecycle()
+    val ghostSources by viewModel.ghostSources.collectAsStateWithLifecycle()
 
     var showBackConfirmation by remember { mutableStateOf(false) }
 
@@ -81,6 +82,7 @@ fun ActiveWorkoutScreen(
         } else {
             WorkoutContent(
                 uiState = uiState,
+                ghostSources = ghostSources,
                 onStart = { viewModel.startWorkout() },
                 onPause = { viewModel.pauseWorkout() },
                 onResume = { viewModel.resumeWorkout() },
@@ -89,6 +91,7 @@ fun ActiveWorkoutScreen(
                 onStartLaps = { viewModel.startLaps() },
                 onMarkLap = { viewModel.markLap() },
                 onEndLaps = { viewModel.endLaps() },
+                onSelectGhost = { viewModel.selectGhost(it) },
             )
         }
     }

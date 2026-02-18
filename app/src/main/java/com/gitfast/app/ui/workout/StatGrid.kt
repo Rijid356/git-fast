@@ -72,6 +72,7 @@ fun LapStatGrid(
     distanceFormatted: String,
     lapCount: Int,
     averageLapTimeFormatted: String?,
+    ghostLapTimeFormatted: String? = null,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -107,11 +108,19 @@ fun LapStatGrid(
                     value = lapCount.toString(),
                     modifier = Modifier.weight(1f),
                 )
-                StatItem(
-                    label = "AVG LAP",
-                    value = averageLapTimeFormatted ?: "--:--",
-                    modifier = Modifier.weight(1f),
-                )
+                if (ghostLapTimeFormatted != null) {
+                    StatItem(
+                        label = "GHOST",
+                        value = ghostLapTimeFormatted,
+                        modifier = Modifier.weight(1f),
+                    )
+                } else {
+                    StatItem(
+                        label = "AVG LAP",
+                        value = averageLapTimeFormatted ?: "--:--",
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
