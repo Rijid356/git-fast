@@ -4,8 +4,30 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- NeonGreen running bolt icon -->
+    <!-- Pixel art running man sprite on a 4dp grid, centered in 72dp safe zone (18-90) -->
     <path
         android:fillColor="#39FF14"
-        android:pathData="M54,28 L42,54 L50,54 L46,80 L66,48 L56,48 L62,28 Z" />
+        android:pathData="
+            M50,26 h8 v4 h-8 z
+            M46,30 h16 v4 h-16 z
+            M50,34 h8 v4 h-8 z
+            M46,38 h4 v4 h-4 z
+            M54,38 h8 v4 h-8 z
+            M42,42 h8 v4 h-8 z
+            M54,42 h4 v4 h-4 z
+            M62,42 h4 v4 h-4 z
+            M38,46 h8 v4 h-8 z
+            M50,46 h12 v4 h-12 z
+            M50,50 h8 v4 h-8 z
+            M46,54 h4 v4 h-4 z
+            M54,54 h4 v4 h-4 z
+            M42,58 h4 v4 h-4 z
+            M58,58 h4 v4 h-4 z
+            M38,62 h4 v4 h-4 z
+            M58,62 h8 v4 h-8 z
+            M34,66 h4 v4 h-4 z
+            M62,66 h4 v4 h-4 z
+            M34,70 h4 v4 h-4 z
+            M62,70 h4 v4 h-4 z
+        " />
 </vector>

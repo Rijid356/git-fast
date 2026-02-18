@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.RectangleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -240,14 +240,14 @@ private fun StatBar(label: String, value: Int, color: Color) {
             modifier = Modifier
                 .weight(1f)
                 .height(10.dp)
-                .clip(RoundedCornerShape(5.dp))
+                .clip(RectangleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(fraction = value / 99f)
                     .height(10.dp)
-                    .clip(RoundedCornerShape(5.dp))
+                    .clip(RectangleShape)
                     .background(color),
             )
         }

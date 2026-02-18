@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.RectangleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -223,7 +223,7 @@ private fun LevelBadge(
         modifier = modifier
             .background(
                 color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(8.dp),
+                shape = RectangleShape,
             )
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),

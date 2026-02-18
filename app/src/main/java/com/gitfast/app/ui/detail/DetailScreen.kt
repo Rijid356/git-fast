@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.RectangleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -271,7 +271,7 @@ private fun DateHeader(
 private fun DetailStatsCard(detail: WorkoutDetailItem) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RectangleShape,
         color = MaterialTheme.colorScheme.surface,
     ) {
         Column(
@@ -346,7 +346,7 @@ private fun XpEarnedSection(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RectangleShape,
         color = MaterialTheme.colorScheme.surface,
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -389,7 +389,7 @@ private fun NoRouteContent() {
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = RectangleShape,
         color = MaterialTheme.colorScheme.surface,
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -425,7 +425,7 @@ private fun GpsQualityFooter(
 private fun DogWalkMetadataSection(detail: WorkoutDetailItem) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RectangleShape,
         color = MaterialTheme.colorScheme.surface,
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
