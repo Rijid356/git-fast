@@ -17,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.gitfast.app.ui.theme.AmberAccent
+import com.gitfast.app.ui.theme.NeonGreen
 
 @Composable
 fun WorkoutSummaryScreen(
@@ -30,6 +32,7 @@ fun WorkoutSummaryScreen(
     trendLabel: String? = null,
     workoutId: String? = null,
     xpEarned: Int = 0,
+    achievements: List<String> = emptyList(),
     onViewDetails: () -> Unit,
     onDone: () -> Unit,
 ) {
@@ -71,6 +74,19 @@ fun WorkoutSummaryScreen(
                         color = MaterialTheme.colorScheme.secondary,
                         textAlign = TextAlign.Center,
                     )
+                }
+
+                if (achievements.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    for (achievement in achievements) {
+                        Text(
+                            text = "Achievement Unlocked: $achievement",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = AmberAccent,
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                    }
                 }
             }
 

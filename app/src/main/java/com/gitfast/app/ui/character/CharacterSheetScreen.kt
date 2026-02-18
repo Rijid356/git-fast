@@ -39,6 +39,8 @@ import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.ui.theme.AmberAccent
 import com.gitfast.app.ui.theme.CyanAccent
 import com.gitfast.app.ui.theme.NeonGreen
+import com.gitfast.app.util.AchievementCategory
+import com.gitfast.app.util.AchievementDef
 import com.gitfast.app.util.XpCalculator
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -51,6 +53,7 @@ fun CharacterSheetScreen(
 ) {
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val transactions by viewModel.recentXpTransactions.collectAsStateWithLifecycle()
+    val unlockedIds by viewModel.unlockedAchievementIds.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -95,6 +98,10 @@ fun CharacterSheetScreen(
 
             item {
                 StatsSection(profile = profile)
+            }
+
+            item {
+                AchievementsSection(unlockedIds = unlockedIds)
             }
 
             item {
@@ -244,6 +251,101 @@ private fun StatBar(label: String, value: Int, color: Color) {
                     .background(color),
             )
         }
+    }
+}
+
+@Composable
+private fun AchievementsSection(unlockedIds: Set<String>) {
+    val byCategory = AchievementDef.byCategory()
+    val totalCount = AchievementDef.entries.size
+    val unlockedCount = unlockedIds.size
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "> Achievements",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                text = "$unlockedCount / $totalCount",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        for ((category, achievements) in byCategory) {
+            Text(
+                text = categoryLabel(category),
+                style = MaterialTheme.typography.labelSmall,
+                color = CyanAccent,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            for (achievement in achievements) {
+                val isUnlocked = achievement.id in unlockedIds
+                AchievementRow(achievement = achievement, isUnlocked = isUnlocked)
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun AchievementRow(achievement: AchievementDef, isUnlocked: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(6.dp))
+            .background(
+                if (isUnlocked) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = if (isUnlocked) achievement.icon else "[?]",
+            style = MaterialTheme.typography.labelMedium,
+            color = if (isUnlocked) NeonGreen else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+            modifier = Modifier.width(48.dp),
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (isUnlocked) achievement.title else "???",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (isUnlocked) MaterialTheme.colorScheme.onSurface
+                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+            )
+            Text(
+                text = achievement.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isUnlocked) MaterialTheme.colorScheme.onSurfaceVariant
+                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+            )
+        }
+        Text(
+            text = "+${achievement.xpReward}",
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isUnlocked) AmberAccent else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+        )
+    }
+}
+
+private fun categoryLabel(category: AchievementCategory): String {
+    return when (category) {
+        AchievementCategory.DISTANCE -> "DISTANCE"
+        AchievementCategory.FREQUENCY -> "FREQUENCY"
+        AchievementCategory.STREAK -> "STREAKS"
+        AchievementCategory.LAPS -> "LAPS"
+        AchievementCategory.DOG_WALK -> "DOG WALKS"
+        AchievementCategory.LEVELING -> "LEVELING"
     }
 }
 

@@ -155,7 +155,10 @@ class WorkoutService : LifecycleService() {
         val snapshot = workoutStateManager.stopWorkout()
 
         lifecycleScope.launch {
-            workoutSaveManager.saveCompletedWorkout(snapshot)
+            val saveResult = workoutSaveManager.saveCompletedWorkout(snapshot)
+            if (saveResult != null && saveResult.achievementsUnlocked.isNotEmpty()) {
+                workoutStateManager.setUnlockedAchievements(saveResult.achievementsUnlocked)
+            }
             workoutStateStore.clearActiveWorkout()
 
             stopForeground(STOP_FOREGROUND_REMOVE)

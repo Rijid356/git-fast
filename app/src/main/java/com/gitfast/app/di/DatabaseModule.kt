@@ -9,6 +9,7 @@ import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.local.migrations.MIGRATION_1_2
 import com.gitfast.app.data.local.migrations.MIGRATION_2_3
 import com.gitfast.app.data.local.migrations.MIGRATION_3_4
+import com.gitfast.app.data.local.migrations.MIGRATION_4_5
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
@@ -30,7 +31,7 @@ object DatabaseModule {
             context,
             GitFastDatabase::class.java,
             "gitfast-database"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
          .build()
     }
 
