@@ -36,8 +36,8 @@ fun LapPhaseContent(
 
         Text(
             text = currentLapTimeFormatted,
-            style = MaterialTheme.typography.displayLarge.copy(fontSize = 48.sp),
-            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.displayLarge.copy(fontSize = 56.sp),
+            color = androidx.compose.ui.graphics.Color.White,
             textAlign = TextAlign.Center,
         )
 

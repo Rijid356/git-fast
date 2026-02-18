@@ -8,7 +8,9 @@ data class Lap(
     val startTime: Instant,
     val endTime: Instant?,
     val distanceMeters: Double,
-    val steps: Int
+    val steps: Int,
+    val splitLatitude: Double? = null,
+    val splitLongitude: Double? = null
 ) {
     val durationMillis: Long?
         get() = endTime?.let { it.toEpochMilli() - startTime.toEpochMilli() }

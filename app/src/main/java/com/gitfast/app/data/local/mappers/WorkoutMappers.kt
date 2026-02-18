@@ -73,7 +73,9 @@ fun LapEntity.toDomain() = Lap(
     startTime = Instant.ofEpochMilli(startTime),
     endTime = endTime?.let { Instant.ofEpochMilli(it) },
     distanceMeters = distanceMeters,
-    steps = steps
+    steps = steps,
+    splitLatitude = splitLatitude,
+    splitLongitude = splitLongitude
 )
 
 fun Lap.toEntity(phaseId: String) = LapEntity(
@@ -83,7 +85,9 @@ fun Lap.toEntity(phaseId: String) = LapEntity(
     startTime = startTime.toEpochMilli(),
     endTime = endTime?.toEpochMilli(),
     distanceMeters = distanceMeters,
-    steps = steps
+    steps = steps,
+    splitLatitude = splitLatitude,
+    splitLongitude = splitLongitude
 )
 
 fun GpsPointEntity.toDomain() = GpsPoint(

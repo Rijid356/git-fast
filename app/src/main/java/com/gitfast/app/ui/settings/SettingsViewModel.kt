@@ -13,6 +13,8 @@ data class SettingsUiState(
     val autoPauseEnabled: Boolean = true,
     val distanceUnit: DistanceUnit = DistanceUnit.MILES,
     val keepScreenOn: Boolean = true,
+    val autoLapEnabled: Boolean = false,
+    val autoLapDistanceMeters: Int = 400,
 )
 
 @HiltViewModel
@@ -25,6 +27,8 @@ class SettingsViewModel @Inject constructor(
             autoPauseEnabled = settingsStore.autoPauseEnabled,
             distanceUnit = settingsStore.distanceUnit,
             keepScreenOn = settingsStore.keepScreenOn,
+            autoLapEnabled = settingsStore.autoLapEnabled,
+            autoLapDistanceMeters = settingsStore.autoLapDistanceMeters,
         )
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -42,5 +46,15 @@ class SettingsViewModel @Inject constructor(
     fun setKeepScreenOn(enabled: Boolean) {
         settingsStore.keepScreenOn = enabled
         _uiState.value = _uiState.value.copy(keepScreenOn = enabled)
+    }
+
+    fun setAutoLapEnabled(enabled: Boolean) {
+        settingsStore.autoLapEnabled = enabled
+        _uiState.value = _uiState.value.copy(autoLapEnabled = enabled)
+    }
+
+    fun setAutoLapDistanceMeters(distance: Int) {
+        settingsStore.autoLapDistanceMeters = distance
+        _uiState.value = _uiState.value.copy(autoLapDistanceMeters = distance)
     }
 }

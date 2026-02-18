@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 
 @Composable
@@ -29,9 +30,9 @@ fun PaceDisplay(
     ) {
         Text(
             text = currentPaceFormatted ?: "-- /mi",
-            style = MaterialTheme.typography.displayLarge.copy(fontSize = 48.sp),
+            style = MaterialTheme.typography.displayLarge.copy(fontSize = 56.sp),
             color = if (currentPaceFormatted != null) {
-                MaterialTheme.colorScheme.onBackground
+                Color.White
             } else {
                 MaterialTheme.colorScheme.onSurface
             },
@@ -68,7 +69,7 @@ fun PausedDisplay(
     ) {
         Text(
             text = "PAUSED",
-            style = MaterialTheme.typography.displayLarge.copy(fontSize = 48.sp),
+            style = MaterialTheme.typography.displayLarge.copy(fontSize = 56.sp),
             color = MaterialTheme.colorScheme.tertiary.copy(alpha = textAlpha),
             textAlign = TextAlign.Center,
         )

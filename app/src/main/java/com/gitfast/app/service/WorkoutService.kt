@@ -100,6 +100,12 @@ class WorkoutService : LifecycleService() {
 
         val workoutId = workoutStateManager.startWorkout(activityType)
 
+        // Configure auto-lap from settings
+        workoutStateManager.setAutoLapConfig(
+            enabled = settingsStore.autoLapEnabled,
+            distanceMeters = settingsStore.autoLapDistanceMeters
+        )
+
         workoutStateStore.setActiveWorkout(workoutId, Instant.now().toEpochMilli())
 
         startForeground(NOTIFICATION_ID, buildNotification("Workout started"))

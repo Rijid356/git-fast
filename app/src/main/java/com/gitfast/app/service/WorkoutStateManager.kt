@@ -79,7 +79,9 @@ class WorkoutStateManager @Inject constructor() {
         val distanceMeters: Double,
         val steps: Int,
         val gpsStartIndex: Int,
-        val gpsEndIndex: Int
+        val gpsEndIndex: Int,
+        val splitLatitude: Double? = null,
+        val splitLongitude: Double? = null
     )
 
     /**
@@ -225,6 +227,9 @@ class WorkoutStateManager @Inject constructor() {
             laps.last().gpsEndIndex + 1
         }
 
+        // Capture GPS pin at lap split
+        val lastGps = _gpsPoints.value.lastOrNull()
+
         // Record completed lap
         val completedLap = LapData(
             lapNumber = currentLapNumber,
@@ -233,7 +238,9 @@ class WorkoutStateManager @Inject constructor() {
             distanceMeters = currentDistance - currentLapStartDistance,
             steps = 0,
             gpsStartIndex = lapStartGpsIndex,
-            gpsEndIndex = currentGpsIndex.coerceAtLeast(lapStartGpsIndex)
+            gpsEndIndex = currentGpsIndex.coerceAtLeast(lapStartGpsIndex),
+            splitLatitude = lastGps?.latitude,
+            splitLongitude = lastGps?.longitude
         )
         laps.add(completedLap)
 
@@ -280,6 +287,9 @@ class WorkoutStateManager @Inject constructor() {
         if (currentLapStartTime != null && currentLapNumber > (laps.lastOrNull()?.lapNumber ?: 0)) {
             markLap()
         }
+
+        // Discard micro-laps (< 5 seconds) at the end
+        discardMicroLap()
 
         val now = Instant.now()
         val currentDistance = _workoutState.value.distanceMeters
@@ -346,6 +356,14 @@ class WorkoutStateManager @Inject constructor() {
         val endTime = Instant.now()
         val currentDistance = _workoutState.value.distanceMeters
 
+        // If stopping during LAPS phase, complete the in-progress lap and discard micro-laps
+        if (currentPhase == PhaseType.LAPS) {
+            if (currentLapStartTime != null && currentLapNumber > (laps.lastOrNull()?.lapNumber ?: 0)) {
+                markLap()
+            }
+            discardMicroLap()
+        }
+
         // Close current phase
         phaseStartTime?.let { start ->
             completedPhases.add(PhaseData(
@@ -388,6 +406,35 @@ class WorkoutStateManager @Inject constructor() {
         return snapshot
     }
 
+    /**
+     * Discard the last lap if it's a micro-lap (< 5 seconds).
+     * Merges its distance into the previous lap, or keeps it if it's the only lap.
+     */
+    private fun discardMicroLap() {
+        if (laps.size < 2) return // Don't discard if it's the only lap
+        val lastLap = laps.last()
+        val durationMs = lastLap.endTime.toEpochMilli() - lastLap.startTime.toEpochMilli()
+        if (durationMs < 5000) {
+            laps.removeAt(laps.size - 1)
+            // Merge distance into previous lap
+            val prevLap = laps.last()
+            laps[laps.size - 1] = prevLap.copy(
+                endTime = lastLap.endTime,
+                distanceMeters = prevLap.distanceMeters + lastLap.distanceMeters,
+                gpsEndIndex = lastLap.gpsEndIndex
+            )
+        }
+    }
+
+    // Auto-lap settings (injected from SettingsStore via WorkoutService)
+    private var autoLapEnabled: Boolean = false
+    private var autoLapDistanceMeters: Int = 400
+
+    fun setAutoLapConfig(enabled: Boolean, distanceMeters: Int) {
+        autoLapEnabled = enabled
+        autoLapDistanceMeters = distanceMeters
+    }
+
     fun addGpsPoint(point: GpsPoint) {
         if (_workoutState.value.isPaused) return
 
@@ -417,6 +464,14 @@ class WorkoutStateManager @Inject constructor() {
                 elapsedSeconds, distanceMeters
             )
         )
+
+        // Auto-lap: trigger markLap() when distance threshold is crossed during LAPS phase
+        if (autoLapEnabled && currentPhase == PhaseType.LAPS && autoLapDistanceMeters > 0) {
+            val lapDistance = distanceMeters - currentLapStartDistance
+            if (lapDistance >= autoLapDistanceMeters) {
+                markLap()
+            }
+        }
     }
 
     fun updateElapsedTime() {

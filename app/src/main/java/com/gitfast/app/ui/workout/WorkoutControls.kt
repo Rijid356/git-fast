@@ -241,7 +241,7 @@ fun WorkoutControls(
                             ),
                         ) {
                             Text(
-                                text = "END LAPS",
+                                text = "COOL DOWN",
                                 style = MaterialTheme.typography.labelLarge,
                                 modifier = Modifier.padding(vertical = 8.dp),
                             )
