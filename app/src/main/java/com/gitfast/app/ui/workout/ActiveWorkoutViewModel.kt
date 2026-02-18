@@ -65,6 +65,7 @@ data class WorkoutSummaryStats(
     val bestLapNumber: Int? = null,
     val trendLabel: String? = null,
     val xpEarned: Int = 0,
+    val achievementNames: List<String> = emptyList(),
 )
 
 @HiltViewModel
@@ -249,6 +250,15 @@ class ActiveWorkoutViewModel @Inject constructor(
                 val wasActive = _uiState.value.isActive
                 val isNowInactive = !state.isActive && state.workoutId == null
                 val completed = wasActive && isNowInactive
+
+                if (completed) {
+                    val achievements = stateManager?.lastUnlockedAchievements?.value ?: emptyList()
+                    if (achievements.isNotEmpty()) {
+                        _lastSummaryStats = _lastSummaryStats.copy(
+                            achievementNames = achievements.map { "${it.title} (+${it.xpReward} XP)" },
+                        )
+                    }
+                }
 
                 val bestLap = stateManager?.getBestLapDuration()
                 val avgLap = stateManager?.getAverageLapDuration()

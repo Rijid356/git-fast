@@ -33,7 +33,7 @@ sealed class Screen(val route: String) {
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
         fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
     }
-    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}&workoutId={workoutId}&xpEarned={xpEarned}") {
+    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}&workoutId={workoutId}&xpEarned={xpEarned}&achievements={achievements}") {
         fun createRoute(
             time: String,
             distance: String,
@@ -45,6 +45,7 @@ sealed class Screen(val route: String) {
             trendLabel: String? = null,
             workoutId: String? = null,
             xpEarned: Int = 0,
+            achievements: List<String> = emptyList(),
         ): String {
             val enc = { s: String -> URLEncoder.encode(s, "UTF-8") }
             val base = "workout_summary/${enc(time)}/${enc(distance)}/${enc(pace)}/${enc(points)}"
@@ -55,6 +56,9 @@ sealed class Screen(val route: String) {
                 trendLabel?.let { append("&trendLabel=${enc(it)}") }
                 workoutId?.let { append("&workoutId=${enc(it)}") }
                 append("&xpEarned=$xpEarned")
+                if (achievements.isNotEmpty()) {
+                    append("&achievements=${enc(achievements.joinToString("|"))}")
+                }
             }
             return base + params
         }
@@ -129,6 +133,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                                 trendLabel = stats.trendLabel,
                                 workoutId = workoutId,
                                 xpEarned = stats.xpEarned,
+                                achievements = stats.achievementNames,
                             )
                         ) {
                             popUpTo(Screen.Home.route) { inclusive = false }
@@ -156,6 +161,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                 navArgument("trendLabel") { type = NavType.StringType; defaultValue = "" },
                 navArgument("workoutId") { type = NavType.StringType; defaultValue = "" },
                 navArgument("xpEarned") { type = NavType.StringType; defaultValue = "0" },
+                navArgument("achievements") { type = NavType.StringType; defaultValue = "" },
             ),
         ) { backStackEntry ->
             val dec = { key: String ->
@@ -170,6 +176,10 @@ fun GitFastNavGraph(navController: NavHostController) {
             val trendLabel = dec("trendLabel").ifEmpty { null }
             val workoutId = dec("workoutId").ifEmpty { null }
             val xpEarned = dec("xpEarned").toIntOrNull() ?: 0
+            val achievements = dec("achievements").ifEmpty { null }
+                ?.split("|")
+                ?.filter { it.isNotEmpty() }
+                ?: emptyList()
 
             WorkoutSummaryScreen(
                 time = dec("time"),
@@ -182,6 +192,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                 trendLabel = trendLabel,
                 workoutId = workoutId,
                 xpEarned = xpEarned,
+                achievements = achievements,
                 onViewDetails = {
                     workoutId?.let { id ->
                         navController.navigate(Screen.Detail.createRoute(id)) {
