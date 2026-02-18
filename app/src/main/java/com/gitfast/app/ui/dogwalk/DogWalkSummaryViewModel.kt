@@ -1,7 +1,6 @@
 package com.gitfast.app.ui.dogwalk
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -52,12 +51,9 @@ class DogWalkSummaryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DogWalkSummaryUiState())
     val uiState: StateFlow<DogWalkSummaryUiState> = _uiState.asStateFlow()
 
-    private val prefs = application.getSharedPreferences("dog_walk_prefs", Context.MODE_PRIVATE)
-
     init {
-        // Load last-used dog name
-        val lastDogName = prefs.getString("last_dog_name", "Juniper") ?: "Juniper"
-        _uiState.value = _uiState.value.copy(dogName = lastDogName)
+        // Dog name is always Juniper
+        _uiState.value = _uiState.value.copy(dogName = "Juniper")
 
         // Load route tags
         viewModelScope.launch {
@@ -79,10 +75,6 @@ class DogWalkSummaryViewModel @Inject constructor(
                 )
             }
         }
-    }
-
-    fun updateDogName(name: String) {
-        _uiState.value = _uiState.value.copy(dogName = name)
     }
 
     fun selectRouteTag(tag: String?) {
@@ -141,9 +133,6 @@ class DogWalkSummaryViewModel @Inject constructor(
         viewModelScope.launch {
             val state = _uiState.value
 
-            // Save dog name for next time
-            prefs.edit().putString("last_dog_name", state.dogName).apply()
-
             // Save or touch route tag
             state.selectedRouteTag?.let { tag ->
                 if (tag !in state.routeTags.dropLast(if (state.routeTags.contains(tag)) 0 else 1)) {
@@ -163,7 +152,7 @@ class DogWalkSummaryViewModel @Inject constructor(
             // Update workout with metadata
             workoutSaveManager.updateDogWalkMetadata(
                 workoutId = workoutId,
-                dogName = state.dogName.ifEmpty { null },
+                dogName = "Juniper",
                 routeTag = state.selectedRouteTag,
                 weatherCondition = state.weatherCondition,
                 weatherTemp = state.weatherTemp,

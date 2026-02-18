@@ -84,6 +84,12 @@ interface WorkoutDao {
     @Query("SELECT COUNT(*) FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK'")
     suspend fun getCompletedDogWalkCount(): Int
 
+    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK' ORDER BY startTime DESC")
+    suspend fun getCompletedDogWalksOnce(): List<WorkoutEntity>
+
+    @Query("SELECT COALESCE(SUM(distanceMeters), 0.0) FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK'")
+    suspend fun getTotalDogWalkDistanceMeters(): Double
+
     @Query("""
         SELECT DISTINCT w.* FROM workouts w
         INNER JOIN workout_phases p ON p.workoutId = w.id AND p.type = 'LAPS'

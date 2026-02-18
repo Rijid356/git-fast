@@ -14,8 +14,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -87,19 +85,13 @@ fun DogWalkSummaryScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Dog name
+            // Dog name (always Juniper)
             SectionLabel("Dog")
-            OutlinedTextField(
-                value = uiState.dogName,
-                onValueChange = { viewModel.updateDogName(it) },
+            Text(
+                text = "Juniper",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                ),
             )
 
             Spacer(modifier = Modifier.height(16.dp))

@@ -16,6 +16,7 @@ enum class AchievementDef(
     val xpReward: Int,
     val icon: String,
     val category: AchievementCategory,
+    val profileId: Int = 1,
 ) {
     // Distance milestones (cumulative)
     FIRST_MILE(
@@ -163,7 +164,7 @@ enum class AchievementDef(
         category = AchievementCategory.LAPS,
     ),
 
-    // Dog Walks
+    // Dog Walks (user profile)
     GOOD_BOY(
         id = "dog_1",
         title = "Good Boy",
@@ -179,6 +180,62 @@ enum class AchievementDef(
         xpReward = 100,
         icon = "[D25]",
         category = AchievementCategory.DOG_WALK,
+    ),
+
+    // Dog Walks (Juniper profile)
+    JUNIPER_FIRST_SNIFF(
+        id = "juniper_first_sniff",
+        title = "First Sniff",
+        description = "Complete Juniper's first walk",
+        xpReward = 15,
+        icon = "[J1]",
+        category = AchievementCategory.DOG_WALK,
+        profileId = 2,
+    ),
+    JUNIPER_TRAIL_SNIFFER(
+        id = "juniper_trail_sniffer",
+        title = "Trail Sniffer",
+        description = "Walk 10 miles with Juniper",
+        xpReward = 50,
+        icon = "[J10]",
+        category = AchievementCategory.DOG_WALK,
+        profileId = 2,
+    ),
+    JUNIPER_ADVENTURE_PUP(
+        id = "juniper_adventure_pup",
+        title = "Adventure Pup",
+        description = "Walk 25 miles with Juniper",
+        xpReward = 100,
+        icon = "[J25]",
+        category = AchievementCategory.DOG_WALK,
+        profileId = 2,
+    ),
+    JUNIPER_PACK_LEADER(
+        id = "juniper_pack_leader",
+        title = "Pack Leader",
+        description = "Complete 10 walks with Juniper",
+        xpReward = 50,
+        icon = "[JP]",
+        category = AchievementCategory.DOG_WALK,
+        profileId = 2,
+    ),
+    JUNIPER_TRAIL_MASTER(
+        id = "juniper_trail_master",
+        title = "Trail Master",
+        description = "Complete 50 walks with Juniper",
+        xpReward = 200,
+        icon = "[JM]",
+        category = AchievementCategory.DOG_WALK,
+        profileId = 2,
+    ),
+    JUNIPER_GOOD_GIRL(
+        id = "juniper_good_girl",
+        title = "Good Girl",
+        description = "Reach level 5 with Juniper",
+        xpReward = 50,
+        icon = "[JG]",
+        category = AchievementCategory.LEVELING,
+        profileId = 2,
     ),
 
     // Leveling
@@ -200,8 +257,14 @@ enum class AchievementDef(
     );
 
     companion object {
-        fun byCategory(): Map<AchievementCategory, List<AchievementDef>> =
-            entries.groupBy { it.category }
+        fun byCategory(profileId: Int? = null): Map<AchievementCategory, List<AchievementDef>> {
+            val filtered = if (profileId != null) {
+                entries.filter { it.profileId == profileId }
+            } else {
+                entries.toList()
+            }
+            return filtered.groupBy { it.category }
+        }
 
         fun findById(id: String): AchievementDef? =
             entries.find { it.id == id }

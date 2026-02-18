@@ -11,14 +11,38 @@ data class AchievementSnapshot(
     val dogWalkCount: Int,
     val characterLevel: Int,
     val unlockedIds: Set<String>,
+    val totalDogWalkDistanceMiles: Double = 0.0,
 )
 
 object AchievementChecker {
 
+    /**
+     * Check user-profile achievements (profileId=1).
+     * Only evaluates achievements with profileId=1.
+     */
     fun checkNewAchievements(snapshot: AchievementSnapshot): List<AchievementDef> {
         val earned = mutableListOf<AchievementDef>()
 
         for (def in AchievementDef.entries) {
+            if (def.profileId != 1) continue
+            if (def.id in snapshot.unlockedIds) continue
+            if (isEarned(def, snapshot)) {
+                earned.add(def)
+            }
+        }
+
+        return earned
+    }
+
+    /**
+     * Check Juniper-profile achievements (profileId=2).
+     * Only evaluates achievements with profileId=2.
+     */
+    fun checkJuniperAchievements(snapshot: AchievementSnapshot): List<AchievementDef> {
+        val earned = mutableListOf<AchievementDef>()
+
+        for (def in AchievementDef.entries) {
+            if (def.profileId != 2) continue
             if (def.id in snapshot.unlockedIds) continue
             if (isEarned(def, snapshot)) {
                 earned.add(def)
@@ -57,9 +81,17 @@ object AchievementChecker {
             AchievementDef.LAP_LEADER -> snapshot.totalLapCount >= 10
             AchievementDef.TRACK_STAR -> snapshot.totalLapCount >= 50
 
-            // Dog walks
+            // Dog walks (user)
             AchievementDef.GOOD_BOY -> snapshot.dogWalkCount >= 1
             AchievementDef.DOGS_BEST_FRIEND -> snapshot.dogWalkCount >= 25
+
+            // Juniper achievements
+            AchievementDef.JUNIPER_FIRST_SNIFF -> snapshot.dogWalkCount >= 1
+            AchievementDef.JUNIPER_TRAIL_SNIFFER -> snapshot.totalDogWalkDistanceMiles >= 10.0
+            AchievementDef.JUNIPER_ADVENTURE_PUP -> snapshot.totalDogWalkDistanceMiles >= 25.0
+            AchievementDef.JUNIPER_PACK_LEADER -> snapshot.dogWalkCount >= 10
+            AchievementDef.JUNIPER_TRAIL_MASTER -> snapshot.dogWalkCount >= 50
+            AchievementDef.JUNIPER_GOOD_GIRL -> snapshot.characterLevel >= 5
 
             // Leveling
             AchievementDef.LEVEL_5 -> snapshot.characterLevel >= 5
