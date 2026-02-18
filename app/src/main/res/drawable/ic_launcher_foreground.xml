@@ -4,30 +4,36 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Pixel art running man sprite on a 4dp grid, centered in 72dp safe zone (18-90) -->
+    <!-- Pixel art running man — side profile, mid-stride -->
+    <!-- 4dp grid, centered in 72dp safe zone (18-90) -->
+
+    <!-- Head -->
     <path
         android:fillColor="#39FF14"
-        android:pathData="
-            M50,26 h8 v4 h-8 z
-            M46,30 h16 v4 h-16 z
-            M50,34 h8 v4 h-8 z
-            M46,38 h4 v4 h-4 z
-            M54,38 h8 v4 h-8 z
-            M42,42 h8 v4 h-8 z
-            M54,42 h4 v4 h-4 z
-            M62,42 h4 v4 h-4 z
-            M38,46 h8 v4 h-8 z
-            M50,46 h12 v4 h-12 z
-            M50,50 h8 v4 h-8 z
-            M46,54 h4 v4 h-4 z
-            M54,54 h4 v4 h-4 z
-            M42,58 h4 v4 h-4 z
-            M58,58 h4 v4 h-4 z
-            M38,62 h4 v4 h-4 z
-            M58,62 h8 v4 h-8 z
-            M34,66 h4 v4 h-4 z
-            M62,66 h4 v4 h-4 z
-            M34,70 h4 v4 h-4 z
-            M62,70 h4 v4 h-4 z
-        " />
+        android:pathData="M52,30 h8 v8 h-8 z" />
+
+    <!-- Back arm (swinging up behind) -->
+    <path
+        android:fillColor="#39FF14"
+        android:pathData="M42,38 h4 v4 h-4 z M38,34 h4 v4 h-4 z" />
+
+    <!-- Torso (leaning forward) -->
+    <path
+        android:fillColor="#39FF14"
+        android:pathData="M48,38 h8 v4 h-8 z M46,42 h8 v4 h-8 z M46,46 h8 v4 h-8 z M48,50 h8 v4 h-8 z" />
+
+    <!-- Front arm (swinging forward) -->
+    <path
+        android:fillColor="#39FF14"
+        android:pathData="M56,46 h4 v4 h-4 z M60,50 h4 v4 h-4 z" />
+
+    <!-- Back leg (extended behind) -->
+    <path
+        android:fillColor="#39FF14"
+        android:pathData="M44,54 h4 v4 h-4 z M40,58 h4 v4 h-4 z M36,62 h4 v4 h-4 z M36,66 h8 v4 h-8 z" />
+
+    <!-- Front leg (striding forward) -->
+    <path
+        android:fillColor="#39FF14"
+        android:pathData="M52,54 h4 v4 h-4 z M56,58 h4 v4 h-4 z M60,62 h4 v4 h-4 z M60,66 h8 v4 h-8 z" />
 </vector>
