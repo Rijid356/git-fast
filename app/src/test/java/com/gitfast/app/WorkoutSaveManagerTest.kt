@@ -272,6 +272,7 @@ class FakeWorkoutDao : WorkoutDao {
     override suspend fun getAllRouteTags(): List<RouteTagEntity> = emptyList()
     override suspend fun updateRouteTagLastUsed(name: String, timestamp: Long) {}
     override suspend fun deleteWorkout(workoutId: String) {}
+    override suspend fun getRecentWorkoutsWithLaps(limit: Int): List<WorkoutEntity> = emptyList()
 }
 
 class FakeCharacterDao : CharacterDao {
