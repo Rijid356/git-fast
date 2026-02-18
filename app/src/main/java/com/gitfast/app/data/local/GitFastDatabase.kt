@@ -23,7 +23,7 @@ import com.gitfast.app.data.local.entity.XpTransactionEntity
         XpTransactionEntity::class,
         UnlockedAchievementEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

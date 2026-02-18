@@ -1,11 +1,14 @@
 package com.gitfast.app.data.local.entity
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
-@Entity(tableName = "unlocked_achievements")
+@Entity(
+    tableName = "unlocked_achievements",
+    primaryKeys = ["achievementId", "profileId"],
+)
 data class UnlockedAchievementEntity(
-    @PrimaryKey val achievementId: String,
+    val achievementId: String,
     val unlockedAt: Long,
     val xpAwarded: Int,
+    val profileId: Int = 1,
 )

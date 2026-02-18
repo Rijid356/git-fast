@@ -28,10 +28,12 @@
 | 2026-02-17 | Add 32 ViewModel unit tests (MockK), fix XpCalculatorTest distance precision, CI fixes | 10 | 5 | +727/-11 |
 | 2026-02-17 | Final XpCalculatorTest fix: use 1610.0m for reliable mile conversion, merge PR #25 | 1 | 1 | +9/-9 |
 | 2026-02-18 | Full retro pixel art UI overhaul: Press Start 2P font, square corners, pixel app icon | 17 | 3 | +135/-102 |
+| 2026-02-18 | Ghost runner: lap-based ghost comparison during workouts with auto/manual ghost selection, 10 unit tests | 11 | 1 | +430/-15 |
+| 2026-02-18 | Streaks and multipliers: daily workout streak tracking with XP multiplier bonuses (1.0x-1.5x), streak UI on home/character/summary screens, 16 unit tests | 16 | 4 | +479/-20 |
 
 ## Totals
-- **Total Sessions:** 17
-- **Total Commits:** 26
-- **Total Files Changed:** 278
-- **Total Lines Added:** 14254
-- **Total Lines Removed:** 690
+- **Total Sessions:** 19
+- **Total Commits:** 31
+- **Total Files Changed:** 305
+- **Total Lines Added:** 15163
+- **Total Lines Removed:** 725

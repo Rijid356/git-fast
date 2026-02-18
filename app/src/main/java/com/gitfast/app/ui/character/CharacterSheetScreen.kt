@@ -21,6 +21,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,40 +50,86 @@ import com.gitfast.app.util.XpCalculator
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+private val tabs = listOf("ME", "JUNIPER")
+
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterSheetScreen(
     onBackClick: () -> Unit,
     viewModel: CharacterSheetViewModel = hiltViewModel(),
 ) {
+    val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
+
+    // User data
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val transactions by viewModel.recentXpTransactions.collectAsStateWithLifecycle()
     val unlockedIds by viewModel.unlockedAchievementIds.collectAsStateWithLifecycle()
 
+    // Juniper data
+    val juniperProfile by viewModel.juniperProfile.collectAsStateWithLifecycle()
+    val juniperTransactions by viewModel.juniperXpTransactions.collectAsStateWithLifecycle()
+    val juniperUnlockedIds by viewModel.juniperUnlockedAchievementIds.collectAsStateWithLifecycle()
+
+    // Active data based on selected tab
+    val activeProfile = if (selectedTab == 0) profile else juniperProfile
+    val activeTransactions = if (selectedTab == 0) transactions else juniperTransactions
+    val activeUnlockedIds = if (selectedTab == 0) unlockedIds else juniperUnlockedIds
+    val activeProfileId = if (selectedTab == 0) 1 else 2
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Character",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = if (selectedTab == 0) "Character" else "Juniper",
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                )
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    indicator = { tabPositions ->
+                        if (selectedTab < tabPositions.size) {
+                            TabRowDefaults.SecondaryIndicator(
+                                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                                color = NeonGreen,
+                            )
+                        }
+                    },
+                ) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { viewModel.selectTab(index) },
+                            text = {
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = if (selectedTab == index) NeonGreen
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            },
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            )
+                }
+            }
         },
     ) { innerPadding ->
         LazyColumn(
@@ -90,23 +140,26 @@ fun CharacterSheetScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
-                LevelSection(profile = profile)
+                LevelSection(profile = activeProfile)
             }
 
             item {
-                XpProgressSection(profile = profile)
+                XpProgressSection(profile = activeProfile)
             }
 
             item {
-                StatsSection(profile = profile)
+                StatsSection(profile = activeProfile)
             }
 
             item {
-                StreakSection(profile = profile)
+                StreakSection(profile = activeProfile)
             }
 
             item {
-                AchievementsSection(unlockedIds = unlockedIds)
+                AchievementsSection(
+                    unlockedIds = activeUnlockedIds,
+                    profileId = activeProfileId,
+                )
             }
 
             item {
@@ -118,16 +171,17 @@ fun CharacterSheetScreen(
                 )
             }
 
-            if (transactions.isEmpty()) {
+            if (activeTransactions.isEmpty()) {
                 item {
                     Text(
-                        text = "No XP earned yet. Complete a workout!",
+                        text = if (selectedTab == 0) "No XP earned yet. Complete a workout!"
+                        else "No XP earned yet. Take Juniper for a walk!",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
-                items(transactions) { tx ->
+                items(activeTransactions) { tx ->
                     XpTransactionRow(transaction = tx)
                 }
             }
@@ -338,9 +392,9 @@ private fun StreakSection(profile: CharacterProfile) {
 }
 
 @Composable
-private fun AchievementsSection(unlockedIds: Set<String>) {
-    val byCategory = AchievementDef.byCategory()
-    val totalCount = AchievementDef.entries.size
+private fun AchievementsSection(unlockedIds: Set<String>, profileId: Int) {
+    val byCategory = AchievementDef.byCategory(profileId)
+    val totalCount = AchievementDef.entries.count { it.profileId == profileId }
     val unlockedCount = unlockedIds.size
 
     Column(modifier = Modifier.fillMaxWidth()) {

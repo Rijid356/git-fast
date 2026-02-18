@@ -13,11 +13,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CharacterDao {
 
-    @Query("SELECT * FROM character_profile WHERE id = 1")
-    fun getProfile(): Flow<CharacterProfileEntity?>
+    @Query("SELECT * FROM character_profile WHERE id = :profileId")
+    fun getProfile(profileId: Int): Flow<CharacterProfileEntity?>
 
-    @Query("SELECT * FROM character_profile WHERE id = 1")
-    suspend fun getProfileOnce(): CharacterProfileEntity?
+    @Query("SELECT * FROM character_profile WHERE id = :profileId")
+    suspend fun getProfileOnce(profileId: Int): CharacterProfileEntity?
 
     @Update
     suspend fun updateProfile(profile: CharacterProfileEntity)
@@ -28,25 +28,25 @@ interface CharacterDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertXpTransaction(tx: XpTransactionEntity)
 
-    @Query("SELECT * FROM xp_transactions ORDER BY timestamp DESC LIMIT :limit")
-    fun getRecentXpTransactions(limit: Int): Flow<List<XpTransactionEntity>>
+    @Query("SELECT * FROM xp_transactions WHERE profileId = :profileId ORDER BY timestamp DESC LIMIT :limit")
+    fun getRecentXpTransactions(profileId: Int, limit: Int): Flow<List<XpTransactionEntity>>
 
-    @Query("SELECT * FROM xp_transactions WHERE workoutId = :workoutId LIMIT 1")
-    suspend fun getXpTransactionForWorkout(workoutId: String): XpTransactionEntity?
+    @Query("SELECT * FROM xp_transactions WHERE workoutId = :workoutId AND profileId = :profileId LIMIT 1")
+    suspend fun getXpTransactionForWorkout(workoutId: String, profileId: Int): XpTransactionEntity?
 
-    @Query("SELECT COUNT(*) FROM xp_transactions")
-    fun getTotalTransactionCount(): Flow<Int>
+    @Query("SELECT COUNT(*) FROM xp_transactions WHERE profileId = :profileId")
+    fun getTotalTransactionCount(profileId: Int): Flow<Int>
 
-    @Query("SELECT * FROM xp_transactions")
-    fun getAllXpTransactions(): Flow<List<XpTransactionEntity>>
+    @Query("SELECT * FROM xp_transactions WHERE profileId = :profileId")
+    fun getAllXpTransactions(profileId: Int): Flow<List<XpTransactionEntity>>
 
     // --- Achievements ---
 
-    @Query("SELECT * FROM unlocked_achievements ORDER BY unlockedAt DESC")
-    fun getUnlockedAchievements(): Flow<List<UnlockedAchievementEntity>>
+    @Query("SELECT * FROM unlocked_achievements WHERE profileId = :profileId ORDER BY unlockedAt DESC")
+    fun getUnlockedAchievements(profileId: Int): Flow<List<UnlockedAchievementEntity>>
 
-    @Query("SELECT achievementId FROM unlocked_achievements")
-    suspend fun getUnlockedAchievementIds(): List<String>
+    @Query("SELECT achievementId FROM unlocked_achievements WHERE profileId = :profileId")
+    suspend fun getUnlockedAchievementIds(profileId: Int): List<String>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUnlockedAchievement(entity: UnlockedAchievementEntity)
