@@ -20,8 +20,6 @@ import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.location.GpsTracker
-import com.gitfast.app.util.DistanceCalculator
-import com.gitfast.app.util.formatElapsedTime
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -43,6 +41,7 @@ class WorkoutService : LifecycleService() {
 
     private var gpsCollectionJob: Job? = null
     private var timerJob: Job? = null
+    private var notificationTimerJob: Job? = null
 
     companion object {
         const val NOTIFICATION_ID = 1
@@ -58,6 +57,10 @@ class WorkoutService : LifecycleService() {
         const val ACTION_START_LAPS = "com.gitfast.app.ACTION_START_LAPS"
         const val ACTION_MARK_LAP = "com.gitfast.app.ACTION_MARK_LAP"
         const val ACTION_END_LAPS = "com.gitfast.app.ACTION_END_LAPS"
+
+        private const val RC_OPEN_APP = 0
+        private const val RC_PAUSE = 1
+        private const val RC_RESUME = 2
 
         @Volatile
         var isRunning = false
@@ -107,7 +110,7 @@ class WorkoutService : LifecycleService() {
 
         workoutStateStore.setActiveWorkout(workoutId, Instant.now().toEpochMilli())
 
-        startForeground(NOTIFICATION_ID, buildNotification("Workout started"))
+        startForeground(NOTIFICATION_ID, buildNotification(workoutStateManager.workoutState.value))
 
         autoPauseDetector.reset()
 
@@ -126,8 +129,14 @@ class WorkoutService : LifecycleService() {
         timerJob = lifecycleScope.launch {
             while (isActive) {
                 workoutStateManager.updateElapsedTime()
-                updateNotification()
                 delay(1_000L)
+            }
+        }
+
+        notificationTimerJob = lifecycleScope.launch {
+            while (isActive) {
+                updateNotification()
+                delay(3_000L)
             }
         }
     }
@@ -136,7 +145,7 @@ class WorkoutService : LifecycleService() {
         autoPauseDetector.reset()
         workoutStateManager.pauseWorkout()
         gpsCollectionJob?.cancel()
-        updateNotification("Workout paused")
+        updateNotification()
     }
 
     private fun resumeWorkout() {
@@ -150,12 +159,13 @@ class WorkoutService : LifecycleService() {
             }
         }
 
-        updateNotification("Tracking workout")
+        updateNotification()
     }
 
     private fun stopWorkout() {
         gpsCollectionJob?.cancel()
         timerJob?.cancel()
+        notificationTimerJob?.cancel()
 
         val snapshot = workoutStateManager.stopWorkout()
 
@@ -177,6 +187,7 @@ class WorkoutService : LifecycleService() {
     private fun discardWorkout() {
         gpsCollectionJob?.cancel()
         timerJob?.cancel()
+        notificationTimerJob?.cancel()
 
         workoutStateManager.stopWorkout()
         workoutStateStore.clearActiveWorkout()
@@ -194,11 +205,11 @@ class WorkoutService : LifecycleService() {
 
         if (result.shouldAutoPause && !state.isPaused) {
             workoutStateManager.autoPauseWorkout()
-            updateNotification("[AUTO-PAUSED]")
+            updateNotification()
         }
         if (result.shouldAutoResume && state.isAutoPaused) {
             workoutStateManager.autoResumeWorkout()
-            updateNotification("Tracking workout")
+            updateNotification()
         }
     }
 
@@ -214,46 +225,61 @@ class WorkoutService : LifecycleService() {
         manager.createNotificationChannel(channel)
     }
 
-    private fun buildNotification(content: String): Notification {
-        val pendingIntent = PendingIntent.getActivity(
+    private fun buildActionPendingIntent(action: String, requestCode: Int): PendingIntent {
+        val intent = Intent(this, WorkoutService::class.java).apply {
+            this.action = action
+        }
+        return PendingIntent.getService(
             this,
-            0,
-            Intent(this, MainActivity::class.java),
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun buildNotification(state: WorkoutTrackingState): Notification {
+        val content = buildNotificationContent(state)
+
+        val openAppIntent = PendingIntent.getActivity(
+            this,
+            RC_OPEN_APP,
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("git-fast")
-            .setContentText(content)
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(content.title)
+            .setContentText(content.collapsedText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(content.expandedText))
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(openAppIntent)
             .setOngoing(true)
             .setSilent(true)
-            .build()
-    }
+            .setOnlyAlertOnce(true)
 
-    private fun updateNotification(text: String? = null) {
-        val state = workoutStateManager.workoutState.value
-        val elapsed = formatElapsedTime(state.elapsedSeconds)
-        val isDogWalk = state.activityType == ActivityType.DOG_WALK
-
-        val content = text ?: run {
-            if (state.isAutoPaused) {
-                "[AUTO-PAUSED] \u2022 $elapsed"
-            } else {
-                val distanceMiles = DistanceCalculator.metersToMiles(state.distanceMeters)
-
-                if (distanceMiles >= 0.01) {
-                    "${"%.2f".format(distanceMiles)} mi \u2022 $elapsed"
-                } else {
-                    val label = if (isDogWalk) "Dog walk" else "Tracking workout"
-                    "$label \u2022 $elapsed"
-                }
-            }
+        if (state.isPaused) {
+            builder.addAction(
+                R.drawable.ic_play,
+                "Resume",
+                buildActionPendingIntent(ACTION_RESUME, RC_RESUME)
+            )
+        } else {
+            builder.addAction(
+                R.drawable.ic_pause,
+                "Pause",
+                buildActionPendingIntent(ACTION_PAUSE, RC_PAUSE)
+            )
         }
 
+        return builder.build()
+    }
+
+    private fun updateNotification() {
+        val state = workoutStateManager.workoutState.value
         val manager = getSystemService(NotificationManager::class.java)
-        manager.notify(NOTIFICATION_ID, buildNotification(content))
+        manager.notify(NOTIFICATION_ID, buildNotification(state))
     }
 
     private val binder = WorkoutBinder()
