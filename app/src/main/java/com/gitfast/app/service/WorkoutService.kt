@@ -100,10 +100,10 @@ class WorkoutService : LifecycleService() {
 
         val workoutId = workoutStateManager.startWorkout(activityType)
 
-        // Configure auto-lap from settings
+        // Configure auto-lap GPS anchor from settings
         workoutStateManager.setAutoLapConfig(
             enabled = settingsStore.autoLapEnabled,
-            distanceMeters = settingsStore.autoLapDistanceMeters
+            anchorRadiusMeters = settingsStore.autoLapAnchorRadiusMeters
         )
 
         workoutStateStore.setActiveWorkout(workoutId, Instant.now().toEpochMilli())

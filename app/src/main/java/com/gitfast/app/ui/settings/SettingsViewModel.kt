@@ -14,7 +14,7 @@ data class SettingsUiState(
     val distanceUnit: DistanceUnit = DistanceUnit.MILES,
     val keepScreenOn: Boolean = true,
     val autoLapEnabled: Boolean = false,
-    val autoLapDistanceMeters: Int = 400,
+    val autoLapAnchorRadiusMeters: Int = 15,
 )
 
 @HiltViewModel
@@ -28,7 +28,7 @@ class SettingsViewModel @Inject constructor(
             distanceUnit = settingsStore.distanceUnit,
             keepScreenOn = settingsStore.keepScreenOn,
             autoLapEnabled = settingsStore.autoLapEnabled,
-            autoLapDistanceMeters = settingsStore.autoLapDistanceMeters,
+            autoLapAnchorRadiusMeters = settingsStore.autoLapAnchorRadiusMeters,
         )
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -53,8 +53,8 @@ class SettingsViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(autoLapEnabled = enabled)
     }
 
-    fun setAutoLapDistanceMeters(distance: Int) {
-        settingsStore.autoLapDistanceMeters = distance
-        _uiState.value = _uiState.value.copy(autoLapDistanceMeters = distance)
+    fun setAutoLapAnchorRadius(radius: Int) {
+        settingsStore.autoLapAnchorRadiusMeters = radius
+        _uiState.value = _uiState.value.copy(autoLapAnchorRadiusMeters = radius)
     }
 }

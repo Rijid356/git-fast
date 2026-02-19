@@ -102,6 +102,7 @@ fun WorkoutContent(
                         ghostLapTimeFormatted = uiState.ghostLapTimeFormatted,
                         ghostDeltaSeconds = uiState.ghostDeltaSeconds,
                         ghostDeltaFormatted = uiState.ghostDeltaFormatted,
+                        autoLapAnchorSet = uiState.autoLapAnchorSet,
                     )
                 }
                 else -> {

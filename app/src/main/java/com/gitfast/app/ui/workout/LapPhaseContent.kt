@@ -22,12 +22,22 @@ fun LapPhaseContent(
     ghostLapTimeFormatted: String? = null,
     ghostDeltaSeconds: Int? = null,
     ghostDeltaFormatted: String? = null,
+    autoLapAnchorSet: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        if (autoLapAnchorSet) {
+            Text(
+                text = "> START/FINISH LINE SET",
+                style = MaterialTheme.typography.labelSmall,
+                color = NeonGreen,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
         Text(
             text = "Current Lap",
             style = MaterialTheme.typography.labelSmall,
