@@ -198,12 +198,22 @@ class WorkoutStateManager @Inject constructor() {
         currentLapStartDistance = currentDistance
         currentLapNumber = 1
 
+        // Capture GPS anchor for auto-lap detection
+        if (autoLapEnabled) {
+            val lastGps = _gpsPoints.value.lastOrNull()
+            anchorLatitude = lastGps?.latitude
+            anchorLongitude = lastGps?.longitude
+            hasLeftAnchorRadius = false
+            lastAutoLapTime = lastGps?.timestamp ?: now
+        }
+
         _workoutState.value = _workoutState.value.copy(
             phase = PhaseType.LAPS,
             lapCount = 0,
             currentLapNumber = 1,
             currentLapElapsedSeconds = 0,
-            lastLapDeltaSeconds = null
+            lastLapDeltaSeconds = null,
+            autoLapAnchorSet = autoLapEnabled && anchorLatitude != null
         )
     }
 
@@ -400,6 +410,10 @@ class WorkoutStateManager @Inject constructor() {
         completedPhases.clear()
         externalGhostLapDuration = null
         useExternalGhost = false
+        anchorLatitude = null
+        anchorLongitude = null
+        hasLeftAnchorRadius = false
+        lastAutoLapTime = null
         _gpsPoints.value = emptyList()
         _workoutState.value = WorkoutTrackingState()
 
@@ -426,13 +440,21 @@ class WorkoutStateManager @Inject constructor() {
         }
     }
 
-    // Auto-lap settings (injected from SettingsStore via WorkoutService)
+    // Auto-lap GPS anchor settings (injected from SettingsStore via WorkoutService)
     private var autoLapEnabled: Boolean = false
-    private var autoLapDistanceMeters: Int = 400
+    private var autoLapAnchorRadiusMeters: Int = 15
+    private var anchorLatitude: Double? = null
+    private var anchorLongitude: Double? = null
+    private var hasLeftAnchorRadius: Boolean = false
+    private var lastAutoLapTime: Instant? = null
 
-    fun setAutoLapConfig(enabled: Boolean, distanceMeters: Int) {
+    companion object {
+        private const val AUTO_LAP_COOLDOWN_MS = 30_000L
+    }
+
+    fun setAutoLapConfig(enabled: Boolean, anchorRadiusMeters: Int) {
         autoLapEnabled = enabled
-        autoLapDistanceMeters = distanceMeters
+        autoLapAnchorRadiusMeters = anchorRadiusMeters
     }
 
     fun addGpsPoint(point: GpsPoint) {
@@ -465,11 +487,25 @@ class WorkoutStateManager @Inject constructor() {
             )
         )
 
-        // Auto-lap: trigger markLap() when distance threshold is crossed during LAPS phase
-        if (autoLapEnabled && currentPhase == PhaseType.LAPS && autoLapDistanceMeters > 0) {
-            val lapDistance = distanceMeters - currentLapStartDistance
-            if (lapDistance >= autoLapDistanceMeters) {
-                markLap()
+        // Auto-lap: trigger markLap() when returning to GPS anchor during LAPS phase
+        if (autoLapEnabled && currentPhase == PhaseType.LAPS &&
+            anchorLatitude != null && anchorLongitude != null
+        ) {
+            val distToAnchor = DistanceCalculator.haversineMeters(
+                point.latitude, point.longitude,
+                anchorLatitude!!, anchorLongitude!!
+            )
+            if (distToAnchor > autoLapAnchorRadiusMeters) {
+                hasLeftAnchorRadius = true
+            } else if (hasLeftAnchorRadius) {
+                val elapsed = lastAutoLapTime?.let {
+                    point.timestamp.toEpochMilli() - it.toEpochMilli()
+                } ?: Long.MAX_VALUE
+                if (elapsed >= AUTO_LAP_COOLDOWN_MS) {
+                    markLap()
+                    hasLeftAnchorRadius = false
+                    lastAutoLapTime = point.timestamp
+                }
             }
         }
     }
@@ -518,6 +554,7 @@ data class WorkoutTrackingState(
     val lastLapDurationFormatted: String? = null,
     val ghostLapDurationSeconds: Int? = null,
     val ghostDeltaSeconds: Int? = null,
+    val autoLapAnchorSet: Boolean = false,
 )
 
 data class WorkoutSnapshot(

@@ -59,6 +59,8 @@ data class WorkoutUiState(
     val ghostLapTimeFormatted: String? = null,
     val ghostDeltaSeconds: Int? = null,
     val ghostDeltaFormatted: String? = null,
+    // Auto-lap anchor
+    val autoLapAnchorSet: Boolean = false,
 )
 
 data class WorkoutSummaryStats(
@@ -354,6 +356,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                         else if (delta > 0) "\u25BC +${delta}s"
                         else "= 0s"
                     },
+                    autoLapAnchorSet = state.autoLapAnchorSet,
                 )
             }
         }
