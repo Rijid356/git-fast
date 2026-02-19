@@ -204,7 +204,7 @@ class WorkoutStateManager @Inject constructor() {
             anchorLatitude = lastGps?.latitude
             anchorLongitude = lastGps?.longitude
             hasLeftAnchorRadius = false
-            lastAutoLapTime = now
+            lastAutoLapTime = lastGps?.timestamp ?: now
         }
 
         _workoutState.value = _workoutState.value.copy(
@@ -498,14 +498,13 @@ class WorkoutStateManager @Inject constructor() {
             if (distToAnchor > autoLapAnchorRadiusMeters) {
                 hasLeftAnchorRadius = true
             } else if (hasLeftAnchorRadius) {
-                val now = Instant.now()
                 val elapsed = lastAutoLapTime?.let {
-                    now.toEpochMilli() - it.toEpochMilli()
+                    point.timestamp.toEpochMilli() - it.toEpochMilli()
                 } ?: Long.MAX_VALUE
                 if (elapsed >= AUTO_LAP_COOLDOWN_MS) {
                     markLap()
                     hasLeftAnchorRadius = false
-                    lastAutoLapTime = now
+                    lastAutoLapTime = point.timestamp
                 }
             }
         }
