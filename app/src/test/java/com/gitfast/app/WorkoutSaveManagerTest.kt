@@ -273,22 +273,26 @@ class FakeWorkoutDao : WorkoutDao {
     override suspend fun updateRouteTagLastUsed(name: String, timestamp: Long) {}
     override suspend fun deleteWorkout(workoutId: String) {}
     override suspend fun getRecentWorkoutsWithLaps(limit: Int): List<WorkoutEntity> = emptyList()
+    override suspend fun getCompletedDogWalksOnce(): List<WorkoutEntity> = emptyList()
+    override suspend fun getTotalDogWalkDistanceMeters(): Double = 0.0
 }
 
 class FakeCharacterDao : CharacterDao {
-    private var profile: CharacterProfileEntity? = CharacterProfileEntity(id = 1, totalXp = 0, level = 1)
+    private val profiles = mutableMapOf<Int, CharacterProfileEntity>(
+        1 to CharacterProfileEntity(id = 1, totalXp = 0, level = 1)
+    )
     private val transactions = mutableListOf<XpTransactionEntity>()
 
-    override fun getProfile(): Flow<CharacterProfileEntity?> = flowOf(profile)
-    override suspend fun getProfileOnce(): CharacterProfileEntity? = profile
-    override suspend fun updateProfile(profile: CharacterProfileEntity) { this.profile = profile }
-    override suspend fun insertProfile(profile: CharacterProfileEntity) { this.profile = profile }
+    override fun getProfile(profileId: Int): Flow<CharacterProfileEntity?> = flowOf(profiles[profileId])
+    override suspend fun getProfileOnce(profileId: Int): CharacterProfileEntity? = profiles[profileId]
+    override suspend fun updateProfile(profile: CharacterProfileEntity) { profiles[profile.id] = profile }
+    override suspend fun insertProfile(profile: CharacterProfileEntity) { profiles[profile.id] = profile }
     override suspend fun insertXpTransaction(tx: XpTransactionEntity) { transactions.add(tx) }
-    override fun getRecentXpTransactions(limit: Int): Flow<List<XpTransactionEntity>> = flowOf(transactions.take(limit))
-    override suspend fun getXpTransactionForWorkout(workoutId: String): XpTransactionEntity? = transactions.find { it.workoutId == workoutId }
-    override fun getTotalTransactionCount(): Flow<Int> = flowOf(transactions.size)
-    override fun getAllXpTransactions(): Flow<List<XpTransactionEntity>> = flowOf(transactions.toList())
-    override fun getUnlockedAchievements(): Flow<List<UnlockedAchievementEntity>> = flowOf(emptyList())
-    override suspend fun getUnlockedAchievementIds(): List<String> = emptyList()
+    override fun getRecentXpTransactions(profileId: Int, limit: Int): Flow<List<XpTransactionEntity>> = flowOf(transactions.filter { it.profileId == profileId }.take(limit))
+    override suspend fun getXpTransactionForWorkout(workoutId: String, profileId: Int): XpTransactionEntity? = transactions.find { it.workoutId == workoutId && it.profileId == profileId }
+    override fun getTotalTransactionCount(profileId: Int): Flow<Int> = flowOf(transactions.count { it.profileId == profileId })
+    override fun getAllXpTransactions(profileId: Int): Flow<List<XpTransactionEntity>> = flowOf(transactions.filter { it.profileId == profileId })
+    override fun getUnlockedAchievements(profileId: Int): Flow<List<UnlockedAchievementEntity>> = flowOf(emptyList())
+    override suspend fun getUnlockedAchievementIds(profileId: Int): List<String> = emptyList()
     override suspend fun insertUnlockedAchievement(entity: UnlockedAchievementEntity) {}
 }

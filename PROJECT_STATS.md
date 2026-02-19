@@ -30,10 +30,11 @@
 | 2026-02-18 | Full retro pixel art UI overhaul: Press Start 2P font, square corners, pixel app icon | 17 | 3 | +135/-102 |
 | 2026-02-18 | Ghost runner: lap-based ghost comparison during workouts with auto/manual ghost selection, 10 unit tests | 11 | 1 | +430/-15 |
 | 2026-02-18 | Streaks and multipliers: daily workout streak tracking with XP multiplier bonuses (1.0x-1.5x), streak UI on home/character/summary screens, 16 unit tests | 16 | 4 | +479/-20 |
+| 2026-02-18 | Field test improvements: GPS lap pins, micro-lap discard, auto-lap detection, portrait lock, bigger text, sunlight readability, button fixes | 20 | 1 | +217/-47 |
 
 ## Totals
-- **Total Sessions:** 19
-- **Total Commits:** 31
-- **Total Files Changed:** 305
-- **Total Lines Added:** 15163
-- **Total Lines Removed:** 725
+- **Total Sessions:** 20
+- **Total Commits:** 32
+- **Total Files Changed:** 325
+- **Total Lines Added:** 15380
+- **Total Lines Removed:** 772
