@@ -41,10 +41,10 @@ class SettingsStore @Inject constructor(
             prefs.edit().putBoolean(KEY_AUTO_LAP_ENABLED, value).apply()
         }
 
-    var autoLapDistanceMeters: Int
-        get() = prefs.getInt(KEY_AUTO_LAP_DISTANCE, 400)
+    var autoLapAnchorRadiusMeters: Int
+        get() = prefs.getInt(KEY_AUTO_LAP_ANCHOR_RADIUS, 15)
         set(value) {
-            prefs.edit().putInt(KEY_AUTO_LAP_DISTANCE, value).apply()
+            prefs.edit().putInt(KEY_AUTO_LAP_ANCHOR_RADIUS, value).apply()
         }
 
     companion object {
@@ -53,6 +53,6 @@ class SettingsStore @Inject constructor(
         private const val KEY_DISTANCE_UNIT = "distance_unit"
         private const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
         private const val KEY_AUTO_LAP_ENABLED = "auto_lap_enabled"
-        private const val KEY_AUTO_LAP_DISTANCE = "auto_lap_distance"
+        private const val KEY_AUTO_LAP_ANCHOR_RADIUS = "auto_lap_anchor_radius"
     }
 }
