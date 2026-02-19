@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**git-fast** is a native Android running/workout tracker app built with Kotlin. It tracks GPS during runs and dog walks, calculates distance/pace in real-time, and stores workout history locally with Room. Future phases add T-Watch S3 BLE integration and RPG gamification.
+**git-fast** is a native Android running/workout tracker app built with Kotlin. It tracks GPS during runs and dog walks, calculates distance/pace in real-time, and stores workout history locally with Room. Includes RPG gamification (XP, leveling, achievements, character stats) and ghost runner features. Future phases add T-Watch S3 BLE integration.
 
 Package: `com.gitfast.app` | Min SDK 26 | Target/Compile SDK 35 | JVM 17
+
+Toolchain: AGP 8.13.2 | Kotlin 2.1.0 | KSP 2.1.0-1.0.29 | Hilt 2.53.1 | Compose BOM 2024.12.01
 
 ## Build & Test Commands
 
@@ -18,6 +20,8 @@ Package: `com.gitfast.app` | Min SDK 26 | Target/Compile SDK 35 | JVM 17
 ./gradlew test --tests "*.DistanceCalculatorTest.test*"  # Run a single test method
 ```
 
+Testing stack: JUnit 4.13.2, MockK 1.13.13, Robolectric 4.14.1, coroutines-test 1.7.3. `unitTests.isReturnDefaultValues = true` and `isIncludeAndroidResources = true` are set in build config.
+
 ## Architecture
 
 ### Data Flow
@@ -25,49 +29,86 @@ Package: `com.gitfast.app` | Min SDK 26 | Target/Compile SDK 35 | JVM 17
 ```
 GpsTracker (FusedLocation) → WorkoutStateManager (in-memory StateFlow) → WorkoutService (foreground LifecycleService)
                                                                               ↓
-                                                                        WorkoutSaveManager → WorkoutDao → Room DB (v2)
+                                                                        WorkoutSaveManager → WorkoutDao → Room DB (v7)
 ```
 
 - `WorkoutService` is intent-controlled: `ACTION_START`, `ACTION_PAUSE`, `ACTION_RESUME`, `ACTION_STOP`, `ACTION_DISCARD`, `ACTION_START_LAPS`, `ACTION_MARK_LAP`, `ACTION_END_LAPS`
 - UI binds via `WorkoutBinder` to observe `WorkoutStateManager` state
-- Crash recovery: `WorkoutStateStore` persists active workout ID to SharedPreferences; `HomeViewModel` checks on init
+
+### Critical Binding Pattern
+
+`WorkoutStateManager` is a **plain `@Singleton` class** (not a ViewModel) — injected into both `WorkoutService` and `ActiveWorkoutViewModel`. The ViewModel connects to the service via `ServiceConnection`/`WorkoutBinder` to get the shared instance. `ActiveWorkoutViewModel` extends `AndroidViewModel` (needs Application context for service binding).
+
+`WorkoutService.isRunning` is a `@Volatile` companion object boolean — the cross-thread service-running flag.
+
+### Crash Recovery
+
+`WorkoutStateStore` (SharedPrefs: `"workout_state"`) persists active workout ID. `HomeViewModel.init` calls `checkForIncompleteWorkout()` which checks `workoutStateStore.hasActiveWorkout() && !WorkoutService.isRunning`. A recovery dialog is shown if true. Service uses `START_REDELIVER_INTENT` for intent re-delivery on kill.
 
 ### Two-Layer Data Model
 
 - **Room entities** (`data/local/entity/`) — flat DB schema, `Long` timestamps
 - **Domain models** (`data/model/`) — `java.time.Instant`, nested relationships, computed properties
-- **Mappers** (`data/local/mappers/WorkoutMappers.kt`) — bidirectional entity↔domain conversion
+- **Mappers** (`data/local/mappers/WorkoutMappers.kt`) — extension functions for bidirectional entity↔domain conversion
 
-Enums (`WorkoutStatus`, `PhaseType`, `ActivityType`, etc.) are shared by both layers, stored in `data/model/`.
+Enums (`WorkoutStatus`, `PhaseType`, `ActivityType`, etc.) are shared by both layers, stored in `data/model/`. Room stores enums as their `.name` string (TEXT columns) via `Converters.kt`.
 
 ### DI Structure (Hilt)
 
-- `DatabaseModule` — Room database, WorkoutDao, WorkoutRepository, WorkoutSaveManager, WorkoutStateStore (all `@Singleton`)
+- `DatabaseModule` — Room database, WorkoutDao, WorkoutRepository, WorkoutSaveManager, WorkoutStateStore, CharacterDao, CharacterRepository (all `@Singleton`)
 - `ServiceModule` — GpsTracker, WorkoutStateManager, PermissionManager, AutoPauseDetector, SettingsStore (all `@Singleton`)
 - `AppModule` — placeholder for future app-wide bindings
 
-### Database Schema (Room v2)
+### Database Schema (Room v7)
 
-Five tables with cascade deletes: `workouts` → `workout_phases` → `laps`, `workouts` → `gps_points`, plus `route_tags`. Migration support in `data/local/migrations/`. `exportSchema = true`.
+Tables: `workouts` → `workout_phases` → `laps`, `workouts` → `gps_points`, `route_tags`, `character_profiles`, `xp_transactions`, `unlocked_achievements`. Cascade deletes on workout relationships. `exportSchema = true` (schemas in `app/schemas/`).
+
+Migration history (`data/local/migrations/`): v1→v2 dog walk fields, v2→v3 route tags, v3→v4 character/XP tables, v4→v5 achievements table, v5→v6 profileId on XP/achievements + Juniper profile seed, v6→v7 splitLatitude/splitLongitude on laps.
+
+`WorkoutDao.saveWorkoutTransaction()` is a `@Transaction` DAO method with upsert semantics (update if exists, insert if not).
 
 ### Navigation
 
-Compose Navigation with sealed `Screen` class. Routes: Home, Workout (with activityType param), WorkoutSummary, DogWalkSummary, History, Detail/{workoutId}, Settings.
+Compose Navigation with sealed `Screen` class in `navigation/GitFastNavGraph.kt`. Routes: Home, Workout (activityType param), WorkoutSummary, DogWalkSummary, History, Detail/{workoutId}, Settings, CharacterSheet.
 
-### Key Features by Domain
+**Gotcha**: `WorkoutSummary` passes data as URL-encoded query params (not Parcelables). Achievements are pipe-delimited (`|`) in the URL. Always use `URLEncoder`/`URLDecoder` when building/parsing these routes.
 
-- **Workout phases**: WARMUP → LAPS → COOLDOWN with per-lap tracking and trend analysis (`LapAnalyzer`, `PhaseAnalyzer`)
-- **Dog walks**: Post-workout metadata (weather, energy, dog name, route tag) with route comparison (`RouteComparisonAnalyzer`)
-- **Auto-pause**: `AutoPauseDetector` triggers on GPS speed drop below threshold (RUN only, toggleable in settings)
-- **GPS filtering**: High-accuracy FLP, 2s intervals, 3m min displacement, 20m max accuracy
+### RPG System
+
+Dual character profiles: id=1 (user/Ryan) and id=2 (Juniper, the dog). Both earn XP on dog walks; each has independent levels, stats, and achievements.
+
+- `CharacterRepository.awardXp()` is **idempotent** — checks for existing `XpTransactionEntity` with `(workoutId, profileId)` before inserting. Achievement XP uses `"achievement:<id>"` as workoutId to prevent double-awarding.
+- `StatsCalculator` uses bracket interpolation (1-99 RPG-style stats) with an `inverted` flag for pace (lower = better).
+- `AchievementDef` enum has a `profileId` field — most default to 1, Juniper-specific ones are profileId=2.
+- Streak multiplier: Day 1 = 1.0x, +0.1x/day, capped at 1.5x (Day 5+). Streak counts today OR yesterday (1-day grace).
+
+### Ghost Runner
+
+In-memory only (fields on `WorkoutStateManager`). Auto-ghost = best lap so far; external ghost = selected from previous workout. Ghost delta positive = behind, negative = ahead. All state wiped after workout stop.
+
+### Key Behavioral Details
+
+- **Auto-lap discard**: Laps under 5 seconds are discarded and distance merged into previous lap (in `discardMicroLap()`).
+- **SettingsStore** uses synchronous SharedPreferences (no Flow). Settings take effect on next workout start, not mid-workout.
+- **GPS callbacks** run on `Looper.getMainLooper()`. The `callbackFlow` in `GpsTracker.startTracking()` uses `trySend()`.
+- **LapAnalyzer.calculateTrend()** requires ≥3 laps for trend analysis (returns `TOO_FEW_LAPS` otherwise).
+- **Database name**: `"gitfast-database"`.
 
 ### Theme
 
-Material3 dark theme: neon green primary (#39FF14), cyan secondary (#58A6FF), near-black background (#0D1117). JetBrains Mono for headings.
+Material3 dark theme with pixel art aesthetic: neon green primary (#39FF14), cyan secondary (#58A6FF), near-black background (#0D1117). `PressStart2P` pixel font for all text styles. `HighContrastText = Color.White` for outdoor readability. `AmberAccent (#F0883E)` for warnings/PR markers.
+
+### Maps
+
+Google Maps with dark style JSON (`res/raw/map_style_dark.json`). `MAPS_API_KEY` must be set in `local.properties` (read via manual Properties loading in `app/build.gradle.kts`, NOT `gradle.properties`).
+
+## watch/ — T-Watch S3 Firmware
+
+PlatformIO project (`watch/platformio.ini`): ESP32-S3 with `espressif32@6.10.0`, `esp32-s3-devkitc-1` board, Arduino framework. Dependencies: XPowersLib (AXP2101 PMU), LovyanGFX (ST7789 display). Currently a working splash-screen stub. See root-level memory notes for flash pipeline details.
 
 ## Checkpoint Specs
 
-Detailed specs for each development phase live in `.claude/specs/`. Always read the relevant spec before implementing a checkpoint — they contain exact code, file paths, and test requirements.
+Detailed specs for each development phase live in `.claude/specs/` (00-14 plus architecture docs). Always read the relevant spec before implementing a checkpoint — they contain exact code, file paths, and test requirements.
 
 ## Conventions
 
@@ -77,3 +118,4 @@ Detailed specs for each development phase live in `.claude/specs/`. Always read 
 - Commit messages: `Checkpoint N: description`
 - Branches: `checkpoint-N-kebab-case-description`
 - Coroutines test: `kotlinx-coroutines-test:1.7.3`
+- Single-module Gradle project (`:app` only)
