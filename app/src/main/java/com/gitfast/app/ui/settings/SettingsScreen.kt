@@ -77,7 +77,7 @@ fun SettingsScreen(
 
             SwitchSettingItem(
                 title = "Auto Lap",
-                subtitle = "Automatically mark laps at a set distance",
+                subtitle = "Auto-mark laps when you return to your start/finish line",
                 checked = uiState.autoLapEnabled,
                 onCheckedChange = { viewModel.setAutoLapEnabled(it) },
             )
@@ -85,9 +85,9 @@ fun SettingsScreen(
             if (uiState.autoLapEnabled) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
-                AutoLapDistanceItem(
-                    selectedMeters = uiState.autoLapDistanceMeters,
-                    onSelect = { viewModel.setAutoLapDistanceMeters(it) },
+                AutoLapRadiusItem(
+                    selectedMeters = uiState.autoLapAnchorRadiusMeters,
+                    onSelect = { viewModel.setAutoLapAnchorRadius(it) },
                 )
             }
 
@@ -200,11 +200,11 @@ private fun DistanceUnitItem(
 }
 
 @Composable
-private fun AutoLapDistanceItem(
+private fun AutoLapRadiusItem(
     selectedMeters: Int,
     onSelect: (Int) -> Unit,
 ) {
-    val options = listOf(200 to "200m", 400 to "400m", 800 to "800m", 1000 to "1 km", 1609 to "1 mile")
+    val options = listOf(10 to "10m", 15 to "15m", 20 to "20m", 25 to "25m")
     val currentLabel = options.find { it.first == selectedMeters }?.second ?: "${selectedMeters}m"
     val nextIndex = (options.indexOfFirst { it.first == selectedMeters } + 1) % options.size
 
@@ -217,11 +217,11 @@ private fun AutoLapDistanceItem(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Auto Lap Distance",
+                text = "Anchor Radius",
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
-                text = "Tap to cycle: 200m, 400m, 800m, 1km, 1mi",
+                text = "Tap to cycle: 10m, 15m, 20m, 25m",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             )
