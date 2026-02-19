@@ -49,12 +49,18 @@ fun WorkoutControls(
                 onClick = onStart,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = if (activityType == ActivityType.DOG_WALK)
+                        MaterialTheme.colorScheme.secondary
+                    else
+                        MaterialTheme.colorScheme.primary,
+                    contentColor = if (activityType == ActivityType.DOG_WALK)
+                        MaterialTheme.colorScheme.onSecondary
+                    else
+                        MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
                 Text(
-                    text = if (activityType == ActivityType.DOG_WALK) "START WALK" else "START RUN",
+                    text = if (activityType == ActivityType.DOG_WALK) "START DOG WALK" else "START RUN",
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )

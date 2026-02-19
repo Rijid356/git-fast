@@ -22,7 +22,6 @@ import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.location.GpsTracker
 import com.gitfast.app.util.DistanceCalculator
 import com.gitfast.app.util.formatElapsedTime
-import com.gitfast.app.util.formatPace
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -243,10 +242,9 @@ class WorkoutService : LifecycleService() {
                 "[AUTO-PAUSED] \u2022 $elapsed"
             } else {
                 val distanceMiles = DistanceCalculator.metersToMiles(state.distanceMeters)
-                val paceText = state.currentPaceSecondsPerMile?.let { formatPace(it) }
 
-                if (distanceMiles >= 0.01 && paceText != null) {
-                    "${"%.2f".format(distanceMiles)} mi \u2022 $paceText"
+                if (distanceMiles >= 0.01) {
+                    "${"%.2f".format(distanceMiles)} mi \u2022 $elapsed"
                 } else {
                     val label = if (isDogWalk) "Dog walk" else "Tracking workout"
                     "$label \u2022 $elapsed"
