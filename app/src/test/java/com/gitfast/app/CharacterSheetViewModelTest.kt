@@ -36,15 +36,27 @@ class CharacterSheetViewModelTest {
         Dispatchers.resetMain()
     }
 
-    @Test
-    fun `profile emits default when repository returns default`() = runTest {
+    private fun mockRepos(
+        profile: CharacterProfile = CharacterProfile(),
+        transactions: List<XpTransaction> = emptyList(),
+    ): Pair<CharacterRepository, WorkoutRepository> {
         val repo = mockk<CharacterRepository>()
-        every { repo.getProfile() } returns flowOf(CharacterProfile())
-        every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
-        every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
+        every { repo.getProfile(1) } returns flowOf(profile)
+        every { repo.getRecentXpTransactions(profileId = 1, limit = 20) } returns flowOf(transactions)
+        every { repo.getUnlockedAchievements(1) } returns flowOf(emptyList())
+        every { repo.getProfile(2) } returns flowOf(CharacterProfile())
+        every { repo.getRecentXpTransactions(profileId = 2, limit = 20) } returns flowOf(emptyList())
+        every { repo.getUnlockedAchievements(2) } returns flowOf(emptyList())
 
         val workoutRepo = mockk<WorkoutRepository>()
         every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+
+        return repo to workoutRepo
+    }
+
+    @Test
+    fun `profile emits default when repository returns default`() = runTest {
+        val (repo, workoutRepo) = mockRepos()
         val viewModel = CharacterSheetViewModel(repo, workoutRepo)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -57,13 +69,7 @@ class CharacterSheetViewModelTest {
     @Test
     fun `profile emits data from repository`() = runTest {
         val profile = CharacterProfile(level = 5, totalXp = 450, xpProgress = 0.5f)
-        val repo = mockk<CharacterRepository>()
-        every { repo.getProfile() } returns flowOf(profile)
-        every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
-        every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
-
-        val workoutRepo = mockk<WorkoutRepository>()
-        every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+        val (repo, workoutRepo) = mockRepos(profile = profile)
         val viewModel = CharacterSheetViewModel(repo, workoutRepo)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -80,13 +86,7 @@ class CharacterSheetViewModelTest {
             XpTransaction("1", "w1", 50, "Run completed", Instant.ofEpochMilli(1000)),
             XpTransaction("2", "w2", 30, "Dog walk completed", Instant.ofEpochMilli(2000)),
         )
-        val repo = mockk<CharacterRepository>()
-        every { repo.getProfile() } returns flowOf(CharacterProfile())
-        every { repo.getRecentXpTransactions(20) } returns flowOf(transactions)
-        every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
-
-        val workoutRepo = mockk<WorkoutRepository>()
-        every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+        val (repo, workoutRepo) = mockRepos(transactions = transactions)
         val viewModel = CharacterSheetViewModel(repo, workoutRepo)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
@@ -99,13 +99,7 @@ class CharacterSheetViewModelTest {
 
     @Test
     fun `recentXpTransactions emits empty list when no transactions`() = runTest {
-        val repo = mockk<CharacterRepository>()
-        every { repo.getProfile() } returns flowOf(CharacterProfile())
-        every { repo.getRecentXpTransactions(20) } returns flowOf(emptyList())
-        every { repo.getUnlockedAchievements() } returns flowOf(emptyList())
-
-        val workoutRepo = mockk<WorkoutRepository>()
-        every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+        val (repo, workoutRepo) = mockRepos()
         val viewModel = CharacterSheetViewModel(repo, workoutRepo)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
