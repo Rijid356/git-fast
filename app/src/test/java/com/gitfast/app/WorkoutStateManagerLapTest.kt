@@ -164,7 +164,8 @@ class WorkoutStateManagerLapTest {
         assertNotNull(lapsPhase)
 
         // laps 1, 2, 3 were manually marked; lap 4 auto-completed by endLaps
+        // but discarded as micro-lap (< 5s duration)
         val lapNumbers = lapsPhase!!.laps.map { it.lapNumber }
-        assertEquals(listOf(1, 2, 3, 4), lapNumbers)
+        assertEquals(listOf(1, 2, 3), lapNumbers)
     }
 }
