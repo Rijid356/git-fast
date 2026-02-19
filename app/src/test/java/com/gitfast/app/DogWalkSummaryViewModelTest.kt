@@ -1,7 +1,6 @@
 package com.gitfast.app
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import com.gitfast.app.data.model.EnergyLevel
@@ -64,25 +63,15 @@ class DogWalkSummaryViewModelTest {
     }
 
     @Test
-    fun `init loads saved dog name from prefs`() {
-        val prefs = application.getSharedPreferences("dog_walk_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putString("last_dog_name", "Buddy").commit()
-
+    fun `init always sets dog name to Juniper`() {
         val vm = createViewModel()
-        assertEquals("Buddy", vm.uiState.value.dogName)
+        assertEquals("Juniper", vm.uiState.value.dogName)
     }
 
     @Test
     fun `workoutId is extracted from savedStateHandle`() {
         val vm = createViewModel("test-123")
         assertEquals("test-123", vm.workoutId)
-    }
-
-    @Test
-    fun `updateDogName updates state`() {
-        val vm = createViewModel()
-        vm.updateDogName("Rex")
-        assertEquals("Rex", vm.uiState.value.dogName)
     }
 
     @Test
@@ -204,9 +193,8 @@ class DogWalkSummaryViewModelTest {
     }
 
     @Test
-    fun `saveWalk saves metadata and marks saved`() {
+    fun `saveWalk saves metadata with Juniper and marks saved`() {
         val vm = createViewModel()
-        vm.updateDogName("Buddy")
         vm.saveWalk()
 
         assertTrue(vm.uiState.value.isSaved)
@@ -214,41 +202,12 @@ class DogWalkSummaryViewModelTest {
         coVerify {
             workoutSaveManager.updateDogWalkMetadata(
                 workoutId = "w1",
-                dogName = "Buddy",
+                dogName = "Juniper",
                 routeTag = null,
                 weatherCondition = null,
                 weatherTemp = null,
                 energyLevel = null,
                 notes = null,
-            )
-        }
-    }
-
-    @Test
-    fun `saveWalk persists dog name to prefs`() {
-        val vm = createViewModel()
-        vm.updateDogName("Fido")
-        vm.saveWalk()
-
-        val prefs = application.getSharedPreferences("dog_walk_prefs", Context.MODE_PRIVATE)
-        assertEquals("Fido", prefs.getString("last_dog_name", null))
-    }
-
-    @Test
-    fun `saveWalk with empty dog name passes null`() {
-        val vm = createViewModel()
-        vm.updateDogName("")
-        vm.saveWalk()
-
-        coVerify {
-            workoutSaveManager.updateDogWalkMetadata(
-                workoutId = "w1",
-                dogName = null,
-                routeTag = any(),
-                weatherCondition = any(),
-                weatherTemp = any(),
-                energyLevel = any(),
-                notes = any(),
             )
         }
     }
