@@ -45,6 +45,34 @@ object StreakCalculator {
     }
 
     /**
+     * Find the longest consecutive-day streak across all workouts.
+     * Scans all workout dates and returns the longest run of consecutive days.
+     */
+    fun getLongestStreak(workouts: List<Workout>): Int {
+        if (workouts.isEmpty()) return 0
+
+        val zone = ZoneId.systemDefault()
+        val sortedDates = workouts
+            .map { it.startTime.atZone(zone).toLocalDate() }
+            .distinct()
+            .sorted()
+
+        var longest = 1
+        var current = 1
+
+        for (i in 1 until sortedDates.size) {
+            if (sortedDates[i] == sortedDates[i - 1].plusDays(1)) {
+                current++
+                if (current > longest) longest = current
+            } else {
+                current = 1
+            }
+        }
+
+        return longest
+    }
+
+    /**
      * XP multiplier for a given streak length.
      * Day 1 = 1.0x, Day 2 = 1.1x, Day 3 = 1.2x, ... capped at 1.5x.
      */
