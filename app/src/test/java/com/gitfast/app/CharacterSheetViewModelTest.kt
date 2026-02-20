@@ -3,6 +3,7 @@ package com.gitfast.app
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.UnlockedAchievement
 import com.gitfast.app.data.model.XpTransaction
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
@@ -50,6 +51,7 @@ class CharacterSheetViewModelTest {
 
         val workoutRepo = mockk<WorkoutRepository>()
         every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
+        every { workoutRepo.getCompletedWorkoutsByType(ActivityType.DOG_WALK) } returns flowOf(emptyList())
 
         return repo to workoutRepo
     }

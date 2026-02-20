@@ -5,7 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.data.repository.CharacterRepository
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.repository.WorkoutRepository
+import com.gitfast.app.util.StatBreakdown
+import com.gitfast.app.util.StatsCalculator
 import com.gitfast.app.util.StreakCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,6 +64,33 @@ class CharacterSheetViewModel @Inject constructor(
         characterRepository.getUnlockedAchievements(2)
             .map { list -> list.map { it.achievementId }.toSet() }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    // Stat breakdowns for user
+    val statBreakdowns: StateFlow<Map<String, StatBreakdown>> =
+        workoutRepository.getCompletedWorkouts()
+            .map { workouts ->
+                val recentRuns = workouts
+                    .filter { it.activityType == ActivityType.RUN }
+                    .take(20)
+                mapOf(
+                    "SPD" to StatsCalculator.speedBreakdown(recentRuns, isWalk = false),
+                    "END" to StatsCalculator.enduranceBreakdown(workouts),
+                    "CON" to StatsCalculator.consistencyBreakdown(workouts),
+                )
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    // Stat breakdowns for Juniper
+    val juniperStatBreakdowns: StateFlow<Map<String, StatBreakdown>> =
+        workoutRepository.getCompletedWorkoutsByType(ActivityType.DOG_WALK)
+            .map { walks ->
+                mapOf(
+                    "SPD" to StatsCalculator.speedBreakdown(walks.take(20), isWalk = true),
+                    "END" to StatsCalculator.enduranceBreakdown(walks),
+                    "CON" to StatsCalculator.consistencyBreakdown(walks),
+                )
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     fun selectTab(index: Int) {
         _selectedTab.value = index

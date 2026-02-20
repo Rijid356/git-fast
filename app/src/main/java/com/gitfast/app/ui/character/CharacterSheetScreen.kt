@@ -1,7 +1,13 @@
 package com.gitfast.app.ui.character
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +40,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +56,7 @@ import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.ui.theme.AmberAccent
 import com.gitfast.app.ui.theme.CyanAccent
 import com.gitfast.app.ui.theme.NeonGreen
+import com.gitfast.app.util.StatBreakdown
 import com.gitfast.app.util.AchievementCategory
 import com.gitfast.app.util.AchievementDef
 import com.gitfast.app.util.StreakCalculator
@@ -74,11 +84,16 @@ fun CharacterSheetScreen(
     val juniperTransactions by viewModel.juniperXpTransactions.collectAsStateWithLifecycle()
     val juniperUnlockedIds by viewModel.juniperUnlockedAchievementIds.collectAsStateWithLifecycle()
 
+    // Stat breakdowns
+    val userBreakdowns by viewModel.statBreakdowns.collectAsStateWithLifecycle()
+    val juniperBreakdowns by viewModel.juniperStatBreakdowns.collectAsStateWithLifecycle()
+
     // Active data based on selected tab
     val activeProfile = if (selectedTab == 0) profile else juniperProfile
     val activeTransactions = if (selectedTab == 0) transactions else juniperTransactions
     val activeUnlockedIds = if (selectedTab == 0) unlockedIds else juniperUnlockedIds
     val activeProfileId = if (selectedTab == 0) 1 else 2
+    val activeBreakdowns = if (selectedTab == 0) userBreakdowns else juniperBreakdowns
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -152,7 +167,7 @@ fun CharacterSheetScreen(
             }
 
             item {
-                StatsSection(profile = activeProfile)
+                StatsSection(profile = activeProfile, breakdowns = activeBreakdowns)
             }
 
             item {
@@ -269,7 +284,10 @@ private fun XpProgressSection(profile: CharacterProfile) {
 }
 
 @Composable
-private fun StatsSection(profile: CharacterProfile) {
+private fun StatsSection(
+    profile: CharacterProfile,
+    breakdowns: Map<String, StatBreakdown>,
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -278,49 +296,121 @@ private fun StatsSection(profile: CharacterProfile) {
             color = MaterialTheme.colorScheme.primary,
         )
         Spacer(modifier = Modifier.height(12.dp))
-        StatBar(label = "SPD", value = profile.speedStat, color = CyanAccent)
+        StatBar(label = "SPD", value = profile.speedStat, color = CyanAccent, breakdown = breakdowns["SPD"])
         Spacer(modifier = Modifier.height(8.dp))
-        StatBar(label = "END", value = profile.enduranceStat, color = AmberAccent)
+        StatBar(label = "END", value = profile.enduranceStat, color = AmberAccent, breakdown = breakdowns["END"])
         Spacer(modifier = Modifier.height(8.dp))
-        StatBar(label = "CON", value = profile.consistencyStat, color = NeonGreen)
+        StatBar(label = "CON", value = profile.consistencyStat, color = NeonGreen, breakdown = breakdowns["CON"])
     }
 }
 
 @Composable
-private fun StatBar(label: String, value: Int, color: Color) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = color,
-            modifier = Modifier.width(36.dp),
-        )
-        Text(
-            text = "$value",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.width(32.dp),
-            textAlign = TextAlign.End,
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Box(
+private fun StatBar(label: String, value: Int, color: Color, breakdown: StatBreakdown?) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .height(10.dp)
-                .clip(RectangleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .fillMaxWidth()
+                .clickable(enabled = breakdown != null) { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = color,
+                modifier = Modifier.width(36.dp),
+            )
+            Text(
+                text = "$value",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.width(32.dp),
+                textAlign = TextAlign.End,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(fraction = value / 99f)
+                    .weight(1f)
                     .height(10.dp)
                     .clip(RectangleShape)
-                    .background(color),
-            )
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction = value / 99f)
+                        .height(10.dp)
+                        .clip(RectangleShape)
+                        .background(color),
+                )
+            }
+            if (breakdown != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (expanded) "\u25B2" else "\u25BC",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
+
+        AnimatedVisibility(
+            visible = expanded && breakdown != null,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut(),
+        ) {
+            if (breakdown != null) {
+                StatBreakdownPanel(breakdown = breakdown, color = color)
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatBreakdownPanel(breakdown: StatBreakdown, color: Color) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp)
+            .clip(RectangleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text(
+            text = breakdown.description,
+            style = MaterialTheme.typography.bodySmall,
+            color = color,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        for ((label, value) in breakdown.details) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = breakdown.brackets,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = breakdown.decayNote,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+        )
     }
 }
 
