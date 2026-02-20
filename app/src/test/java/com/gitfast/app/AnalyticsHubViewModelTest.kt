@@ -80,9 +80,9 @@ class AnalyticsHubViewModelTest {
 
     @Test
     fun `total distance shows integer for 100+ miles`() = runTest {
-        // ~161 km = 100 miles
+        // 161000m = ~100.04 miles
         coEvery { workoutRepository.getCompletedWorkoutCount() } returns 50
-        coEvery { workoutRepository.getTotalDistanceMeters() } returns 160934.0
+        coEvery { workoutRepository.getTotalDistanceMeters() } returns 161000.0
         coEvery { workoutRepository.getTotalDurationMillis() } returns 0L
         coEvery { workoutRepository.getAllCompletedWorkoutsOnce() } returns emptyList()
 
