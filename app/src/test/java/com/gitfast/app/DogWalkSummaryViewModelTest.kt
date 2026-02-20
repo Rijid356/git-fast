@@ -57,15 +57,12 @@ class DogWalkSummaryViewModelTest {
     }
 
     @Test
-    fun `init loads default dog name from prefs`() {
+    fun `init seeds default route tags`() {
         val vm = createViewModel()
-        assertEquals("Juniper", vm.uiState.value.dogName)
-    }
-
-    @Test
-    fun `init always sets dog name to Juniper`() {
-        val vm = createViewModel()
-        assertEquals("Juniper", vm.uiState.value.dogName)
+        val tags = vm.uiState.value.routeTags
+        assertTrue(tags.contains("Park"))
+        assertTrue(tags.contains("Neighborhood"))
+        assertTrue(tags.contains("City"))
     }
 
     @Test

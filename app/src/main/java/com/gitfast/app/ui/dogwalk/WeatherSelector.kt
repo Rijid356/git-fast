@@ -43,6 +43,7 @@ fun WeatherSelector(
                 WeatherCondition.CLOUDY to "\u2601\uFE0F Cloudy",
                 WeatherCondition.RAINY to "\uD83C\uDF27 Rainy",
                 WeatherCondition.SNOWY to "\u2744\uFE0F Snowy",
+                WeatherCondition.WINDY to "\uD83D\uDCA8 Windy",
             )
             conditions.forEach { (condition, label) ->
                 FilterChip(

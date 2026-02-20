@@ -57,14 +57,14 @@ fun DogWalkSummaryScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
-                .padding(top = 32.dp, bottom = 24.dp),
+                .padding(top = 56.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Header
             Text(
-                text = "WALK COMPLETE",
+                text = "DOG WALK COMPLETE",
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.secondary,
                 textAlign = TextAlign.Center,
             )
 
@@ -86,17 +86,6 @@ fun DogWalkSummaryScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Dog name (always Juniper)
-            SectionLabel("Dog")
-            Text(
-                text = "Juniper",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Route tag
             RouteTagSelector(
@@ -155,12 +144,12 @@ fun DogWalkSummaryScreen(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isSaving,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
             ) {
                 Text(
-                    text = if (uiState.isSaving) "SAVING..." else "SAVE WALK",
+                    text = if (uiState.isSaving) "SAVING..." else "SAVE DOG WALK",
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
