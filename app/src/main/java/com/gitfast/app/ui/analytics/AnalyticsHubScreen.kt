@@ -19,12 +19,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.TableChart
-import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,12 +58,12 @@ data class AnalyticsSection(
 )
 
 private val sections = listOf(
-    AnalyticsSection("ROUTE MAP", "Compare GPS traces", Icons.Default.Map),
-    AnalyticsSection("ROUTE STATS", "Performance by route", Icons.Default.TableChart),
-    AnalyticsSection("RECORDS", "Personal bests", Icons.Default.EmojiEvents),
-    AnalyticsSection("TRENDS", "Weekly & monthly", Icons.Default.TrendingUp),
-    AnalyticsSection("WEATHER", "Impact analysis", Icons.Default.WbSunny),
-    AnalyticsSection("TRAINING", "Phase & energy", Icons.Default.FitnessCenter),
+    AnalyticsSection("ROUTE MAP", "Compare GPS traces", Icons.Default.Place),
+    AnalyticsSection("ROUTE STATS", "Performance by route", Icons.Default.Info),
+    AnalyticsSection("RECORDS", "Personal bests", Icons.Default.Star),
+    AnalyticsSection("TRENDS", "Weekly & monthly", Icons.Default.Favorite),
+    AnalyticsSection("WEATHER", "Impact analysis", Icons.Default.Warning),
+    AnalyticsSection("TRAINING", "Phase & energy", Icons.Default.Person),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
