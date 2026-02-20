@@ -127,7 +127,7 @@ class WorkoutSaveManager @Inject constructor(
             id = snapshot.workoutId,
             startTime = snapshot.startTime.toEpochMilli(),
             endTime = snapshot.endTime.toEpochMilli(),
-            totalSteps = 0,
+            totalSteps = snapshot.totalSteps,
             distanceMeters = snapshot.totalDistanceMeters,
             status = WorkoutStatus.COMPLETED,
             activityType = snapshot.activityType,

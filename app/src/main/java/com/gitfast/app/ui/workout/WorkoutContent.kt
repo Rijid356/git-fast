@@ -121,7 +121,7 @@ fun WorkoutContent(
                         elapsedTimeFormatted = uiState.elapsedTimeFormatted,
                         distanceFormatted = uiState.distanceFormatted,
                         averagePaceFormatted = uiState.averagePaceFormatted,
-                        gpsPointCount = uiState.gpsPointCount,
+                        stepCount = uiState.stepCount,
                     )
                 }
                 uiState.phase == PhaseType.WARMUP -> {
@@ -130,7 +130,7 @@ fun WorkoutContent(
                             elapsedTimeFormatted = uiState.elapsedTimeFormatted,
                             distanceFormatted = uiState.distanceFormatted,
                             averagePaceFormatted = uiState.averagePaceFormatted,
-                            gpsPointCount = uiState.gpsPointCount,
+                            stepCount = uiState.stepCount,
                         )
                         if (ghostSources.isNotEmpty() && uiState.isActive && uiState.activityType == ActivityType.RUN) {
                             Spacer(modifier = Modifier.height(12.dp))

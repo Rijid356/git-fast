@@ -26,7 +26,7 @@ fun WorkoutSummaryScreen(
     time: String,
     distance: String,
     pace: String,
-    points: String,
+    steps: String,
     lapCount: Int = 0,
     bestLapTime: String? = null,
     bestLapNumber: Int? = null,
@@ -108,7 +108,7 @@ fun WorkoutSummaryScreen(
                 elapsedTimeFormatted = time,
                 distanceFormatted = distance,
                 averagePaceFormatted = pace,
-                gpsPointCount = points.toIntOrNull() ?: 0,
+                stepCount = steps.toIntOrNull() ?: 0,
             )
 
             if (lapCount > 0 && bestLapTime != null) {

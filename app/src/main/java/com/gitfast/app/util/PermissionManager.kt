@@ -3,6 +3,7 @@ package com.gitfast.app.util
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -13,10 +14,11 @@ class PermissionManager @Inject constructor(
     data class PermissionState(
         val fineLocation: Boolean,
         val backgroundLocation: Boolean,
-        val notifications: Boolean
+        val notifications: Boolean,
+        val activityRecognition: Boolean
     ) {
         val canTrackWorkout: Boolean
-            get() = fineLocation && backgroundLocation && notifications
+            get() = fineLocation && backgroundLocation && notifications && activityRecognition
 
         val needsBackgroundLocation: Boolean
             get() = fineLocation && !backgroundLocation
@@ -32,7 +34,14 @@ class PermissionManager @Inject constructor(
             ) == PackageManager.PERMISSION_GRANTED,
             notifications = ContextCompat.checkSelfPermission(
                 context, Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED,
+            activityRecognition = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACTIVITY_RECOGNITION
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true // Not needed below API 29
+            }
         )
     }
 }

@@ -52,6 +52,13 @@ class WorkoutStateManager @Inject constructor() {
     private var phaseStartDistance: Double = 0.0
     private var phaseStartSteps: Int = 0
 
+    // Step counter tracking
+    private var stepCountAtStart: Int = 0
+    private var currentStepCount: Int = 0
+    private var lapStartStepCount: Int = 0
+    private var phaseStartStepCount: Int = 0
+    private var stepBaselineSet: Boolean = false
+
     // Activity type
     private var activityType: ActivityType = ActivityType.RUN
 
@@ -106,6 +113,19 @@ class WorkoutStateManager @Inject constructor() {
         )
     }
 
+    fun initStepBaseline(sensorSteps: Int) {
+        stepCountAtStart = sensorSteps
+        currentStepCount = 0
+        phaseStartStepCount = 0
+        lapStartStepCount = 0
+        stepBaselineSet = true
+    }
+
+    fun updateStepCount(sensorSteps: Int) {
+        currentStepCount = sensorSteps - stepCountAtStart
+        _workoutState.value = _workoutState.value.copy(stepCount = currentStepCount)
+    }
+
     fun startWorkout(activityType: ActivityType = ActivityType.RUN): String {
         val id = UUID.randomUUID().toString()
         val now = Instant.now()
@@ -124,6 +144,13 @@ class WorkoutStateManager @Inject constructor() {
         completedPhases.clear()
         currentLapStartTime = null
         currentLapNumber = 0
+
+        // Reset step tracking
+        stepCountAtStart = 0
+        currentStepCount = 0
+        lapStartStepCount = 0
+        phaseStartStepCount = 0
+        stepBaselineSet = false
 
         _workoutState.value = WorkoutTrackingState(
             isActive = true,
@@ -185,7 +212,7 @@ class WorkoutStateManager @Inject constructor() {
                 startTime = start,
                 endTime = now,
                 distanceMeters = currentDistance - phaseStartDistance,
-                steps = 0,
+                steps = currentStepCount - phaseStartStepCount,
                 laps = emptyList()
             ))
         }
@@ -194,6 +221,8 @@ class WorkoutStateManager @Inject constructor() {
         currentPhase = PhaseType.LAPS
         phaseStartTime = now
         phaseStartDistance = currentDistance
+        phaseStartStepCount = currentStepCount
+        lapStartStepCount = currentStepCount
         currentLapStartTime = now
         currentLapStartDistance = currentDistance
         currentLapNumber = 1
@@ -246,7 +275,7 @@ class WorkoutStateManager @Inject constructor() {
             startTime = currentLapStartTime ?: now,
             endTime = now,
             distanceMeters = currentDistance - currentLapStartDistance,
-            steps = 0,
+            steps = currentStepCount - lapStartStepCount,
             gpsStartIndex = lapStartGpsIndex,
             gpsEndIndex = currentGpsIndex.coerceAtLeast(lapStartGpsIndex),
             splitLatitude = lastGps?.latitude,
@@ -271,6 +300,7 @@ class WorkoutStateManager @Inject constructor() {
         currentLapNumber++
         currentLapStartTime = now
         currentLapStartDistance = currentDistance
+        lapStartStepCount = currentStepCount
 
         _workoutState.value = _workoutState.value.copy(
             lapCount = laps.size,
@@ -311,7 +341,7 @@ class WorkoutStateManager @Inject constructor() {
                 startTime = start,
                 endTime = now,
                 distanceMeters = currentDistance - phaseStartDistance,
-                steps = 0,
+                steps = currentStepCount - phaseStartStepCount,
                 laps = laps.toList()
             ))
         }
@@ -320,6 +350,7 @@ class WorkoutStateManager @Inject constructor() {
         currentPhase = PhaseType.COOLDOWN
         phaseStartTime = now
         phaseStartDistance = currentDistance
+        phaseStartStepCount = currentStepCount
 
         _workoutState.value = _workoutState.value.copy(
             phase = PhaseType.COOLDOWN
@@ -381,7 +412,7 @@ class WorkoutStateManager @Inject constructor() {
                 startTime = start,
                 endTime = endTime,
                 distanceMeters = currentDistance - phaseStartDistance,
-                steps = 0,
+                steps = currentStepCount - phaseStartStepCount,
                 laps = if (currentPhase == PhaseType.LAPS) laps.toList() else emptyList()
             ))
         }
@@ -394,7 +425,8 @@ class WorkoutStateManager @Inject constructor() {
             totalDistanceMeters = currentDistance,
             totalPausedDurationMillis = totalPausedDuration,
             phases = completedPhases.toList(),
-            activityType = activityType
+            activityType = activityType,
+            totalSteps = currentStepCount
         )
 
         // Reset all state
@@ -410,6 +442,11 @@ class WorkoutStateManager @Inject constructor() {
         completedPhases.clear()
         externalGhostLapDuration = null
         useExternalGhost = false
+        stepCountAtStart = 0
+        currentStepCount = 0
+        lapStartStepCount = 0
+        phaseStartStepCount = 0
+        stepBaselineSet = false
         anchorLatitude = null
         anchorLongitude = null
         hasLeftAnchorRadius = false
@@ -555,6 +592,7 @@ data class WorkoutTrackingState(
     val ghostLapDurationSeconds: Int? = null,
     val ghostDeltaSeconds: Int? = null,
     val autoLapAnchorSet: Boolean = false,
+    val stepCount: Int = 0,
 )
 
 data class WorkoutSnapshot(
@@ -565,5 +603,6 @@ data class WorkoutSnapshot(
     val totalDistanceMeters: Double,
     val totalPausedDurationMillis: Long,
     val phases: List<WorkoutStateManager.PhaseData>,
-    val activityType: ActivityType
+    val activityType: ActivityType,
+    val totalSteps: Int = 0
 )
