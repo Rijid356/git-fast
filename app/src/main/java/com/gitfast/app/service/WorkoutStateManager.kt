@@ -173,7 +173,11 @@ class WorkoutStateManager @Inject constructor() {
 
     fun pauseWorkout() {
         pauseStartTime = Instant.now()
-        _workoutState.value = _workoutState.value.copy(isPaused = true, isAutoPaused = false)
+        _workoutState.value = _workoutState.value.copy(
+            isPaused = true,
+            isAutoPaused = false,
+            isHomeArrivalPaused = false
+        )
     }
 
     fun resumeWorkout() {
@@ -181,7 +185,11 @@ class WorkoutStateManager @Inject constructor() {
             totalPausedDuration += Instant.now().toEpochMilli() - pauseStart.toEpochMilli()
         }
         pauseStartTime = null
-        _workoutState.value = _workoutState.value.copy(isPaused = false, isAutoPaused = false)
+        _workoutState.value = _workoutState.value.copy(
+            isPaused = false,
+            isAutoPaused = false,
+            isHomeArrivalPaused = false
+        )
     }
 
     fun autoPauseWorkout() {
@@ -189,12 +197,24 @@ class WorkoutStateManager @Inject constructor() {
         _workoutState.value = _workoutState.value.copy(isPaused = true, isAutoPaused = true)
     }
 
+    fun homeArrivalPause() {
+        pauseStartTime = Instant.now()
+        _workoutState.value = _workoutState.value.copy(
+            isPaused = true,
+            isHomeArrivalPaused = true
+        )
+    }
+
     fun autoResumeWorkout() {
         pauseStartTime?.let { pauseStart ->
             totalPausedDuration += Instant.now().toEpochMilli() - pauseStart.toEpochMilli()
         }
         pauseStartTime = null
-        _workoutState.value = _workoutState.value.copy(isPaused = false, isAutoPaused = false)
+        _workoutState.value = _workoutState.value.copy(
+            isPaused = false,
+            isAutoPaused = false,
+            isHomeArrivalPaused = false
+        )
     }
 
     /**
@@ -577,6 +597,7 @@ data class WorkoutTrackingState(
     val isActive: Boolean = false,
     val isPaused: Boolean = false,
     val isAutoPaused: Boolean = false,
+    val isHomeArrivalPaused: Boolean = false,
     val workoutId: String? = null,
     val elapsedSeconds: Int = 0,
     val distanceMeters: Double = 0.0,
