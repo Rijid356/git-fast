@@ -43,6 +43,7 @@ class ActiveWorkoutViewModelTest {
             fineLocation = false,
             backgroundLocation = false,
             notifications = false,
+            activityRecognition = false,
         )
 
         viewModel = ActiveWorkoutViewModel(application, permissionManager, settingsStore, workoutRepository)
@@ -74,6 +75,7 @@ class ActiveWorkoutViewModelTest {
             fineLocation = true,
             backgroundLocation = true,
             notifications = true,
+            activityRecognition = true,
         )
 
         viewModel.refreshPermissions()
