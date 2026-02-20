@@ -12,7 +12,8 @@ class PermissionManagerTest {
         val state = PermissionState(
             fineLocation = true,
             backgroundLocation = true,
-            notifications = true
+            notifications = true,
+            activityRecognition = true
         )
         assertTrue(state.canTrackWorkout)
     }
@@ -22,7 +23,8 @@ class PermissionManagerTest {
         val state = PermissionState(
             fineLocation = false,
             backgroundLocation = true,
-            notifications = true
+            notifications = true,
+            activityRecognition = true
         )
         assertFalse(state.canTrackWorkout)
     }
@@ -32,7 +34,8 @@ class PermissionManagerTest {
         val state = PermissionState(
             fineLocation = true,
             backgroundLocation = false,
-            notifications = true
+            notifications = true,
+            activityRecognition = true
         )
         assertTrue(state.needsBackgroundLocation)
     }

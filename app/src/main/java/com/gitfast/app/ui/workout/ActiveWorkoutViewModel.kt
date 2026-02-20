@@ -39,7 +39,7 @@ data class WorkoutUiState(
     val distanceFormatted: String = "0.00 mi",
     val currentPaceFormatted: String? = null,
     val averagePaceFormatted: String? = null,
-    val gpsPointCount: Int = 0,
+    val stepCount: Int = 0,
     val isWorkoutComplete: Boolean = false,
     val isDiscarded: Boolean = false,
     val activityType: ActivityType = ActivityType.RUN,
@@ -67,7 +67,7 @@ data class WorkoutSummaryStats(
     val time: String = "00:00",
     val distance: String = "0.00 mi",
     val pace: String = "-- /mi",
-    val points: String = "0",
+    val steps: String = "0",
     val lapCount: Int = 0,
     val bestLapTime: String? = null,
     val bestLapNumber: Int? = null,
@@ -114,6 +114,7 @@ class ActiveWorkoutViewModel @Inject constructor(
 
     fun setActivityType(type: ActivityType) {
         activityType = type
+        _uiState.value = _uiState.value.copy(activityType = type)
         if (type == ActivityType.RUN) loadGhostSources()
     }
 
@@ -277,7 +278,7 @@ class ActiveWorkoutViewModel @Inject constructor(
             time = state.elapsedTimeFormatted,
             distance = state.distanceFormatted,
             pace = state.averagePaceFormatted ?: "-- /mi",
-            points = state.gpsPointCount.toString(),
+            steps = state.stepCount.toString(),
             lapCount = state.lapCount,
             bestLapTime = state.bestLapTimeFormatted,
             bestLapNumber = manager?.getBestLapNumber(),
@@ -328,7 +329,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                     distanceFormatted = formatDistance(state.distanceMeters, unit),
                     currentPaceFormatted = state.currentPaceSecondsPerMile?.let { formatPace(it, unit) },
                     averagePaceFormatted = state.averagePaceSecondsPerMile?.let { formatPace(it, unit) },
-                    gpsPointCount = _uiState.value.gpsPointCount,
+                    stepCount = state.stepCount,
                     isWorkoutComplete = completed && !_didDiscard,
                     isDiscarded = completed && _didDiscard,
                     phase = state.phase,
@@ -361,10 +362,5 @@ class ActiveWorkoutViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
-            manager.gpsPoints.collect { points ->
-                _uiState.value = _uiState.value.copy(gpsPointCount = points.size)
-            }
-        }
     }
 }
