@@ -275,6 +275,8 @@ class FakeWorkoutDao : WorkoutDao {
     override suspend fun getRecentWorkoutsWithLaps(limit: Int): List<WorkoutEntity> = emptyList()
     override suspend fun getCompletedDogWalksOnce(): List<WorkoutEntity> = emptyList()
     override suspend fun getTotalDogWalkDistanceMeters(): Double = 0.0
+    override suspend fun getTotalDistanceMeters(): Double = 0.0
+    override suspend fun getTotalDurationMillis(): Long = 0L
 }
 
 class FakeCharacterDao : CharacterDao {
