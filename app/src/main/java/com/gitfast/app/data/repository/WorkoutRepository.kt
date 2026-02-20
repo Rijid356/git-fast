@@ -144,6 +144,14 @@ class WorkoutRepository @Inject constructor(
         return workoutDao.getTotalDogWalkDistanceMeters()
     }
 
+    suspend fun getTotalDistanceMeters(): Double {
+        return workoutDao.getTotalDistanceMeters()
+    }
+
+    suspend fun getTotalDurationMillis(): Long {
+        return workoutDao.getTotalDurationMillis()
+    }
+
     suspend fun getRecentWorkoutsWithLaps(limit: Int): List<Workout> {
         return workoutDao.getRecentWorkoutsWithLaps(limit).map { entity ->
             val phases = workoutDao.getPhasesForWorkout(entity.id).map { phase ->

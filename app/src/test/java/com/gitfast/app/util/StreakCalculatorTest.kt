@@ -133,6 +133,76 @@ class StreakCalculatorTest {
     }
 
     @Test
+    fun `getLongestStreak returns 0 for empty list`() {
+        assertEquals(0, StreakCalculator.getLongestStreak(emptyList()))
+    }
+
+    @Test
+    fun `getLongestStreak returns 1 for single workout`() {
+        val workouts = listOf(workoutOn(LocalDate.of(2026, 2, 10)))
+        assertEquals(1, StreakCalculator.getLongestStreak(workouts))
+    }
+
+    @Test
+    fun `getLongestStreak finds longest run of consecutive days`() {
+        val workouts = listOf(
+            // 2-day streak
+            workoutOn(LocalDate.of(2026, 1, 5)),
+            workoutOn(LocalDate.of(2026, 1, 6)),
+            // gap
+            // 4-day streak (longest)
+            workoutOn(LocalDate.of(2026, 1, 10)),
+            workoutOn(LocalDate.of(2026, 1, 11)),
+            workoutOn(LocalDate.of(2026, 1, 12)),
+            workoutOn(LocalDate.of(2026, 1, 13)),
+            // gap
+            // 1-day
+            workoutOn(LocalDate.of(2026, 1, 20)),
+        )
+        assertEquals(4, StreakCalculator.getLongestStreak(workouts))
+    }
+
+    @Test
+    fun `getLongestStreak handles gaps correctly`() {
+        val workouts = listOf(
+            workoutOn(LocalDate.of(2026, 2, 1)),
+            // gap on 2nd
+            workoutOn(LocalDate.of(2026, 2, 3)),
+            // gap on 4th
+            workoutOn(LocalDate.of(2026, 2, 5)),
+        )
+        assertEquals(1, StreakCalculator.getLongestStreak(workouts))
+    }
+
+    @Test
+    fun `getLongestStreak counts current active streak if it is the longest`() {
+        val today = LocalDate.of(2026, 2, 18)
+        val workouts = listOf(
+            // old 2-day streak
+            workoutOn(LocalDate.of(2026, 1, 5)),
+            workoutOn(LocalDate.of(2026, 1, 6)),
+            // current 5-day streak ending today
+            workoutOn(today.minusDays(4)),
+            workoutOn(today.minusDays(3)),
+            workoutOn(today.minusDays(2)),
+            workoutOn(today.minusDays(1)),
+            workoutOn(today),
+        )
+        assertEquals(5, StreakCalculator.getLongestStreak(workouts))
+    }
+
+    @Test
+    fun `getLongestStreak deduplicates multiple workouts on same day`() {
+        val date = LocalDate.of(2026, 2, 10)
+        val workouts = listOf(
+            workoutOn(date),
+            workoutOn(date), // same day, second workout
+            workoutOn(date.plusDays(1)),
+        )
+        assertEquals(2, StreakCalculator.getLongestStreak(workouts))
+    }
+
+    @Test
     fun `XpCalculator applies streak multiplier`() {
         val baseResult = XpCalculator.calculateXp(
             distanceMeters = 1610.0,
