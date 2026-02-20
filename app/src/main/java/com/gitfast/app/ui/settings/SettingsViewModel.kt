@@ -1,8 +1,12 @@
 package com.gitfast.app.ui.settings
 
-import androidx.lifecycle.ViewModel
+import android.annotation.SuppressLint
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.DistanceUnit
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,12 +19,17 @@ data class SettingsUiState(
     val keepScreenOn: Boolean = true,
     val autoLapEnabled: Boolean = false,
     val autoLapAnchorRadiusMeters: Int = 15,
+    val homeArrivalEnabled: Boolean = false,
+    val hasHomeLocation: Boolean = false,
+    val homeArrivalRadiusMeters: Int = 30,
+    val isCapturingLocation: Boolean = false,
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    application: Application,
     private val settingsStore: SettingsStore,
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(
         SettingsUiState(
@@ -29,6 +38,9 @@ class SettingsViewModel @Inject constructor(
             keepScreenOn = settingsStore.keepScreenOn,
             autoLapEnabled = settingsStore.autoLapEnabled,
             autoLapAnchorRadiusMeters = settingsStore.autoLapAnchorRadiusMeters,
+            homeArrivalEnabled = settingsStore.homeArrivalEnabled,
+            hasHomeLocation = settingsStore.hasHomeLocation,
+            homeArrivalRadiusMeters = settingsStore.homeArrivalRadiusMeters,
         )
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -56,5 +68,46 @@ class SettingsViewModel @Inject constructor(
     fun setAutoLapAnchorRadius(radius: Int) {
         settingsStore.autoLapAnchorRadiusMeters = radius
         _uiState.value = _uiState.value.copy(autoLapAnchorRadiusMeters = radius)
+    }
+
+    fun setHomeArrivalEnabled(enabled: Boolean) {
+        settingsStore.homeArrivalEnabled = enabled
+        _uiState.value = _uiState.value.copy(homeArrivalEnabled = enabled)
+    }
+
+    fun setHomeArrivalRadius(radius: Int) {
+        settingsStore.homeArrivalRadiusMeters = radius
+        _uiState.value = _uiState.value.copy(homeArrivalRadiusMeters = radius)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun captureCurrentLocation() {
+        _uiState.value = _uiState.value.copy(isCapturingLocation = true)
+        val fusedClient = LocationServices.getFusedLocationProviderClient(getApplication<Application>())
+        fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    settingsStore.homeLatitude = location.latitude
+                    settingsStore.homeLongitude = location.longitude
+                    _uiState.value = _uiState.value.copy(
+                        hasHomeLocation = true,
+                        isCapturingLocation = false
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(isCapturingLocation = false)
+                }
+            }
+            .addOnFailureListener {
+                _uiState.value = _uiState.value.copy(isCapturingLocation = false)
+            }
+    }
+
+    fun clearHomeLocation() {
+        settingsStore.clearHomeLocation()
+        settingsStore.homeArrivalEnabled = false
+        _uiState.value = _uiState.value.copy(
+            hasHomeLocation = false,
+            homeArrivalEnabled = false
+        )
     }
 }
