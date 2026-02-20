@@ -4,36 +4,42 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Pixel art running man — side profile, mid-stride -->
-    <!-- 4dp grid, centered in 72dp safe zone (18-90) -->
+    <!-- Pixel art running man — side profile, peak stride pose -->
+    <!-- 4dp grid, centered in safe zone. Same palette as character sheet. -->
+    <!-- Modeled after Mega Man / NES run cycle key frame -->
 
-    <!-- Head -->
+    <!-- Headband — cyan (#58A6FF) -->
+    <path
+        android:fillColor="#58A6FF"
+        android:pathData="M48,24h20v4h-20z M48,28h20v4h-20z M44,60h16v4h-16z" />
+
+    <!-- Hair frame — dark cyan (#3D7AB8) -->
+    <path
+        android:fillColor="#3D7AB8"
+        android:pathData="M48,32h4v4h-4z" />
+
+    <!-- Skin — (#E6C8A0) -->
+    <path
+        android:fillColor="#E6C8A0"
+        android:pathData="M52,32h16v4h-16z M52,36h4v4h-4z M60,36h8v4h-8z M56,40h8v4h-8z M72,40h4v4h-4z M68,44h4v4h-4z M40,52h4v4h-4z M36,56h4v4h-4z M40,64h8v4h-8z M60,64h8v4h-8z M36,68h8v4h-8z M64,68h8v4h-8z M32,72h8v4h-8z M68,72h8v4h-8z" />
+
+    <!-- Eye — dark (#1A1A2E) -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M56,36h4v4h-4z" />
+
+    <!-- Shirt — neon green (#39FF14) -->
     <path
         android:fillColor="#39FF14"
-        android:pathData="M52,30 h8 v8 h-8 z" />
+        android:pathData="M52,44h16v4h-16z M48,48h20v4h-20z M48,52h16v4h-16z M48,56h16v4h-16z" />
 
-    <!-- Back arm (swinging up behind) -->
+    <!-- Shirt shadow — dim green (#2BCC10) -->
     <path
-        android:fillColor="#39FF14"
-        android:pathData="M42,38 h4 v4 h-4 z M38,34 h4 v4 h-4 z" />
+        android:fillColor="#2BCC10"
+        android:pathData="M48,44h4v4h-4z M44,48h4v4h-4z M44,52h4v4h-4z" />
 
-    <!-- Torso (leaning forward) -->
+    <!-- Shoes — amber (#F0883E) -->
     <path
-        android:fillColor="#39FF14"
-        android:pathData="M48,38 h8 v4 h-8 z M46,42 h8 v4 h-8 z M46,46 h8 v4 h-8 z M48,50 h8 v4 h-8 z" />
-
-    <!-- Front arm (swinging forward) -->
-    <path
-        android:fillColor="#39FF14"
-        android:pathData="M56,46 h4 v4 h-4 z M60,50 h4 v4 h-4 z" />
-
-    <!-- Back leg (extended behind) -->
-    <path
-        android:fillColor="#39FF14"
-        android:pathData="M44,54 h4 v4 h-4 z M40,58 h4 v4 h-4 z M36,62 h4 v4 h-4 z M36,66 h8 v4 h-8 z" />
-
-    <!-- Front leg (striding forward) -->
-    <path
-        android:fillColor="#39FF14"
-        android:pathData="M52,54 h4 v4 h-4 z M56,58 h4 v4 h-4 z M60,62 h4 v4 h-4 z M60,66 h8 v4 h-8 z" />
+        android:fillColor="#F0883E"
+        android:pathData="M32,76h12v4h-12z M64,76h12v4h-12z" />
 </vector>

@@ -531,17 +531,20 @@ private fun XpTransactionRow(transaction: XpTransaction) {
 
 /**
  * 16x16 pixel art running man drawn on Canvas.
- * Mid-stride pose with neon green body and cyan accents.
+ * JRPG Hero chibi style — big head with cyan headband, neon green shirt,
+ * dynamic running pose with wide stride. Modeled after Final Fantasy NES sprites.
  */
 @Composable
 private fun PixelRunner(modifier: Modifier = Modifier) {
     val primary = NeonGreen
+    val primaryDim = Color(0xFF2BCC10) // shirt shading
     val skin = Color(0xFFE6C8A0)
+    val skinShade = Color(0xFFCCAA80) // skin shadow
     val hair = CyanAccent
+    val hairDark = Color(0xFF3D7AB8) // hair shadow
     val shoe = AmberAccent
+    val eye = Color(0xFF1A1A2E)
 
-    // 16x16 grid — each '1' marks a filled pixel
-    // Row-major: (row, col, color)
     Canvas(modifier = modifier) {
         val px = size.width / 16f
 
@@ -553,56 +556,64 @@ private fun PixelRunner(modifier: Modifier = Modifier) {
             )
         }
 
-        // Hair / head top (rows 0-1)
-        fill(0, 6, hair); fill(0, 7, hair); fill(0, 8, hair); fill(0, 9, hair)
-        fill(1, 5, hair); fill(1, 6, hair); fill(1, 7, hair); fill(1, 8, hair); fill(1, 9, hair)
+        // Headband (rows 0-1) — cyan bandana with trailing end
+        fill(0, 6, hair); fill(0, 7, hair); fill(0, 8, hair); fill(0, 9, hair); fill(0, 10, hair)
+        fill(1, 5, hair); fill(1, 6, hair); fill(1, 7, hair); fill(1, 8, hair)
+        fill(1, 9, hair); fill(1, 10, hair); fill(1, 11, hairDark)
 
-        // Face (rows 2-3)
-        fill(2, 6, skin); fill(2, 7, skin); fill(2, 8, skin); fill(2, 9, skin)
-        fill(3, 6, skin); fill(3, 7, skin); fill(3, 8, skin); fill(3, 9, skin)
+        // Head (rows 2-4) — chibi big head with hair frame
+        fill(2, 4, hairDark); fill(2, 5, skin); fill(2, 6, skin); fill(2, 7, skin)
+        fill(2, 8, skin); fill(2, 9, skin); fill(2, 10, skin); fill(2, 11, hairDark)
+        fill(3, 5, skin); fill(3, 6, eye); fill(3, 7, skin)
+        fill(3, 8, skin); fill(3, 9, eye); fill(3, 10, skin)
+        fill(4, 5, skin); fill(4, 6, skin); fill(4, 7, skin)
+        fill(4, 8, skin); fill(4, 9, skin); fill(4, 10, skin)
 
-        // Neck (row 4)
-        fill(4, 7, skin); fill(4, 8, skin)
+        // Neck (row 5)
+        fill(5, 7, skin); fill(5, 8, skinShade)
 
-        // Torso (rows 5-8) — shirt
-        fill(5, 5, primary); fill(5, 6, primary); fill(5, 7, primary); fill(5, 8, primary); fill(5, 9, primary); fill(5, 10, primary)
-        fill(6, 5, primary); fill(6, 6, primary); fill(6, 7, primary); fill(6, 8, primary); fill(6, 9, primary); fill(6, 10, primary)
-        fill(7, 6, primary); fill(7, 7, primary); fill(7, 8, primary); fill(7, 9, primary)
-        fill(8, 6, primary); fill(8, 7, primary); fill(8, 8, primary); fill(8, 9, primary)
+        // Shirt / torso (rows 6-9) — neon green with dim shading on right
+        fill(6, 5, primary); fill(6, 6, primary); fill(6, 7, primary)
+        fill(6, 8, primary); fill(6, 9, primary); fill(6, 10, primaryDim)
+        fill(7, 4, primary); fill(7, 5, primary); fill(7, 6, primary); fill(7, 7, primary)
+        fill(7, 8, primary); fill(7, 9, primary); fill(7, 10, primary); fill(7, 11, primaryDim)
+        fill(8, 5, primary); fill(8, 6, primary); fill(8, 7, primary)
+        fill(8, 8, primary); fill(8, 9, primary); fill(8, 10, primaryDim)
+        fill(9, 6, primary); fill(9, 7, primary); fill(9, 8, primary); fill(9, 9, primaryDim)
 
-        // Arms — left arm back, right arm forward (running pose)
-        fill(5, 4, skin); fill(6, 3, skin); fill(7, 2, skin) // left arm (back)
-        fill(5, 11, skin); fill(6, 12, skin); fill(7, 13, skin) // right arm (forward)
+        // Arms — running pose (back arm up-right, front arm down-left)
+        fill(6, 11, skin); fill(7, 12, skinShade) // back arm (behind)
+        fill(8, 4, skin); fill(9, 3, skinShade) // front arm (forward)
 
-        // Shorts (rows 9-10)
-        fill(9, 6, hair); fill(9, 7, hair); fill(9, 8, hair); fill(9, 9, hair)
-        fill(10, 5, hair); fill(10, 6, hair); fill(10, 8, hair); fill(10, 9, hair)
+        // Shorts (row 10) — cyan, split for legs
+        fill(10, 5, hair); fill(10, 6, hair); fill(10, 9, hair); fill(10, 10, hair)
 
-        // Legs — stride pose (rows 11-13)
-        fill(11, 4, skin); fill(11, 5, skin); fill(11, 9, skin); fill(11, 10, skin)
-        fill(12, 3, skin); fill(12, 4, skin); fill(12, 10, skin); fill(12, 11, skin)
-        fill(13, 2, skin); fill(13, 3, skin); fill(13, 11, skin); fill(13, 12, skin)
+        // Legs — wide stride (rows 11-13)
+        fill(11, 4, skin); fill(11, 5, skin); fill(11, 10, skin); fill(11, 11, skinShade)
+        fill(12, 3, skin); fill(12, 4, skinShade); fill(12, 11, skin); fill(12, 12, skinShade)
+        fill(13, 2, skin); fill(13, 3, skinShade); fill(13, 12, skin); fill(13, 13, skinShade)
 
-        // Shoes (rows 14-15)
+        // Shoes (row 14) — amber, 3px wide each
         fill(14, 1, shoe); fill(14, 2, shoe); fill(14, 3, shoe)
-        fill(14, 11, shoe); fill(14, 12, shoe); fill(14, 13, shoe)
-        fill(15, 1, shoe); fill(15, 2, shoe)
-        fill(15, 12, shoe); fill(15, 13, shoe)
+        fill(14, 12, shoe); fill(14, 13, shoe); fill(14, 14, shoe)
     }
 }
 
 /**
  * 16x16 pixel art dog drawn on Canvas.
- * Side profile with neon green collar and amber body.
+ * Front-facing tri-color Australian Shepherd with blue eyes,
+ * white blaze, copper points, and neon green collar. Happy pup style.
  */
 @Composable
 private fun PixelDog(modifier: Modifier = Modifier) {
-    val body = AmberAccent
-    val dark = Color(0xFFC06820) // darker shade for ears/detail
-    val collar = NeonGreen
-    val nose = Color(0xFF2D2D2D)
-    val eye = Color.White
+    val coat = Color(0xFF2D2D2D) // black coat
+    val coatLight = Color(0xFF404040) // subtle coat highlight
+    val white = Color(0xFFE8E8E8) // blaze, chest, paws
+    val copper = Color(0xFFC07830) // tan/copper points
+    val blueEye = CyanAccent // Aussie blue eyes
+    val nose = Color(0xFF1A1A1A)
     val tongue = Color(0xFFFF6B8A)
+    val collar = NeonGreen
 
     Canvas(modifier = modifier) {
         val px = size.width / 16f
@@ -615,49 +626,59 @@ private fun PixelDog(modifier: Modifier = Modifier) {
             )
         }
 
-        // Ears (rows 1-3)
-        fill(1, 2, dark); fill(1, 3, dark)
-        fill(2, 1, dark); fill(2, 2, dark); fill(2, 3, dark)
-        fill(3, 2, body)
+        // Ears — floppy, wide-set (rows 1-2)
+        fill(1, 2, coat); fill(1, 3, coat)
+        fill(1, 12, coat); fill(1, 13, coat)
+        fill(2, 1, coat); fill(2, 2, coat); fill(2, 3, coatLight); fill(2, 4, coat)
+        fill(2, 11, coat); fill(2, 12, coatLight); fill(2, 13, coat); fill(2, 14, coat)
 
-        // Head (rows 3-6)
-        fill(3, 3, body); fill(3, 4, body); fill(3, 5, body); fill(3, 6, body)
-        fill(4, 2, body); fill(4, 3, body); fill(4, 4, body); fill(4, 5, body); fill(4, 6, body); fill(4, 7, body)
-        fill(5, 2, body); fill(5, 3, body); fill(5, 4, body); fill(5, 5, body); fill(5, 6, body); fill(5, 7, body); fill(5, 8, body)
+        // Top of head (row 3) — black with white blaze starting
+        fill(3, 3, coat); fill(3, 4, coat); fill(3, 5, coat); fill(3, 6, coat)
+        fill(3, 7, white); fill(3, 8, white)
+        fill(3, 9, coat); fill(3, 10, coat); fill(3, 11, coat); fill(3, 12, coat)
 
-        // Eye
-        fill(4, 4, eye)
+        // Eyes row (row 4) — copper brows, blue eyes, white blaze
+        fill(4, 3, coat); fill(4, 4, copper); fill(4, 5, coat)
+        fill(4, 6, coat); fill(4, 7, white); fill(4, 8, white); fill(4, 9, coat)
+        fill(4, 10, coat); fill(4, 11, copper); fill(4, 12, coat)
 
-        // Snout + nose (rows 6-7)
-        fill(6, 3, body); fill(6, 4, body); fill(6, 5, body); fill(6, 6, body); fill(6, 7, body); fill(6, 8, body); fill(6, 9, body)
-        fill(7, 6, body); fill(7, 7, body); fill(7, 8, body); fill(7, 9, body); fill(7, 10, nose)
-        fill(6, 10, nose); fill(6, 11, nose)
+        // Eyes (row 5) — blue Aussie eyes + blaze
+        fill(5, 3, coat); fill(5, 4, blueEye); fill(5, 5, coat)
+        fill(5, 6, white); fill(5, 7, white); fill(5, 8, white); fill(5, 9, white)
+        fill(5, 10, coat); fill(5, 11, blueEye); fill(5, 12, coat)
 
-        // Tongue
-        fill(8, 9, tongue); fill(8, 10, tongue)
+        // Muzzle (row 6) — narrows, white with copper cheeks
+        fill(6, 4, copper); fill(6, 5, coat); fill(6, 6, white); fill(6, 7, white)
+        fill(6, 8, white); fill(6, 9, white); fill(6, 10, coat); fill(6, 11, copper)
 
-        // Collar (row 7 on neck)
-        fill(7, 3, collar); fill(7, 4, collar); fill(7, 5, collar)
+        // Nose + mouth (row 7)
+        fill(7, 5, coat); fill(7, 6, white); fill(7, 7, nose); fill(7, 8, nose)
+        fill(7, 9, white); fill(7, 10, coat)
 
-        // Body (rows 8-11)
-        fill(8, 2, body); fill(8, 3, body); fill(8, 4, body); fill(8, 5, body); fill(8, 6, body); fill(8, 7, body); fill(8, 8, body)
-        fill(9, 1, body); fill(9, 2, body); fill(9, 3, body); fill(9, 4, body); fill(9, 5, body); fill(9, 6, body); fill(9, 7, body); fill(9, 8, body)
-        fill(10, 1, body); fill(10, 2, body); fill(10, 3, body); fill(10, 4, body); fill(10, 5, body); fill(10, 6, body); fill(10, 7, body); fill(10, 8, body)
-        fill(11, 1, body); fill(11, 2, body); fill(11, 3, body); fill(11, 4, body); fill(11, 5, body); fill(11, 6, body); fill(11, 7, body); fill(11, 8, body)
+        // Lower mouth + tongue (row 8)
+        fill(8, 6, coat); fill(8, 7, coat); fill(8, 8, coat); fill(8, 9, coat)
+        fill(8, 10, tongue); fill(8, 11, tongue)
 
-        // Tail (rows 7-9, curling up)
-        fill(9, 0, body)
-        fill(8, 0, dark); fill(7, 0, dark)
-        fill(6, 0, dark); fill(6, 1, dark)
+        // Collar (row 9) — neon green
+        fill(9, 4, collar); fill(9, 5, collar); fill(9, 6, collar); fill(9, 7, collar)
+        fill(9, 8, collar); fill(9, 9, collar); fill(9, 10, collar); fill(9, 11, collar)
 
-        // Front legs (rows 12-14)
-        fill(12, 6, body); fill(12, 7, body)
-        fill(13, 6, body); fill(13, 7, body)
-        fill(14, 6, dark); fill(14, 7, dark) // paws
+        // Chest — white bib (rows 10-11)
+        fill(10, 3, coat); fill(10, 4, coat); fill(10, 5, white); fill(10, 6, white)
+        fill(10, 7, white); fill(10, 8, white); fill(10, 9, white); fill(10, 10, white)
+        fill(10, 11, coat); fill(10, 12, coat)
+        fill(11, 3, coat); fill(11, 4, coat); fill(11, 5, white); fill(11, 6, white)
+        fill(11, 7, white); fill(11, 8, white); fill(11, 9, white); fill(11, 10, white)
+        fill(11, 11, coat); fill(11, 12, coat)
 
-        // Back legs (rows 12-14)
-        fill(12, 2, body); fill(12, 3, body)
-        fill(13, 2, body); fill(13, 3, body)
-        fill(14, 2, dark); fill(14, 3, dark) // paws
+        // Front legs (rows 12-13) — copper fronts, black sides
+        fill(12, 3, coat); fill(12, 4, copper); fill(12, 5, copper)
+        fill(12, 10, copper); fill(12, 11, copper); fill(12, 12, coat)
+        fill(13, 3, coat); fill(13, 4, copper); fill(13, 5, copper)
+        fill(13, 10, copper); fill(13, 11, copper); fill(13, 12, coat)
+
+        // Paws (row 14) — white
+        fill(14, 4, white); fill(14, 5, white)
+        fill(14, 10, white); fill(14, 11, white)
     }
 }

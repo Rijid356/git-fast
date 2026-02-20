@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Monochrome running man silhouette for Android 13+ themed icons -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,24h20v4h-20z M48,28h20v4h-20z M48,32h20v4h-20z M52,36h16v4h-16z M56,40h8v4h-8z M72,40h4v4h-4z M48,44h24v4h-24z M44,48h24v4h-24z M40,52h24v4h-24z M36,56h4v4h-4z M48,56h16v4h-16z M44,60h16v4h-16z M40,64h8v4h-8z M60,64h8v4h-8z M36,68h8v4h-8z M64,68h8v4h-8z M32,72h8v4h-8z M68,72h8v4h-8z M32,76h12v4h-12z M64,76h12v4h-12z" />
+</vector>
