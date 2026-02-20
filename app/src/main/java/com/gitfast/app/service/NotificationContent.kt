@@ -22,7 +22,9 @@ fun buildNotificationContent(state: WorkoutTrackingState): NotificationContent {
 
     val activityLabel = if (isDogWalk) "Dog Walk" else "Running"
 
-    val title = if (isPaused) {
+    val title = if (state.isHomeArrivalPaused) {
+        "git-fast \u2022 Home!"
+    } else if (isPaused) {
         "git-fast \u2022 Paused"
     } else {
         "git-fast \u2022 $activityLabel"
@@ -36,7 +38,8 @@ fun buildNotificationContent(state: WorkoutTrackingState): NotificationContent {
 
     val expandedText = buildString {
         append("Time        $elapsed")
-        if (isPaused) append("  (paused)")
+        if (state.isHomeArrivalPaused) append("  (home)")
+        else if (isPaused) append("  (paused)")
         append("\n")
         append("Distance    $distance")
         if (!isDogWalk) {

@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -97,6 +99,36 @@ fun SettingsScreen(
                 selected = uiState.distanceUnit,
                 onSelect = { viewModel.setDistanceUnit(it) },
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Location section ---
+            SectionHeader(text = "Location")
+
+            SwitchSettingItem(
+                title = "Home Arrival",
+                subtitle = "Auto-pause when you arrive home",
+                checked = uiState.homeArrivalEnabled,
+                onCheckedChange = { viewModel.setHomeArrivalEnabled(it) },
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+            SetHomeLocationItem(
+                hasHomeLocation = uiState.hasHomeLocation,
+                isCapturing = uiState.isCapturingLocation,
+                onCapture = { viewModel.captureCurrentLocation() },
+                onClear = { viewModel.clearHomeLocation() },
+            )
+
+            if (uiState.hasHomeLocation && uiState.homeArrivalEnabled) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                HomeArrivalRadiusItem(
+                    selectedMeters = uiState.homeArrivalRadiusMeters,
+                    onSelect = { viewModel.setHomeArrivalRadius(it) },
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -222,6 +254,84 @@ private fun AutoLapRadiusItem(
             )
             Text(
                 text = "Tap to cycle: 10m, 15m, 20m, 25m",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            )
+        }
+        Text(
+            text = currentLabel,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@Composable
+private fun SetHomeLocationItem(
+    hasHomeLocation: Boolean,
+    isCapturing: Boolean,
+    onCapture: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !isCapturing) {
+                if (hasHomeLocation) onClear() else onCapture()
+            }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (hasHomeLocation) "Home Location" else "Set Home Location",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Text(
+                text = if (hasHomeLocation) "Tap to clear" else "Tap to capture current GPS position",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            )
+        }
+        if (isCapturing) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+            )
+        } else {
+            Text(
+                text = if (hasHomeLocation) "Set" else "Not set",
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (hasHomeLocation) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeArrivalRadiusItem(
+    selectedMeters: Int,
+    onSelect: (Int) -> Unit,
+) {
+    val options = listOf(15 to "15m", 30 to "30m", 50 to "50m", 75 to "75m")
+    val currentLabel = options.find { it.first == selectedMeters }?.second ?: "${selectedMeters}m"
+    val nextIndex = (options.indexOfFirst { it.first == selectedMeters } + 1) % options.size
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelect(options[nextIndex].first) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Home Radius",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Text(
+                text = "Tap to cycle: 15m, 30m, 50m, 75m",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             )
