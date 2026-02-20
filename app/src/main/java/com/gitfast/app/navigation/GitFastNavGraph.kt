@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.ui.analytics.AnalyticsHubScreen
+import com.gitfast.app.ui.analytics.routeoverlay.RouteOverlayScreen
 import com.gitfast.app.ui.character.CharacterSheetScreen
 import com.gitfast.app.ui.detail.DetailScreen
 import com.gitfast.app.ui.dogwalk.DogWalkSummaryScreen
@@ -31,6 +32,7 @@ sealed class Screen(val route: String) {
     }
     data object Settings : Screen("settings")
     data object Analytics : Screen("analytics")
+    data object RouteOverlay : Screen("route_overlay")
     data object CharacterSheet : Screen("character_sheet")
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
         fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
@@ -99,6 +101,16 @@ fun GitFastNavGraph(navController: NavHostController) {
         }
         composable(Screen.Analytics.route) {
             AnalyticsHubScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onRouteMapClick = {
+                    navController.navigate(Screen.RouteOverlay.route)
+                },
+            )
+        }
+        composable(Screen.RouteOverlay.route) {
+            RouteOverlayScreen(
                 onBackClick = {
                     navController.popBackStack()
                 },

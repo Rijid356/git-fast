@@ -152,6 +152,15 @@ class WorkoutRepository @Inject constructor(
         return workoutDao.getTotalDurationMillis()
     }
 
+    suspend fun getWorkoutsWithGpsForRouteTag(routeTag: String): List<Workout> {
+        return workoutDao.getDogWalksByRoute(routeTag).first()
+            .take(5)
+            .map { entity ->
+                val gpsPoints = workoutDao.getGpsPointsForWorkout(entity.id).map { it.toDomain() }
+                entity.toDomain(emptyList(), gpsPoints)
+            }
+    }
+
     suspend fun getRecentWorkoutsWithLaps(limit: Int): List<Workout> {
         return workoutDao.getRecentWorkoutsWithLaps(limit).map { entity ->
             val phases = workoutDao.getPhasesForWorkout(entity.id).map { phase ->
