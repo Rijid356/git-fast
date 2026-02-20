@@ -18,9 +18,16 @@ Toolchain: AGP 8.13.2 | Kotlin 2.1.0 | KSP 2.1.0-1.0.29 | Hilt 2.53.1 | Compose 
 ./gradlew connectedDebugAndroidTest                      # Run instrumented tests (requires device/emulator)
 ./gradlew test --tests "*.DistanceCalculatorTest"        # Run a single test class
 ./gradlew test --tests "*.DistanceCalculatorTest.test*"  # Run a single test method
+./gradlew koverHtmlReportDebug                           # Generate code coverage report
 ```
 
-Testing stack: JUnit 4.13.2, MockK 1.13.13, Robolectric 4.14.1, coroutines-test 1.7.3. `unitTests.isReturnDefaultValues = true` and `isIncludeAndroidResources = true` are set in build config.
+Testing stack: JUnit 4.13.2, MockK 1.13.13, Robolectric 4.14.1, coroutines-test 1.7.3. `unitTests.isReturnDefaultValues = true` and `isIncludeAndroidResources = true` are set in build config. Instrumented tests use Espresso 3.6.1, Compose UI testing, and Room testing 2.6.1.
+
+Code coverage via Kover 0.9.7 — excludes Hilt/Room/Compose generated code, DI modules, entity/model data classes, and migrations. No lint tools configured; uses `kotlin.code.style=official` only.
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on PRs to main: builds debug APK and runs unit tests with Java 17 (temurin). Uploads test failure reports as artifacts. Instrumented tests are **not** run in CI (device/emulator required).
 
 ## Architecture
 
@@ -100,7 +107,11 @@ Material3 dark theme with pixel art aesthetic: neon green primary (#39FF14), cya
 
 ### Maps
 
-Google Maps with dark style JSON (`res/raw/map_style_dark.json`). `MAPS_API_KEY` must be set in `local.properties` (read via manual Properties loading in `app/build.gradle.kts`, NOT `gradle.properties`).
+Google Maps with dark style JSON (`res/raw/map_style_dark.json`). `MAPS_API_KEY` must be set in `local.properties` (read via manual Properties loading in `app/build.gradle.kts`, NOT `gradle.properties`). Key is injected into the manifest via `manifestPlaceholders`.
+
+### Permissions & Services
+
+Manifest declares: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_BACKGROUND_LOCATION`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `POST_NOTIFICATIONS`, `ACTIVITY_RECOGNITION`. `WorkoutService` has `foregroundServiceType="location"`. `MainActivity` is locked to portrait orientation.
 
 ## watch/ — T-Watch S3 Firmware
 
