@@ -58,7 +58,7 @@ data class AnalyticsSection(
 )
 
 private val sections = listOf(
-    AnalyticsSection("ROUTE MAP", "Compare GPS traces", Icons.Default.Place),
+    AnalyticsSection("ROUTE MAP", "Compare GPS traces", Icons.Default.Place, enabled = true),
     AnalyticsSection("ROUTE STATS", "Performance by route", Icons.Default.Info),
     AnalyticsSection("RECORDS", "Personal bests", Icons.Default.Star),
     AnalyticsSection("TRENDS", "Weekly & monthly", Icons.Default.Favorite),
@@ -70,6 +70,7 @@ private val sections = listOf(
 @Composable
 fun AnalyticsHubScreen(
     onBackClick: () -> Unit,
+    onRouteMapClick: () -> Unit = {},
     viewModel: AnalyticsHubViewModel = hiltViewModel(),
 ) {
     val stats by viewModel.stats.collectAsStateWithLifecycle()
@@ -129,7 +130,9 @@ fun AnalyticsHubScreen(
                 SectionCard(
                     section = section,
                     onClick = {
-                        if (!section.enabled) {
+                        if (section.enabled && section.title == "ROUTE MAP") {
+                            onRouteMapClick()
+                        } else if (!section.enabled) {
                             scope.launch {
                                 snackbarHostState.showSnackbar("Coming soon!")
                             }
