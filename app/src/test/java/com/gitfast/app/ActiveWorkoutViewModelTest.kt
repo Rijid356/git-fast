@@ -183,7 +183,7 @@ class ActiveWorkoutViewModelTest {
         assertEquals("00:00", stats.time)
         assertEquals("0.00 mi", stats.distance)
         assertEquals("-- /mi", stats.pace)
-        assertEquals("0", stats.points)
+        assertEquals("0", stats.steps)
         assertEquals(0, stats.xpEarned)
     }
 

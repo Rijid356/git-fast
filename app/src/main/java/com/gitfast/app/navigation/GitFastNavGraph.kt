@@ -33,12 +33,12 @@ sealed class Screen(val route: String) {
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
         fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
     }
-    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{points}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}&workoutId={workoutId}&xpEarned={xpEarned}&achievements={achievements}&streakDays={streakDays}") {
+    data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{steps}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}&workoutId={workoutId}&xpEarned={xpEarned}&achievements={achievements}&streakDays={streakDays}") {
         fun createRoute(
             time: String,
             distance: String,
             pace: String,
-            points: String,
+            steps: String,
             lapCount: Int = 0,
             bestLapTime: String? = null,
             bestLapNumber: Int? = null,
@@ -49,7 +49,7 @@ sealed class Screen(val route: String) {
             streakDays: Int = 0,
         ): String {
             val enc = { s: String -> URLEncoder.encode(s, "UTF-8") }
-            val base = "workout_summary/${enc(time)}/${enc(distance)}/${enc(pace)}/${enc(points)}"
+            val base = "workout_summary/${enc(time)}/${enc(distance)}/${enc(pace)}/${enc(steps)}"
             val params = buildString {
                 append("?lapCount=$lapCount")
                 bestLapTime?.let { append("&bestLapTime=${enc(it)}") }
@@ -128,7 +128,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                                 time = stats.time,
                                 distance = stats.distance,
                                 pace = stats.pace,
-                                points = stats.points,
+                                steps = stats.steps,
                                 lapCount = stats.lapCount,
                                 bestLapTime = stats.bestLapTime,
                                 bestLapNumber = stats.bestLapNumber,
@@ -157,7 +157,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                 navArgument("time") { type = NavType.StringType },
                 navArgument("distance") { type = NavType.StringType },
                 navArgument("pace") { type = NavType.StringType },
-                navArgument("points") { type = NavType.StringType },
+                navArgument("steps") { type = NavType.StringType },
                 navArgument("lapCount") { type = NavType.StringType; defaultValue = "0" },
                 navArgument("bestLapTime") { type = NavType.StringType; defaultValue = "" },
                 navArgument("bestLapNumber") { type = NavType.StringType; defaultValue = "" },
@@ -190,7 +190,7 @@ fun GitFastNavGraph(navController: NavHostController) {
                 time = dec("time"),
                 distance = dec("distance"),
                 pace = dec("pace"),
-                points = dec("points"),
+                steps = dec("steps"),
                 lapCount = lapCount,
                 bestLapTime = bestLapTime,
                 bestLapNumber = bestLapNumber,

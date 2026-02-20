@@ -35,10 +35,22 @@ fun PermissionRequestContent(
         onPermissionsChanged()
     }
 
-    val notificationLauncher = rememberLauncherForActivityResult(
+    val activityRecognitionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
     ) { _ ->
         if (!permissionState.backgroundLocation) {
+            backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        } else {
+            onPermissionsChanged()
+        }
+    }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { _ ->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !permissionState.activityRecognition) {
+            activityRecognitionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+        } else if (!permissionState.backgroundLocation) {
             backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         } else {
             onPermissionsChanged()
@@ -53,6 +65,8 @@ fun PermissionRequestContent(
         if (fineGranted) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !permissionState.notifications) {
                 notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !permissionState.activityRecognition) {
+                activityRecognitionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
             } else if (!permissionState.backgroundLocation) {
                 backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             } else {
@@ -108,6 +122,14 @@ fun PermissionRequestContent(
             isGranted = permissionState.notifications,
         )
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        PermissionCard(
+            title = "Activity Recognition",
+            description = "Count your steps during workouts.",
+            isGranted = permissionState.activityRecognition,
+        )
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
@@ -121,6 +143,8 @@ fun PermissionRequestContent(
                     )
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !permissionState.notifications) {
                     notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !permissionState.activityRecognition) {
+                    activityRecognitionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
                 } else if (!permissionState.backgroundLocation) {
                     backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 }

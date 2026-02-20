@@ -21,7 +21,7 @@ fun StatGrid(
     elapsedTimeFormatted: String,
     distanceFormatted: String,
     averagePaceFormatted: String?,
-    gpsPointCount: Int,
+    stepCount: Int,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -58,8 +58,8 @@ fun StatGrid(
                     modifier = Modifier.weight(1f),
                 )
                 StatItem(
-                    label = "GPS PTS",
-                    value = gpsPointCount.toString(),
+                    label = "STEPS",
+                    value = stepCount.toString(),
                     modifier = Modifier.weight(1f),
                 )
             }
