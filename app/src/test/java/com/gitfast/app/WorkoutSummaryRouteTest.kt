@@ -14,7 +14,7 @@ class WorkoutSummaryRouteTest {
             time = "10:00",
             distance = "1.00 mi",
             pace = "10:00 /mi",
-            points = "50",
+            steps = "50",
             workoutId = "abc-123",
         )
         assertTrue(route.contains("workoutId=abc-123"))
@@ -26,7 +26,7 @@ class WorkoutSummaryRouteTest {
             time = "10:00",
             distance = "1.00 mi",
             pace = "10:00 /mi",
-            points = "50",
+            steps = "50",
             workoutId = null,
         )
         assertFalse(route.contains("workoutId="))
@@ -38,7 +38,7 @@ class WorkoutSummaryRouteTest {
             time = "10:00",
             distance = "1.00 mi",
             pace = "10:00 /mi",
-            points = "50",
+            steps = "50",
             workoutId = "abc 123",
         )
         assertTrue(route.contains("workoutId=abc+123") || route.contains("workoutId=abc%20123"))
@@ -51,7 +51,7 @@ class WorkoutSummaryRouteTest {
             time = "30:00",
             distance = "3.10 mi",
             pace = "9:41 /mi",
-            points = "150",
+            steps = "150",
             lapCount = 5,
             bestLapTime = "5:30",
             bestLapNumber = 3,
