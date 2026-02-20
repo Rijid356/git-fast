@@ -210,6 +210,11 @@ class RouteOverlayViewModelTest {
         distanceMeters = distanceMeters,
         status = WorkoutStatus.COMPLETED,
         activityType = ActivityType.DOG_WALK,
+        dogName = null,
+        notes = null,
+        weatherCondition = null,
+        weatherTemp = null,
+        energyLevel = null,
         routeTag = "Park",
     )
 
