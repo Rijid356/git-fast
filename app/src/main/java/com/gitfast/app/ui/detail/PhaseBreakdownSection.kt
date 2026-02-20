@@ -48,8 +48,7 @@ fun PhaseCard(phase: PhaseAnalyzer.PhaseDisplayItem) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -59,13 +58,26 @@ fun PhaseCard(phase: PhaseAnalyzer.PhaseDisplayItem) {
                     PhaseType.WARMUP -> MaterialTheme.colorScheme.tertiary
                     PhaseType.LAPS -> MaterialTheme.colorScheme.primary
                     PhaseType.COOLDOWN -> MaterialTheme.colorScheme.secondary
-                }
+                },
+                modifier = Modifier.weight(1.2f)
             )
-
             Text(
-                text = "${phase.durationFormatted}  •  ${phase.distanceFormatted}  •  ${phase.paceFormatted}",
+                text = phase.durationFormatted,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = phase.distanceFormatted,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = phase.paceFormatted,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
             )
         }
     }
