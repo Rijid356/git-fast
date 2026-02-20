@@ -283,6 +283,18 @@ class WorkoutService : LifecycleService() {
             .setSilent(true)
             .setOnlyAlertOnce(true)
 
+        // Show a real-time chronometer in the notification and status bar
+        if (!state.isPaused) {
+            builder
+                .setUsesChronometer(true)
+                .setShowWhen(true)
+                .setWhen(System.currentTimeMillis() - state.elapsedSeconds * 1000L)
+        } else {
+            builder
+                .setUsesChronometer(false)
+                .setShowWhen(false)
+        }
+
         if (state.isPaused) {
             builder.addAction(
                 R.drawable.ic_play,
