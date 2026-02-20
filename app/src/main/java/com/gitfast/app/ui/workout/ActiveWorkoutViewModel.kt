@@ -318,13 +318,17 @@ class ActiveWorkoutViewModel @Inject constructor(
                 val avgLap = stateManager?.getAverageLapDuration()
 
                 val unit = settingsStore.distanceUnit
+                // Before workout starts, state manager defaults to RUN.
+                // Use the ViewModel's local activityType until the workout is active.
+                val resolvedActivityType = if (state.isActive) state.activityType else activityType
+
                 _uiState.value = WorkoutUiState(
                     isActive = state.isActive,
                     isPaused = state.isPaused,
                     isAutoPaused = state.isAutoPaused,
                     keepScreenOn = settingsStore.keepScreenOn,
                     workoutId = state.workoutId,
-                    activityType = state.activityType,
+                    activityType = resolvedActivityType,
                     elapsedTimeFormatted = formatElapsedTime(state.elapsedSeconds),
                     distanceFormatted = formatDistance(state.distanceMeters, unit),
                     currentPaceFormatted = state.currentPaceSecondsPerMile?.let { formatPace(it, unit) },
