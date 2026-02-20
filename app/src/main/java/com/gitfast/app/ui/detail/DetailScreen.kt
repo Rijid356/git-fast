@@ -367,15 +367,16 @@ private fun XpEarnedSection(
                 )
             }
             xpBreakdown?.let { breakdown ->
-                Spacer(modifier = Modifier.height(8.dp))
-                breakdown.split(";").forEach { entry ->
-                    val trimmed = entry.trim()
-                    if (trimmed.isNotEmpty()) {
-                        Text(
-                            text = trimmed,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                Spacer(modifier = Modifier.height(12.dp))
+                val entries = breakdown.split(";").map { it.trim() }.filter { it.isNotEmpty() }
+                entries.forEachIndexed { index, entry ->
+                    Text(
+                        text = entry,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (index < entries.lastIndex) {
+                        Spacer(modifier = Modifier.height(6.dp))
                     }
                 }
             }
