@@ -21,6 +21,7 @@ import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.location.GpsTracker
 import com.gitfast.app.location.StepTracker
+import com.gitfast.app.util.DistanceCalculator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -64,10 +65,15 @@ class WorkoutService : LifecycleService() {
         private const val RC_OPEN_APP = 0
         private const val RC_PAUSE = 1
         private const val RC_RESUME = 2
+        private const val RC_STOP = 3
 
         @Volatile
         var isRunning = false
     }
+
+    // Home arrival detection state
+    private var hasLeftHomeRadius = false
+    private var homeArrivalTriggered = false
 
     override fun onCreate() {
         super.onCreate()
@@ -116,10 +122,13 @@ class WorkoutService : LifecycleService() {
         startForeground(NOTIFICATION_ID, buildNotification(workoutStateManager.workoutState.value))
 
         autoPauseDetector.reset()
+        hasLeftHomeRadius = false
+        homeArrivalTriggered = false
 
         gpsCollectionJob = lifecycleScope.launch {
             gpsTracker.startTracking().collect { point ->
                 handleAutoPause(point, activityType)
+                handleHomeArrival(point)
                 workoutStateManager.addGpsPoint(point)
                 Log.d(
                     "WorkoutService",
@@ -171,6 +180,7 @@ class WorkoutService : LifecycleService() {
         gpsCollectionJob = lifecycleScope.launch {
             gpsTracker.startTracking().collect { point ->
                 handleAutoPause(point, workoutStateManager.workoutState.value.activityType)
+                handleHomeArrival(point)
                 workoutStateManager.addGpsPoint(point)
             }
         }
@@ -237,6 +247,31 @@ class WorkoutService : LifecycleService() {
         }
     }
 
+    private fun handleHomeArrival(point: GpsPoint) {
+        if (!settingsStore.homeArrivalEnabled) return
+        if (homeArrivalTriggered) return
+
+        val homeLat = settingsStore.homeLatitude ?: return
+        val homeLng = settingsStore.homeLongitude ?: return
+        val radius = settingsStore.homeArrivalRadiusMeters
+
+        val state = workoutStateManager.workoutState.value
+        if (state.isPaused) return
+
+        val distanceToHome = DistanceCalculator.haversineMeters(
+            point.latitude, point.longitude,
+            homeLat, homeLng
+        )
+
+        if (distanceToHome > radius) {
+            hasLeftHomeRadius = true
+        } else if (hasLeftHomeRadius) {
+            homeArrivalTriggered = true
+            workoutStateManager.homeArrivalPause()
+            updateNotification()
+        }
+    }
+
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
@@ -295,7 +330,18 @@ class WorkoutService : LifecycleService() {
                 .setShowWhen(false)
         }
 
-        if (state.isPaused) {
+        if (state.isHomeArrivalPaused) {
+            builder.addAction(
+                R.drawable.ic_stop,
+                "Stop",
+                buildActionPendingIntent(ACTION_STOP, RC_STOP)
+            )
+            builder.addAction(
+                R.drawable.ic_play,
+                "Resume",
+                buildActionPendingIntent(ACTION_RESUME, RC_RESUME)
+            )
+        } else if (state.isPaused) {
             builder.addAction(
                 R.drawable.ic_play,
                 "Resume",

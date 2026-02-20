@@ -1,5 +1,7 @@
 package com.gitfast.app
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.DistanceUnit
 import com.gitfast.app.ui.settings.SettingsViewModel
@@ -11,19 +13,24 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class SettingsViewModelTest {
 
     private lateinit var settingsStore: SettingsStore
     private lateinit var viewModel: SettingsViewModel
+    private lateinit var app: Application
 
     @Before
     fun setUp() {
+        app = ApplicationProvider.getApplicationContext()
         settingsStore = mockk(relaxed = true)
         every { settingsStore.autoPauseEnabled } returns true
         every { settingsStore.distanceUnit } returns DistanceUnit.MILES
         every { settingsStore.keepScreenOn } returns true
-        viewModel = SettingsViewModel(settingsStore)
+        viewModel = SettingsViewModel(app, settingsStore)
     }
 
     @Test
@@ -73,7 +80,7 @@ class SettingsViewModelTest {
         every { customStore.distanceUnit } returns DistanceUnit.KILOMETERS
         every { customStore.keepScreenOn } returns false
 
-        val vm = SettingsViewModel(customStore)
+        val vm = SettingsViewModel(app, customStore)
         val state = vm.uiState.value
 
         assertFalse(state.autoPauseEnabled)
