@@ -20,7 +20,7 @@ class WorkoutUiStateTest {
         assertEquals("0.00 mi", state.distanceFormatted)
         assertNull(state.currentPaceFormatted)
         assertNull(state.averagePaceFormatted)
-        assertEquals(0, state.gpsPointCount)
+        assertEquals(0, state.stepCount)
         assertFalse(state.isWorkoutComplete)
     }
 
@@ -35,7 +35,7 @@ class WorkoutUiStateTest {
             distanceFormatted = "1.25 mi",
             currentPaceFormatted = "8:15 /mi",
             averagePaceFormatted = "8:45 /mi",
-            gpsPointCount = 42,
+            stepCount = 42,
             isWorkoutComplete = false,
         )
 
@@ -46,12 +46,12 @@ class WorkoutUiStateTest {
         assertEquals("1.25 mi", updated.distanceFormatted)
         assertEquals("8:15 /mi", updated.currentPaceFormatted)
         assertEquals("8:45 /mi", updated.averagePaceFormatted)
-        assertEquals(42, updated.gpsPointCount)
+        assertEquals(42, updated.stepCount)
         assertFalse(updated.isWorkoutComplete)
 
         // original should be unchanged
         assertFalse(original.isActive)
         assertEquals("00:00", original.elapsedTimeFormatted)
-        assertEquals(0, original.gpsPointCount)
+        assertEquals(0, original.stepCount)
     }
 }

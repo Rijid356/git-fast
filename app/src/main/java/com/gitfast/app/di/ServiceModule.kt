@@ -3,6 +3,7 @@ package com.gitfast.app.di
 import android.content.Context
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.location.GpsTracker
+import com.gitfast.app.location.StepTracker
 import com.gitfast.app.service.AutoPauseDetector
 import com.gitfast.app.service.WorkoutStateManager
 import com.gitfast.app.util.PermissionManager
@@ -21,6 +22,12 @@ object ServiceModule {
     @Singleton
     fun provideGpsTracker(@ApplicationContext context: Context): GpsTracker {
         return GpsTracker(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStepTracker(@ApplicationContext context: Context): StepTracker {
+        return StepTracker(context)
     }
 
     @Provides

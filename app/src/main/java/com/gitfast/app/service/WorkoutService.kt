@@ -20,6 +20,7 @@ import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.location.GpsTracker
+import com.gitfast.app.location.StepTracker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -32,6 +33,7 @@ import javax.inject.Inject
 class WorkoutService : LifecycleService() {
 
     @Inject lateinit var gpsTracker: GpsTracker
+    @Inject lateinit var stepTracker: StepTracker
     @Inject lateinit var workoutStateManager: WorkoutStateManager
     @Inject lateinit var workoutRepository: WorkoutRepository
     @Inject lateinit var workoutSaveManager: WorkoutSaveManager
@@ -40,6 +42,7 @@ class WorkoutService : LifecycleService() {
     @Inject lateinit var settingsStore: SettingsStore
 
     private var gpsCollectionJob: Job? = null
+    private var stepCollectionJob: Job? = null
     private var timerJob: Job? = null
     private var notificationTimerJob: Job? = null
 
@@ -126,6 +129,18 @@ class WorkoutService : LifecycleService() {
             }
         }
 
+        stepCollectionJob = lifecycleScope.launch {
+            var isFirstReading = true
+            stepTracker.startTracking().collect { sensorSteps ->
+                if (isFirstReading) {
+                    workoutStateManager.initStepBaseline(sensorSteps)
+                    isFirstReading = false
+                } else {
+                    workoutStateManager.updateStepCount(sensorSteps)
+                }
+            }
+        }
+
         timerJob = lifecycleScope.launch {
             while (isActive) {
                 workoutStateManager.updateElapsedTime()
@@ -145,6 +160,7 @@ class WorkoutService : LifecycleService() {
         autoPauseDetector.reset()
         workoutStateManager.pauseWorkout()
         gpsCollectionJob?.cancel()
+        stepCollectionJob?.cancel()
         updateNotification()
     }
 
@@ -159,11 +175,18 @@ class WorkoutService : LifecycleService() {
             }
         }
 
+        stepCollectionJob = lifecycleScope.launch {
+            stepTracker.startTracking().collect { sensorSteps ->
+                workoutStateManager.updateStepCount(sensorSteps)
+            }
+        }
+
         updateNotification()
     }
 
     private fun stopWorkout() {
         gpsCollectionJob?.cancel()
+        stepCollectionJob?.cancel()
         timerJob?.cancel()
         notificationTimerJob?.cancel()
 
@@ -186,6 +209,7 @@ class WorkoutService : LifecycleService() {
 
     private fun discardWorkout() {
         gpsCollectionJob?.cancel()
+        stepCollectionJob?.cancel()
         timerJob?.cancel()
         notificationTimerJob?.cancel()
 
