@@ -52,6 +52,7 @@ fun HomeScreen(
     onWorkoutClick: (workoutId: String) -> Unit,
     onSettingsClick: () -> Unit,
     onCharacterClick: () -> Unit,
+    onAnalyticsClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
@@ -152,6 +153,23 @@ fun HomeScreen(
             ) {
                 Text(
                     text = "View History",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = onAnalyticsClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+            ) {
+                Text(
+                    text = "Analytics",
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
