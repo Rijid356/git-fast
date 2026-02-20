@@ -8,6 +8,13 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.math.roundToInt
 
+data class StatBreakdown(
+    val description: String,
+    val details: List<Pair<String, String>>,
+    val brackets: String,
+    val decayNote: String,
+)
+
 object StatsCalculator {
 
     private const val MAX_STAT = 99
@@ -234,6 +241,129 @@ object StatsCalculator {
             ),
             inverted = false,
         )
+    }
+
+    // --- Breakdown methods ---
+
+    fun speedBreakdown(recentRuns: List<Workout>, isWalk: Boolean): StatBreakdown {
+        val validPaces = recentRuns.mapNotNull { it.averagePaceSecondsPerMile }
+            .filter { it > 0 }
+
+        val details = mutableListOf<Pair<String, String>>()
+        if (validPaces.isNotEmpty()) {
+            val best = validPaces.min()
+            val sorted = validPaces.sorted()
+            val median = sorted[sorted.size / 2]
+            val effectivePace = best * 0.6 + median * 0.4
+            details.add("Best pace" to formatPace(best))
+            details.add("Median pace" to formatPace(median))
+            details.add("Effective" to formatPace(effectivePace))
+        }
+        details.add("Workouts used" to "${validPaces.size}")
+
+        val brackets = if (isWalk) {
+            "12:00\u219299 | 15:00\u219275 | 18:00\u219250 | 22:00\u219225 | 30:00\u21921"
+        } else {
+            "5:00\u219299 | 7:00\u219275 | 9:00\u219250 | 12:00\u219225 | 16:00\u21921"
+        }
+
+        val label = if (isWalk) "walks" else "runs"
+        return StatBreakdown(
+            description = "Based on your last 20 $label",
+            details = details,
+            brackets = brackets,
+            decayNote = "Uses last 20 $label. Older ones rotate out as new ones are added.",
+        )
+    }
+
+    fun enduranceBreakdown(allWorkouts: List<Workout>): StatBreakdown {
+        val distances = allWorkouts.map { it.distanceMiles }
+        val durations = allWorkouts.mapNotNull { it.durationMillis?.let { ms -> ms / 60_000.0 } }
+
+        val details = mutableListOf<Pair<String, String>>()
+        if (distances.isNotEmpty()) {
+            details.add("Max distance" to "%.2f mi".format(distances.max()))
+            val recent10 = distances.take(10)
+            details.add("Recent avg dist" to "%.2f mi".format(recent10.average()))
+        }
+        if (durations.isNotEmpty()) {
+            details.add("Max duration" to "%d min".format(durations.max().toInt()))
+            val recent10 = durations.take(10)
+            details.add("Recent avg dur" to "%d min".format(recent10.average().toInt()))
+        }
+        if (distances.isEmpty() && durations.isEmpty()) {
+            details.add("No data" to "Complete a workout!")
+        }
+
+        return StatBreakdown(
+            description = "Distance (50%) + duration (50%)",
+            details = details,
+            brackets = "Dist: 0.1mi\u21921 | 1mi\u219225 | 3mi\u219250 | 6mi\u219275 | 13.1mi\u219299\n" +
+                "Dur: 5min\u21921 | 15min\u219225 | 30min\u219250 | 60min\u219275 | 120min\u219299",
+            decayNote = "Rarely decays \u2014 your best workout anchors 70% of the score.",
+        )
+    }
+
+    fun consistencyBreakdown(
+        allWorkouts: List<Workout>,
+        now: Instant = Instant.now(),
+    ): StatBreakdown {
+        val zone = ZoneId.systemDefault()
+        val today = now.atZone(zone).toLocalDate()
+        val thirtyDaysAgo = today.minusDays(30)
+
+        val recentWorkouts = allWorkouts.filter { workout ->
+            val workoutDate = workout.startTime.atZone(zone).toLocalDate()
+            !workoutDate.isBefore(thirtyDaysAgo) && !workoutDate.isAfter(today)
+        }
+
+        val workoutDates = recentWorkouts
+            .map { it.startTime.atZone(zone).toLocalDate() }
+            .distinct()
+            .sorted()
+
+        var currentStreak = 0
+        var checkDate = today
+        val dateSet = workoutDates.toSet()
+        while (!checkDate.isBefore(thirtyDaysAgo) && dateSet.contains(checkDate)) {
+            currentStreak++
+            checkDate = checkDate.minusDays(1)
+        }
+
+        var longestStreak = 0
+        if (workoutDates.isNotEmpty()) {
+            var running = 1
+            for (i in 1 until workoutDates.size) {
+                if (workoutDates[i] == workoutDates[i - 1].plusDays(1)) {
+                    running++
+                } else {
+                    longestStreak = maxOf(longestStreak, running)
+                    running = 1
+                }
+            }
+            longestStreak = maxOf(longestStreak, running)
+        }
+
+        val details = listOf(
+            "30-day count" to "${recentWorkouts.size}",
+            "Current streak" to "${currentStreak}d",
+            "Longest streak" to "${longestStreak}d",
+        )
+
+        return StatBreakdown(
+            description = "Frequency (50%) + streak (50%)",
+            details = details,
+            brackets = "Freq: 1\u21921 | 6\u219225 | 12\u219250 | 20\u219275 | 28\u219299\n" +
+                "Streak: 1d\u21921 | 3d\u219225 | 7d\u219250 | 10d\u219275 | 14d\u219299",
+            decayNote = "Actively decays \u2014 uses a 30-day rolling window.",
+        )
+    }
+
+    private fun formatPace(seconds: Double): String {
+        val totalSeconds = seconds.toInt()
+        val minutes = totalSeconds / 60
+        val secs = totalSeconds % 60
+        return "%d:%02d/mi".format(minutes, secs)
     }
 
     // --- Generic bracket interpolation ---
