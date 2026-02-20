@@ -24,7 +24,6 @@ data class DogWalkSummaryUiState(
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
     val isDiscarded: Boolean = false,
-    val dogName: String = "",
     val routeTags: List<String> = emptyList(),
     val selectedRouteTag: String? = null,
     val isCreatingNewTag: Boolean = false,
@@ -51,16 +50,16 @@ class DogWalkSummaryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DogWalkSummaryUiState())
     val uiState: StateFlow<DogWalkSummaryUiState> = _uiState.asStateFlow()
 
-    init {
-        // Dog name is always Juniper
-        _uiState.value = _uiState.value.copy(dogName = "Juniper")
+    companion object {
+        private val DEFAULT_ROUTE_TAGS = listOf("Park", "Neighborhood", "City")
+    }
 
-        // Load route tags
+    init {
+        // Load route tags, merging with defaults
         viewModelScope.launch {
-            val tags = workoutRepository.getAllRouteTags()
-            _uiState.value = _uiState.value.copy(
-                routeTags = tags.map { it.name }
-            )
+            val dbTags = workoutRepository.getAllRouteTags().map { it.name }
+            val merged = DEFAULT_ROUTE_TAGS + dbTags.filter { it !in DEFAULT_ROUTE_TAGS }
+            _uiState.value = _uiState.value.copy(routeTags = merged)
         }
 
         // Load workout stats from DB
