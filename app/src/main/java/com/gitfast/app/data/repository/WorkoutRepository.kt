@@ -98,6 +98,14 @@ class WorkoutRepository @Inject constructor(
         return workoutDao.getAllRouteTags()
     }
 
+    suspend fun getAllRouteTagNames(): List<String> {
+        val dbTags = workoutDao.getAllRouteTags()
+            .sortedByDescending { it.lastUsed }
+            .map { it.name }
+        val workoutTags = workoutDao.getDistinctRouteTags()
+        return (dbTags + workoutTags).distinct()
+    }
+
     suspend fun saveRouteTag(tag: RouteTagEntity) {
         workoutDao.insertRouteTag(tag)
     }
