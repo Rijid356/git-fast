@@ -317,6 +317,7 @@ class RoutePerformanceViewModelTest {
         override suspend fun getActiveWorkout(): WorkoutEntity? = null
         override suspend fun insertRouteTag(tag: RouteTagEntity) {}
         override suspend fun getAllRouteTags(): List<RouteTagEntity> = routeTags
+        override suspend fun getDistinctRouteTags(): List<String> = routeTags.map { it.name }
         override suspend fun updateRouteTagLastUsed(name: String, timestamp: Long) {}
         override suspend fun saveWorkoutTransaction(
             workout: WorkoutEntity,

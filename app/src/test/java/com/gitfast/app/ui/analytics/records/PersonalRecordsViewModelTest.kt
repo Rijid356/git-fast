@@ -149,6 +149,7 @@ class PersonalRecordsViewModelTest {
         override suspend fun getActiveWorkout(): WorkoutEntity? = null
         override suspend fun insertRouteTag(tag: RouteTagEntity) {}
         override suspend fun getAllRouteTags(): List<RouteTagEntity> = emptyList()
+        override suspend fun getDistinctRouteTags(): List<String> = emptyList()
         override suspend fun updateRouteTagLastUsed(name: String, timestamp: Long) {}
         override suspend fun saveWorkoutTransaction(
             workout: WorkoutEntity,

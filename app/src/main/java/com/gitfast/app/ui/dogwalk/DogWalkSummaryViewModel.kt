@@ -132,20 +132,15 @@ class DogWalkSummaryViewModel @Inject constructor(
         viewModelScope.launch {
             val state = _uiState.value
 
-            // Save or touch route tag
+            // Save or touch route tag (REPLACE upserts: inserts if new, updates if exists)
             state.selectedRouteTag?.let { tag ->
-                if (tag !in state.routeTags.dropLast(if (state.routeTags.contains(tag)) 0 else 1)) {
-                    // New tag
-                    workoutRepository.saveRouteTag(
-                        RouteTagEntity(
-                            name = tag,
-                            createdAt = System.currentTimeMillis(),
-                            lastUsed = System.currentTimeMillis()
-                        )
+                workoutRepository.saveRouteTag(
+                    RouteTagEntity(
+                        name = tag,
+                        createdAt = System.currentTimeMillis(),
+                        lastUsed = System.currentTimeMillis()
                     )
-                } else {
-                    workoutRepository.touchRouteTag(tag)
-                }
+                )
             }
 
             // Update workout with metadata
