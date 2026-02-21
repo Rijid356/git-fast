@@ -2,15 +2,22 @@ package com.gitfast.app.ui.settings
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.gitfast.app.auth.GoogleAuthManager
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.DistanceUnit
+import com.gitfast.app.data.sync.FirestoreSync
+import com.gitfast.app.data.sync.SyncStatus
+import com.gitfast.app.data.sync.SyncStatusStore
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SettingsUiState(
@@ -23,12 +30,20 @@ data class SettingsUiState(
     val hasHomeLocation: Boolean = false,
     val homeArrivalRadiusMeters: Int = 30,
     val isCapturingLocation: Boolean = false,
+    val isSignedIn: Boolean = false,
+    val userEmail: String? = null,
+    val syncStatus: SyncStatus = SyncStatus.Idle,
+    val lastSyncedAt: Long = 0L,
+    val isSyncing: Boolean = false,
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     application: Application,
     private val settingsStore: SettingsStore,
+    private val googleAuthManager: GoogleAuthManager,
+    private val firestoreSync: FirestoreSync,
+    private val syncStatusStore: SyncStatusStore,
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(
@@ -41,9 +56,56 @@ class SettingsViewModel @Inject constructor(
             homeArrivalEnabled = settingsStore.homeArrivalEnabled,
             hasHomeLocation = settingsStore.hasHomeLocation,
             homeArrivalRadiusMeters = settingsStore.homeArrivalRadiusMeters,
+            isSignedIn = googleAuthManager.currentUser.value != null,
+            userEmail = googleAuthManager.currentUser.value?.email,
+            lastSyncedAt = syncStatusStore.lastSyncedAt,
         )
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+
+    init {
+        // Observe auth state
+        viewModelScope.launch {
+            googleAuthManager.currentUser.collect { user ->
+                _uiState.value = _uiState.value.copy(
+                    isSignedIn = user != null,
+                    userEmail = user?.email,
+                )
+            }
+        }
+
+        // Observe sync status
+        viewModelScope.launch {
+            syncStatusStore.syncStatus.collect { status ->
+                _uiState.value = _uiState.value.copy(
+                    syncStatus = status,
+                    isSyncing = status is SyncStatus.Syncing,
+                    lastSyncedAt = syncStatusStore.lastSyncedAt,
+                )
+            }
+        }
+    }
+
+    fun signIn(activityContext: Context) {
+        viewModelScope.launch {
+            val result = googleAuthManager.signIn(activityContext)
+            if (result.isSuccess && !syncStatusStore.hasCompletedInitialSync) {
+                firestoreSync.initialMigration()
+            }
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            googleAuthManager.signOut()
+        }
+    }
+
+    fun syncNow() {
+        viewModelScope.launch {
+            firestoreSync.fullSync()
+        }
+    }
 
     fun setAutoPauseEnabled(enabled: Boolean) {
         settingsStore.autoPauseEnabled = enabled

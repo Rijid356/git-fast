@@ -6,6 +6,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlinx.kover")
+    id("com.google.gms.google-services")
 }
 
 // Read MAPS_API_KEY from local.properties (findProperty doesn't read local.properties)
@@ -65,6 +67,37 @@ android {
     }
 }
 
+kover {
+    currentProject {
+        sources {
+            excludedSourceSets.add("test")
+            excludedSourceSets.add("androidTest")
+        }
+    }
+    reports {
+        filters {
+            excludes {
+                // Hilt generated code
+                classes("*_HiltModules*", "*_Factory*", "*_MembersInjector*", "Hilt_*", "*_GeneratedInjector*")
+                // Room generated code
+                classes("*_Impl", "*_Impl\$*")
+                // Compose generated code
+                classes("*ComposableSingletons*")
+                // DI modules (configuration only)
+                packages("com.gitfast.app.di")
+                // Data classes / enums (no logic to test)
+                packages("com.gitfast.app.data.local.entity", "com.gitfast.app.data.model")
+                // Database migrations (SQL strings, tested via instrumented tests)
+                packages("com.gitfast.app.data.local.migrations")
+                // BuildConfig and app entry points
+                classes("com.gitfast.app.BuildConfig", "com.gitfast.app.GitFastApp", "com.gitfast.app.MainActivity")
+                // Firebase SDK wrappers (not unit-testable)
+                packages("com.gitfast.app.auth")
+            }
+        }
+    }
+}
+
 dependencies {
     // Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
@@ -102,6 +135,16 @@ dependencies {
 
     // Lifecycle Service
     implementation("androidx.lifecycle:lifecycle-service:2.8.7")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+
+    // Credential Manager (Google Sign-In)
+    implementation("androidx.credentials:credentials:1.5.0-beta01")
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0-beta01")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     // Core
     implementation("androidx.core:core-ktx:1.15.0")
