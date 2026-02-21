@@ -59,7 +59,7 @@ data class AnalyticsSection(
 
 private val sections = listOf(
     AnalyticsSection("ROUTE MAP", "Compare GPS traces", Icons.Default.Place, enabled = true),
-    AnalyticsSection("ROUTE STATS", "Performance by route", Icons.Default.Info),
+    AnalyticsSection("ROUTE STATS", "Performance by route", Icons.Default.Info, enabled = true),
     AnalyticsSection("RECORDS", "Personal bests", Icons.Default.Star),
     AnalyticsSection("TRENDS", "Weekly & monthly", Icons.Default.Favorite),
     AnalyticsSection("WEATHER", "Impact analysis", Icons.Default.Warning),
@@ -71,6 +71,7 @@ private val sections = listOf(
 fun AnalyticsHubScreen(
     onBackClick: () -> Unit,
     onRouteMapClick: () -> Unit = {},
+    onRouteStatsClick: () -> Unit = {},
     viewModel: AnalyticsHubViewModel = hiltViewModel(),
 ) {
     val stats by viewModel.stats.collectAsStateWithLifecycle()
@@ -130,10 +131,10 @@ fun AnalyticsHubScreen(
                 SectionCard(
                     section = section,
                     onClick = {
-                        if (section.enabled && section.title == "ROUTE MAP") {
-                            onRouteMapClick()
-                        } else if (!section.enabled) {
-                            scope.launch {
+                        when {
+                            section.enabled && section.title == "ROUTE MAP" -> onRouteMapClick()
+                            section.enabled && section.title == "ROUTE STATS" -> onRouteStatsClick()
+                            !section.enabled -> scope.launch {
                                 snackbarHostState.showSnackbar("Coming soon!")
                             }
                         }
