@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.ui.analytics.AnalyticsHubScreen
 import com.gitfast.app.ui.analytics.routeoverlay.RouteOverlayScreen
+import com.gitfast.app.ui.analytics.records.PersonalRecordsScreen
 import com.gitfast.app.ui.analytics.routeperformance.RoutePerformanceScreen
 import com.gitfast.app.ui.character.CharacterSheetScreen
 import com.gitfast.app.ui.detail.DetailScreen
@@ -35,6 +36,7 @@ sealed class Screen(val route: String) {
     data object Analytics : Screen("analytics")
     data object RouteOverlay : Screen("route_overlay")
     data object RoutePerformance : Screen("route_performance")
+    data object PersonalRecords : Screen("personal_records")
     data object CharacterSheet : Screen("character_sheet")
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
         fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
@@ -112,6 +114,9 @@ fun GitFastNavGraph(navController: NavHostController) {
                 onRouteStatsClick = {
                     navController.navigate(Screen.RoutePerformance.route)
                 },
+                onRecordsClick = {
+                    navController.navigate(Screen.PersonalRecords.route)
+                },
             )
         }
         composable(Screen.RouteOverlay.route) {
@@ -123,6 +128,16 @@ fun GitFastNavGraph(navController: NavHostController) {
         }
         composable(Screen.RoutePerformance.route) {
             RoutePerformanceScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onWorkoutClick = { workoutId ->
+                    navController.navigate(Screen.Detail.createRoute(workoutId))
+                },
+            )
+        }
+        composable(Screen.PersonalRecords.route) {
+            PersonalRecordsScreen(
                 onBackClick = {
                     navController.popBackStack()
                 },

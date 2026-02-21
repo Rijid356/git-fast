@@ -255,6 +255,7 @@ class RouteOverlayViewModelTest {
         override fun getAllCompletedWorkouts(): Flow<List<WorkoutEntity>> = flowOf(emptyList())
         override suspend fun getAllCompletedWorkoutsOnce(): List<WorkoutEntity> = emptyList()
         override suspend fun getRecentCompletedRuns(limit: Int): List<WorkoutEntity> = emptyList()
+        override suspend fun getAllCompletedRunsOnce(): List<WorkoutEntity> = emptyList()
         override fun getCompletedWorkoutsByType(activityType: String): Flow<List<WorkoutEntity>> = flowOf(emptyList())
         override fun getDogWalksByRoute(routeTag: String): Flow<List<WorkoutEntity>> =
             flowOf(workoutsByRoute[routeTag] ?: emptyList())
