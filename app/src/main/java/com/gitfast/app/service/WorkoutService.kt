@@ -319,15 +319,16 @@ class WorkoutService : LifecycleService() {
             .setOnlyAlertOnce(true)
 
         // Show a real-time chronometer in the notification and status bar
+        builder.setShowWhen(true)
         if (!state.isPaused) {
             builder
                 .setUsesChronometer(true)
-                .setShowWhen(true)
                 .setWhen(System.currentTimeMillis() - state.elapsedSeconds * 1000L)
         } else {
+            // When paused, show frozen time (no ticking chronometer)
             builder
                 .setUsesChronometer(false)
-                .setShowWhen(false)
+                .setWhen(System.currentTimeMillis() - state.elapsedSeconds * 1000L)
         }
 
         if (state.isHomeArrivalPaused) {
