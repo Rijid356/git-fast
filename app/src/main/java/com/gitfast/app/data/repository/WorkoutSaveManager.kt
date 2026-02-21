@@ -19,6 +19,7 @@ import com.gitfast.app.util.AchievementSnapshot
 import com.gitfast.app.util.DistanceCalculator
 import com.gitfast.app.util.StatsCalculator
 import com.gitfast.app.util.StreakCalculator
+import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.util.XpCalculator
 import java.util.UUID
 import javax.inject.Inject
@@ -35,6 +36,7 @@ class WorkoutSaveManager @Inject constructor(
     private val workoutDao: WorkoutDao,
     private val characterRepository: CharacterRepository,
     private val workoutRepository: WorkoutRepository,
+    private val firestoreSync: FirestoreSync?,
 ) {
 
     suspend fun saveCompletedWorkout(snapshot: WorkoutSnapshot): SaveResult? {
@@ -106,6 +108,14 @@ class WorkoutSaveManager @Inject constructor(
                 )
                 recalculateJuniperStats()
                 checkJuniperAchievements()
+            }
+
+            // Fire-and-forget cloud sync
+            try {
+                firestoreSync?.pushWorkout(snapshot.workoutId)
+                firestoreSync?.pushCharacterData()
+            } catch (e: Exception) {
+                Log.w("WorkoutSaveManager", "Cloud sync failed (non-blocking)", e)
             }
 
             Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}, awarded $xpAwarded XP, streak=$streakDays, ${newAchievements.size} achievements unlocked")
@@ -251,5 +261,13 @@ class WorkoutSaveManager @Inject constructor(
                 notes = notes
             )
         )
+
+        // Fire-and-forget cloud sync for updated metadata
+        try {
+            firestoreSync?.pushWorkout(workoutId)
+            firestoreSync?.pushRouteTags()
+        } catch (e: Exception) {
+            Log.w("WorkoutSaveManager", "Cloud sync failed (non-blocking)", e)
+        }
     }
 }

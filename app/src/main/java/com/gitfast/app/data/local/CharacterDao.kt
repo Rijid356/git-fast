@@ -40,6 +40,9 @@ interface CharacterDao {
     @Query("SELECT * FROM xp_transactions WHERE profileId = :profileId")
     fun getAllXpTransactions(profileId: Int): Flow<List<XpTransactionEntity>>
 
+    @Query("SELECT * FROM xp_transactions WHERE profileId = :profileId")
+    suspend fun getXpTransactionsOnce(profileId: Int): List<XpTransactionEntity>
+
     // --- Achievements ---
 
     @Query("SELECT * FROM unlocked_achievements WHERE profileId = :profileId ORDER BY unlockedAt DESC")
@@ -47,6 +50,9 @@ interface CharacterDao {
 
     @Query("SELECT achievementId FROM unlocked_achievements WHERE profileId = :profileId")
     suspend fun getUnlockedAchievementIds(profileId: Int): List<String>
+
+    @Query("SELECT * FROM unlocked_achievements WHERE profileId = :profileId")
+    suspend fun getUnlockedAchievementsOnce(profileId: Int): List<UnlockedAchievementEntity>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUnlockedAchievement(entity: UnlockedAchievementEntity)

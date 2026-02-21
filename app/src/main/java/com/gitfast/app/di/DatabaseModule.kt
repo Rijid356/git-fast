@@ -15,6 +15,7 @@ import com.gitfast.app.data.local.migrations.MIGRATION_6_7
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
+import com.gitfast.app.data.sync.FirestoreSync
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -59,8 +60,9 @@ object DatabaseModule {
         workoutDao: WorkoutDao,
         characterRepository: CharacterRepository,
         workoutRepository: WorkoutRepository,
+        firestoreSync: FirestoreSync,
     ): WorkoutSaveManager {
-        return WorkoutSaveManager(workoutDao, characterRepository, workoutRepository)
+        return WorkoutSaveManager(workoutDao, characterRepository, workoutRepository, firestoreSync)
     }
 
     @Provides

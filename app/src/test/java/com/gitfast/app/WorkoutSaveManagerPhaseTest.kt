@@ -24,7 +24,7 @@ class WorkoutSaveManagerPhaseTest {
     @Before
     fun setUp() {
         fakeDao = FakeWorkoutDao()
-        saveManager = WorkoutSaveManager(fakeDao, CharacterRepository(FakeCharacterDao()), WorkoutRepository(fakeDao))
+        saveManager = WorkoutSaveManager(fakeDao, CharacterRepository(FakeCharacterDao()), WorkoutRepository(fakeDao), null)
     }
 
     private fun createPhaseData(
