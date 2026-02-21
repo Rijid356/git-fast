@@ -57,7 +57,7 @@ object RouteComparisonAnalyzer {
         return listOf(currentItem) + previousItems
     }
 
-    private fun formatDelta(deltaSeconds: Int): String {
+    internal fun formatDelta(deltaSeconds: Int): String {
         val absDelta = kotlin.math.abs(deltaSeconds)
         val minutes = absDelta / 60
         val seconds = absDelta % 60
