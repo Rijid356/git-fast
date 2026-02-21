@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "43645397236",
+    "project_id": "git-fast-b9366",
+    "storage_bucket": "git-fast-b9366.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:43645397236:android:7eab85875b348cd1f016a1",
+        "android_client_info": {
+          "package_name": "com.gitfast.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "43645397236-t2pqq5a4s0cmi0slb1p8obnmth03jss4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gitfast.app",
+            "certificate_hash": "acab7eea39e32ca6f20de92f5754be3170a27309"
+          }
+        },
+        {
+          "client_id": "43645397236-ule66jeedddvfk0sgrqn1ogfitbokh7v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUwgAXWbKcF365zSHXZK5z__TuW1zY8Fw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "43645397236-ule66jeedddvfk0sgrqn1ogfitbokh7v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
