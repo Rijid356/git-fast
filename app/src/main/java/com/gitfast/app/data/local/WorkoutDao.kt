@@ -69,6 +69,9 @@ interface WorkoutDao {
     @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = 'RUN' ORDER BY startTime DESC LIMIT :limit")
     suspend fun getRecentCompletedRuns(limit: Int): List<WorkoutEntity>
 
+    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = 'RUN' ORDER BY startTime DESC")
+    suspend fun getAllCompletedRunsOnce(): List<WorkoutEntity>
+
     @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = :activityType ORDER BY startTime DESC")
     fun getCompletedWorkoutsByType(activityType: String): Flow<List<WorkoutEntity>>
 
