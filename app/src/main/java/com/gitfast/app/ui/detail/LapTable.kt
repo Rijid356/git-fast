@@ -1,23 +1,36 @@
 package com.gitfast.app.ui.detail
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun LapTable(laps: List<LapDisplayItem>) {
+fun LapTable(
+    laps: List<LapDisplayItem>,
+    onDeleteLap: ((String) -> Unit)? = null,
+) {
+    var lapToDelete by remember { mutableStateOf<LapDisplayItem?>(null) }
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RectangleShape,
@@ -28,12 +41,28 @@ fun LapTable(laps: List<LapDisplayItem>) {
             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
             laps.forEach { lap ->
-                LapTableRow(lap = lap)
+                LapTableRow(
+                    lap = lap,
+                    onLongPress = if (onDeleteLap != null) {
+                        { lapToDelete = lap }
+                    } else null,
+                )
                 if (lap != laps.last()) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                 }
             }
         }
+    }
+
+    lapToDelete?.let { lap ->
+        DeleteLapDialog(
+            lapNumber = lap.lapNumber,
+            onConfirm = {
+                onDeleteLap?.invoke(lap.id)
+                lapToDelete = null
+            },
+            onDismiss = { lapToDelete = null },
+        )
     }
 }
 
@@ -54,11 +83,23 @@ private fun LapTableHeader() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun LapTableRow(lap: LapDisplayItem) {
+private fun LapTableRow(
+    lap: LapDisplayItem,
+    onLongPress: (() -> Unit)? = null,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .let { mod ->
+                if (onLongPress != null) {
+                    mod.combinedClickable(
+                        onClick = {},
+                        onLongClick = onLongPress,
+                    )
+                } else mod
+            }
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -107,4 +148,34 @@ private fun LapTableRow(lap: LapDisplayItem) {
             textAlign = TextAlign.End
         )
     }
+}
+
+@Composable
+private fun DeleteLapDialog(
+    lapNumber: Int,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Delete lap $lapNumber?")
+        },
+        text = {
+            Text(text = "This action cannot be undone.")
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = "DELETE",
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "CANCEL")
+            }
+        },
+    )
 }
