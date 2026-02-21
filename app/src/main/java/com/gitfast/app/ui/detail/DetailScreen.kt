@@ -131,6 +131,7 @@ fun DetailScreen(
                     phases = state.phases,
                     lapAnalysis = state.lapAnalysis,
                     routeComparison = state.routeComparison,
+                    onDeleteLap = viewModel::deleteLap,
                     modifier = Modifier.padding(innerPadding),
                 )
             }
@@ -154,6 +155,7 @@ private fun DetailContent(
     phases: List<com.gitfast.app.util.PhaseAnalyzer.PhaseDisplayItem>,
     lapAnalysis: LapAnalysis?,
     routeComparison: List<RouteComparisonAnalyzer.RouteComparisonItem>,
+    onDeleteLap: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -200,7 +202,7 @@ private fun DetailContent(
             }
 
             lapAnalysis?.let {
-                LapAnalysisSection(analysis = it)
+                LapAnalysisSection(analysis = it, onDeleteLap = onDeleteLap)
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }

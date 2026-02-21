@@ -33,6 +33,7 @@ object LapAnalyzer {
             } else null
 
             LapDisplayItem(
+                id = lap.id,
                 lapNumber = lap.lapNumber,
                 timeFormatted = formatElapsedTime(durationSeconds),
                 distanceFormatted = formatDistance(lap.distanceMeters),

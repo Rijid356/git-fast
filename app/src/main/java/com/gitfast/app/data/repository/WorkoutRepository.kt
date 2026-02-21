@@ -90,6 +90,10 @@ class WorkoutRepository @Inject constructor(
         workoutDao.deleteWorkout(workoutId)
     }
 
+    suspend fun deleteLap(lapId: String) {
+        workoutDao.deleteLap(lapId)
+    }
+
     suspend fun getCompletedWorkoutCount(): Int {
         return workoutDao.getCompletedWorkoutCount()
     }
