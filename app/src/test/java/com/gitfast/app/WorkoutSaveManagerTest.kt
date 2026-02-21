@@ -40,7 +40,7 @@ class WorkoutSaveManagerTest {
     fun setUp() {
         fakeDao = FakeWorkoutDao()
         fakeCharacterDao = FakeCharacterDao()
-        saveManager = WorkoutSaveManager(fakeDao, CharacterRepository(fakeCharacterDao), WorkoutRepository(fakeDao))
+        saveManager = WorkoutSaveManager(fakeDao, CharacterRepository(fakeCharacterDao), WorkoutRepository(fakeDao), null)
     }
 
     private fun createSnapshot(
@@ -299,5 +299,7 @@ class FakeCharacterDao : CharacterDao {
     override fun getAllXpTransactions(profileId: Int): Flow<List<XpTransactionEntity>> = flowOf(transactions.filter { it.profileId == profileId })
     override fun getUnlockedAchievements(profileId: Int): Flow<List<UnlockedAchievementEntity>> = flowOf(emptyList())
     override suspend fun getUnlockedAchievementIds(profileId: Int): List<String> = emptyList()
+    override suspend fun getUnlockedAchievementsOnce(profileId: Int): List<UnlockedAchievementEntity> = emptyList()
+    override suspend fun getXpTransactionsOnce(profileId: Int): List<XpTransactionEntity> = transactions.filter { it.profileId == profileId }
     override suspend fun insertUnlockedAchievement(entity: UnlockedAchievementEntity) {}
 }

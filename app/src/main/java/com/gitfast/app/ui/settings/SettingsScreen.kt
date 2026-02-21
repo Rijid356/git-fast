@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,6 +41,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -140,6 +142,22 @@ fun SettingsScreen(
                 subtitle = "Prevent screen from dimming during workouts",
                 checked = uiState.keepScreenOn,
                 onCheckedChange = { viewModel.setKeepScreenOn(it) },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Cloud Backup section ---
+            SectionHeader(text = "Cloud Backup")
+
+            CloudBackupSection(
+                isSignedIn = uiState.isSignedIn,
+                userEmail = uiState.userEmail,
+                syncStatus = uiState.syncStatus,
+                lastSyncedAt = uiState.lastSyncedAt,
+                isSyncing = uiState.isSyncing,
+                onSignIn = { viewModel.signIn(context) },
+                onSignOut = { viewModel.signOut() },
+                onSyncNow = { viewModel.syncNow() },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
