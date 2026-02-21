@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-02-18
+- **Last Active:** 2026-02-21
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose
 
@@ -31,10 +31,23 @@
 | 2026-02-18 | Ghost runner: lap-based ghost comparison during workouts with auto/manual ghost selection, 10 unit tests | 11 | 1 | +430/-15 |
 | 2026-02-18 | Streaks and multipliers: daily workout streak tracking with XP multiplier bonuses (1.0x-1.5x), streak UI on home/character/summary screens, 16 unit tests | 16 | 4 | +479/-20 |
 | 2026-02-18 | Field test improvements: GPS lap pins, micro-lap discard, auto-lap detection, portrait lock, bigger text, sunlight readability, button fixes | 20 | 1 | +217/-47 |
+| 2026-02-19 | Replace distance-based auto-lap with GPS start/finish anchor detection, configurable radius (10-25m), leave-and-return + cooldown logic, 8 unit tests | 9 | 2 | +268/-29 |
+| 2026-02-19 | Update CLAUDE.md with comprehensive architecture docs: RPG system, ghost runner, crash recovery, DB v7 migration history, navigation gotchas, toolchain versions, watch/ firmware section | 1 | 1 | +58/-16 |
+| 2026-02-19 | Dog walk UI polish: "START DOG WALK" text + cyan button color, raised active-walk buttons (96dp), notification shows elapsed time instead of pace | 3 | 1 | +12/-8 |
+| 2026-02-19 | Enhanced workout notification: BigTextStyle expandable view, activity-aware content (run vs dog walk), Pause/Resume action buttons, separate 3s notification timer, 10 unit tests | 5 | 1 | +285/-37 |
+| 2026-02-20 | Fix dog walk button reverting to "START RUN" after service binds — collectWorkoutState() was clobbering activityType with state manager default | 1 | 1 | +5/-1 |
+| 2026-02-20 | Redesign app icon (side-profile running man, multi-color palette) and character sheet sprites (JRPG Hero runner, tri-color Aussie dog), add monochrome icon layer | 5 | 1 | +722/-682 |
+| 2026-02-20 | Dog walk summary polish (title/color/padding/routes/windy) + real-time notification chronometer | 6 | 2 | +33/-35 |
+| 2026-02-20 | Tap-to-expand stat breakdowns on Character Sheet: animated panels showing formula, inputs, brackets, decay notes for SPD/END/CON | 4 | 1 | +284/-32 |
+| 2026-02-20 | Home arrival auto-pause: GPS geofence pauses workout at home with Stop/Resume notification, Settings UI for home location capture, 9 unit tests | 10 | 2 | +531/-10 |
+| 2026-02-20 | Checkpoint 15: Analytics hub screen with lifetime stats, 6 section cards for future analytics features, navigation from HomeScreen, getLongestStreak(), 12 unit tests | 10 | 4 | +621/-0 |
+| 2026-02-20 | Checkpoint 16: Route overlay comparison — GPS trace visualization on map with color-coded polylines, route tag selector, interactive zoom/pan, trace legend, 7 unit tests | 7 | 2 | +770/-2 |
+| 2026-02-21 | Checkpoint 17: Route performance table — session history per route tag with trend summary banner, personal best highlighting, delta comparisons, tap-to-detail navigation, 11 unit tests | 7 | 1 | +929/-6 |
+| 2026-02-21 | Checkpoint 18: Personal records dashboard — all-time bests for runs (fastest pace, longest run/duration, best lap), dog walks (longest walk/duration, most steps), overall (streak, totals), tap-to-detail, 15 unit tests | 13 | 2 | +846/-1 |
 
 ## Totals
-- **Total Sessions:** 20
-- **Total Commits:** 32
-- **Total Files Changed:** 325
-- **Total Lines Added:** 15380
-- **Total Lines Removed:** 772
+- **Total Sessions:** 33
+- **Total Commits:** 53
+- **Total Files Changed:** 406
+- **Total Lines Added:** 20744
+- **Total Lines Removed:** 1631
