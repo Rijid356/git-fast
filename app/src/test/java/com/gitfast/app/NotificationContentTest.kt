@@ -53,7 +53,7 @@ class NotificationContentTest {
     }
 
     @Test
-    fun `collapsed text for run includes time distance and pace`() {
+    fun `collapsed text for run includes distance and pace but not time`() {
         val state = WorkoutTrackingState(
             isActive = true,
             activityType = ActivityType.RUN,
@@ -62,13 +62,13 @@ class NotificationContentTest {
             currentPaceSecondsPerMile = 765 // 12:45
         )
         val content = buildNotificationContent(state)
-        assertTrue(content.collapsedText.contains("05:32"))
+        assertFalse(content.collapsedText.contains("05:32"))
         assertTrue(content.collapsedText.contains("mi"))
         assertTrue(content.collapsedText.contains("12:45 /mi"))
     }
 
     @Test
-    fun `collapsed text for dog walk includes time and distance but no pace`() {
+    fun `collapsed text for dog walk includes distance but no time or pace`() {
         val state = WorkoutTrackingState(
             isActive = true,
             activityType = ActivityType.DOG_WALK,
@@ -77,13 +77,13 @@ class NotificationContentTest {
             currentPaceSecondsPerMile = 900
         )
         val content = buildNotificationContent(state)
-        assertTrue(content.collapsedText.contains("23:15"))
+        assertFalse(content.collapsedText.contains("23:15"))
         assertTrue(content.collapsedText.contains("mi"))
         assertFalse(content.collapsedText.contains("/mi"))
     }
 
     @Test
-    fun `expanded text for run has all 4 stat lines`() {
+    fun `expanded text for run has distance and pace lines but no time`() {
         val state = WorkoutTrackingState(
             isActive = true,
             activityType = ActivityType.RUN,
@@ -93,14 +93,14 @@ class NotificationContentTest {
             averagePaceSecondsPerMile = 782
         )
         val content = buildNotificationContent(state)
-        assertTrue(content.expandedText.contains("Time"))
+        assertFalse(content.expandedText.contains("Time"))
         assertTrue(content.expandedText.contains("Distance"))
         assertTrue(content.expandedText.contains("Pace"))
         assertTrue(content.expandedText.contains("Avg Pace"))
     }
 
     @Test
-    fun `expanded text for dog walk has only time and distance`() {
+    fun `expanded text for dog walk has only distance`() {
         val state = WorkoutTrackingState(
             isActive = true,
             activityType = ActivityType.DOG_WALK,
@@ -110,14 +110,14 @@ class NotificationContentTest {
             averagePaceSecondsPerMile = 950
         )
         val content = buildNotificationContent(state)
-        assertTrue(content.expandedText.contains("Time"))
+        assertFalse(content.expandedText.contains("Time"))
         assertTrue(content.expandedText.contains("Distance"))
         assertFalse(content.expandedText.contains("Pace"))
         assertFalse(content.expandedText.contains("Avg Pace"))
     }
 
     @Test
-    fun `expanded text for paused state shows paused after time`() {
+    fun `expanded text for paused state shows paused indicator`() {
         val state = WorkoutTrackingState(
             isActive = true,
             isPaused = true,
@@ -128,9 +128,6 @@ class NotificationContentTest {
         )
         val content = buildNotificationContent(state)
         assertTrue(content.expandedText.contains("(paused)"))
-        // "(paused)" should be on the Time line
-        val timeLine = content.expandedText.lines().first { it.contains("Time") }
-        assertTrue(timeLine.contains("(paused)"))
     }
 
     @Test
