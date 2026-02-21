@@ -42,9 +42,7 @@ class RouteOverlayViewModel @Inject constructor(
 
     private fun loadRouteTags() {
         viewModelScope.launch {
-            val tags = workoutRepository.getAllRouteTags()
-                .sortedByDescending { it.lastUsed }
-                .map { it.name }
+            val tags = workoutRepository.getAllRouteTagNames()
             _uiState.update { it.copy(
                 routeTags = tags,
                 selectedTag = if (tags.size == 1) tags.first() else null,

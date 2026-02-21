@@ -122,6 +122,9 @@ interface WorkoutDao {
     @Query("SELECT * FROM route_tags ORDER BY lastUsed DESC")
     suspend fun getAllRouteTags(): List<RouteTagEntity>
 
+    @Query("SELECT DISTINCT routeTag FROM workouts WHERE status = 'COMPLETED' AND routeTag IS NOT NULL AND routeTag != '' ORDER BY routeTag ASC")
+    suspend fun getDistinctRouteTags(): List<String>
+
     @Query("UPDATE route_tags SET lastUsed = :timestamp WHERE name = :name")
     suspend fun updateRouteTagLastUsed(name: String, timestamp: Long)
 
