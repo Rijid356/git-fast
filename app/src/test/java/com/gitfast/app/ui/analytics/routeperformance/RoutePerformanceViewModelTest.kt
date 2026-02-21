@@ -326,6 +326,7 @@ class RoutePerformanceViewModelTest {
             gpsPoints: List<GpsPointEntity>,
         ) {}
         override suspend fun deleteWorkout(workoutId: String) {}
+        override suspend fun deleteLap(lapId: String) {}
         override suspend fun getRecentWorkoutsWithLaps(limit: Int): List<WorkoutEntity> = emptyList()
     }
 }
