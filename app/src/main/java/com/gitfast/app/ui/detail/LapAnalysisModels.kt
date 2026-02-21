@@ -18,6 +18,7 @@ data class LapAnalysis(
 )
 
 data class LapDisplayItem(
+    val id: String,
     val lapNumber: Int,
     val timeFormatted: String,         // "2:15"
     val distanceFormatted: String,     // "0.26 mi"

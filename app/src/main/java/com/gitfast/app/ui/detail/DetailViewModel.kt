@@ -66,6 +66,13 @@ class DetailViewModel @Inject constructor(
         }
     }
 
+    fun deleteLap(lapId: String) {
+        viewModelScope.launch {
+            workoutRepository.deleteLap(lapId)
+            loadWorkout()
+        }
+    }
+
     fun deleteWorkout() {
         viewModelScope.launch {
             workoutRepository.deleteWorkout(workoutId)

@@ -274,6 +274,7 @@ class FakeWorkoutDao : WorkoutDao {
     override suspend fun getDistinctRouteTags(): List<String> = emptyList()
     override suspend fun updateRouteTagLastUsed(name: String, timestamp: Long) {}
     override suspend fun deleteWorkout(workoutId: String) {}
+    override suspend fun deleteLap(lapId: String) {}
     override suspend fun getRecentWorkoutsWithLaps(limit: Int): List<WorkoutEntity> = emptyList()
     override suspend fun getCompletedDogWalksOnce(): List<WorkoutEntity> = emptyList()
     override suspend fun getTotalDogWalkDistanceMeters(): Double = 0.0

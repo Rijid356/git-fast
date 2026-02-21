@@ -11,7 +11,10 @@ import androidx.compose.ui.unit.dp
 import com.gitfast.app.ui.components.SectionHeader
 
 @Composable
-fun LapAnalysisSection(analysis: LapAnalysis) {
+fun LapAnalysisSection(
+    analysis: LapAnalysis,
+    onDeleteLap: ((String) -> Unit)? = null,
+) {
     Column {
         SectionHeader(text = "LAP ANALYSIS")
 
@@ -33,7 +36,7 @@ fun LapAnalysisSection(analysis: LapAnalysis) {
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        LapTable(laps = analysis.laps)
+        LapTable(laps = analysis.laps, onDeleteLap = onDeleteLap)
     }
 }
 
