@@ -72,7 +72,7 @@ class PersonalRecordsCalculatorTest {
             createRun("r2", phases = listOf(phase2)),
         )
 
-        val records = PersonalRecordsCalculator.calculateRunRecords(emptyList(), runsWithLaps)
+        val records = PersonalRecordsCalculator.calculateRunRecords(runsWithLaps, runsWithLaps)
         val bestLap = records.find { it.title == "BEST LAP" }
 
         assertEquals("r1", bestLap?.workoutId)
