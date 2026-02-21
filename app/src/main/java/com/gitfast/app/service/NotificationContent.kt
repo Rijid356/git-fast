@@ -2,7 +2,6 @@ package com.gitfast.app.service
 
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.util.formatDistance
-import com.gitfast.app.util.formatElapsedTime
 import com.gitfast.app.util.formatPace
 
 data class NotificationContent(
@@ -15,7 +14,6 @@ fun buildNotificationContent(state: WorkoutTrackingState): NotificationContent {
     val isPaused = state.isPaused
     val isDogWalk = state.activityType == ActivityType.DOG_WALK
 
-    val elapsed = formatElapsedTime(state.elapsedSeconds)
     val distance = formatDistance(state.distanceMeters)
     val currentPace = state.currentPaceSecondsPerMile?.let { formatPace(it) } ?: "-- /mi"
     val avgPace = state.averagePaceSecondsPerMile?.let { formatPace(it) } ?: "-- /mi"
@@ -31,22 +29,20 @@ fun buildNotificationContent(state: WorkoutTrackingState): NotificationContent {
     }
 
     val collapsedText = if (isDogWalk) {
-        "$elapsed \u2022 $distance"
+        distance
     } else {
-        "$elapsed \u2022 $distance \u2022 $currentPace"
+        "$distance \u2022 $currentPace"
     }
 
     val expandedText = buildString {
-        append("Time        $elapsed")
-        if (state.isHomeArrivalPaused) append("  (home)")
-        else if (isPaused) append("  (paused)")
-        append("\n")
         append("Distance    $distance")
         if (!isDogWalk) {
             append("\n")
             append("Pace        $currentPace\n")
             append("Avg Pace    $avgPace")
         }
+        if (state.isHomeArrivalPaused) append("\n(arrived home)")
+        else if (isPaused) append("\n(paused)")
     }
 
     return NotificationContent(
