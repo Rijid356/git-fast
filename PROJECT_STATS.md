@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-02-21
+- **Last Active:** 2026-02-23
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose
 
@@ -44,10 +44,17 @@
 | 2026-02-20 | Checkpoint 16: Route overlay comparison — GPS trace visualization on map with color-coded polylines, route tag selector, interactive zoom/pan, trace legend, 7 unit tests | 7 | 2 | +770/-2 |
 | 2026-02-21 | Checkpoint 17: Route performance table — session history per route tag with trend summary banner, personal best highlighting, delta comparisons, tap-to-detail navigation, 11 unit tests | 7 | 1 | +929/-6 |
 | 2026-02-21 | Checkpoint 18: Personal records dashboard — all-time bests for runs (fastest pace, longest run/duration, best lap), dog walks (longest walk/duration, most steps), overall (streak, totals), tap-to-detail, 15 unit tests | 13 | 2 | +846/-1 |
+| 2026-02-21 | Fix empty route tag dropdowns (upsert save + fallback query from workout records), add long-press to delete lap from workout history with confirmation dialog | 15 | 2 | +126/-24 |
+| 2026-02-21 | Remove duplicate time from notification text (chronometer handles it), show elapsed time in status bar even when paused | 3 | 1 | +16/-22 |
+| 2026-02-21 | Firebase cloud backup: Google Sign-In, Firestore bidirectional sync, fire-and-forget post-workout push, Cloud Backup settings UI, 36 unit tests | 20 | 1 | +1592/-5 |
+| 2026-02-22 | Checkpoint 19: Weekly & monthly trends — TrendsCalculator with ISO week/month grouping, period-over-period comparison cards with delta badges, pixel bar charts, activity filtering (ALL/RUNS/WALKS), 17 unit tests | 9 | 0 | +~880/-0 |
+| 2026-02-23 | Remove google-services.json from git tracking, add to .gitignore, CI decodes from GitHub secret | 3 | 1 | +6/-47 |
+| 2026-02-23 | Ship analytics trends: PR #66 merged — TrendsCalculator, pixel bar charts, TrendsScreen, navigation, tests | 9 | 1 | +1228/-1 |
+| 2026-02-23 | Increase test coverage 33.8%→35.4% line, 32.7%→33.9% branch: 28 new tests across StatsCalculator, WorkoutSaveManager, HomeViewModel, DetailViewModel; raised Kover thresholds to 32%/28% | 5 | 0 | +437/-15 |
 
 ## Totals
-- **Total Sessions:** 33
-- **Total Commits:** 53
-- **Total Files Changed:** 406
-- **Total Lines Added:** 20744
-- **Total Lines Removed:** 1631
+- **Total Sessions:** 40
+- **Total Commits:** 59
+- **Total Files Changed:** 470
+- **Total Lines Added:** 25029
+- **Total Lines Removed:** 1745
