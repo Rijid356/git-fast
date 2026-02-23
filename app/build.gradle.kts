@@ -95,6 +95,14 @@ kover {
                 packages("com.gitfast.app.auth")
             }
         }
+        verify {
+            rule {
+                minBound(32) // Line coverage >= 32%
+            }
+            rule {
+                minBound(28, kotlinx.kover.gradle.plugin.dsl.CoverageUnit.BRANCH) // Branch coverage >= 28%
+            }
+        }
     }
 }
 

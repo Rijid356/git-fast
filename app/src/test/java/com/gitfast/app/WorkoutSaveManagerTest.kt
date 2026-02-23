@@ -17,8 +17,12 @@ import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
+import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.service.WorkoutSnapshot
 import com.gitfast.app.service.WorkoutStateManager
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -50,7 +54,8 @@ class WorkoutSaveManagerTest {
         gpsPoints: List<GpsPoint> = emptyList(),
         totalDistanceMeters: Double = 1609.34,
         totalPausedDurationMillis: Long = 0L,
-        phases: List<WorkoutStateManager.PhaseData>? = null
+        phases: List<WorkoutStateManager.PhaseData>? = null,
+        activityType: ActivityType = ActivityType.RUN,
     ): WorkoutSnapshot {
         val defaultPhases = phases ?: listOf(
             WorkoutStateManager.PhaseData(
@@ -70,7 +75,7 @@ class WorkoutSaveManagerTest {
             totalDistanceMeters = totalDistanceMeters,
             totalPausedDurationMillis = totalPausedDurationMillis,
             phases = defaultPhases,
-            activityType = ActivityType.RUN
+            activityType = activityType,
         )
     }
 
@@ -219,6 +224,129 @@ class WorkoutSaveManagerTest {
 
         assertTrue(fakeDao.savedLaps.isEmpty())
     }
+
+    // --- Dog Walk Profile Tests ---
+
+    @Test
+    fun `dog walk awards XP to both user and Juniper profiles`() = runTest {
+        val snapshot = createSnapshot(activityType = ActivityType.DOG_WALK)
+
+        saveManager.saveCompletedWorkout(snapshot)
+
+        val tx1 = fakeCharacterDao.getXpTransactionForWorkout(snapshot.workoutId, 1)
+        val tx2 = fakeCharacterDao.getXpTransactionForWorkout(snapshot.workoutId, 2)
+        assertNotNull("Profile 1 should receive XP", tx1)
+        assertNotNull("Juniper (profile 2) should receive XP for dog walk", tx2)
+    }
+
+    @Test
+    fun `run workout does not award XP to Juniper`() = runTest {
+        val snapshot = createSnapshot(activityType = ActivityType.RUN)
+
+        saveManager.saveCompletedWorkout(snapshot)
+
+        val tx2 = fakeCharacterDao.getXpTransactionForWorkout(snapshot.workoutId, 2)
+        assertNull("Juniper should not receive XP for a run", tx2)
+    }
+
+    @Test
+    fun `dog walk triggers Juniper stats recalculation`() = runTest {
+        val mockCharRepo = mockk<CharacterRepository>(relaxed = true)
+        coEvery { mockCharRepo.awardXp(any(), any(), any(), any()) } returns 50
+        val manager = WorkoutSaveManager(fakeDao, mockCharRepo, WorkoutRepository(fakeDao), null)
+
+        val snapshot = createSnapshot(activityType = ActivityType.DOG_WALK)
+        manager.saveCompletedWorkout(snapshot)
+
+        coVerify { mockCharRepo.updateStats(eq(2), any()) }
+    }
+
+    // --- updateDogWalkMetadata Tests ---
+
+    @Test
+    fun `updateDogWalkMetadata updates workout entity fields`() = runTest {
+        fakeDao.workoutToReturn = WorkoutEntity(
+            id = "w-dog",
+            startTime = 1000L,
+            endTime = 5000L,
+            totalSteps = 0,
+            distanceMeters = 1609.34,
+            status = WorkoutStatus.COMPLETED,
+            activityType = ActivityType.DOG_WALK,
+            dogName = null,
+            notes = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            routeTag = null,
+        )
+
+        saveManager.updateDogWalkMetadata(
+            workoutId = "w-dog",
+            dogName = "Juniper",
+            routeTag = "Park Loop",
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            notes = "Good walk",
+        )
+
+        assertNotNull(fakeDao.updatedWorkout)
+        assertEquals("Juniper", fakeDao.updatedWorkout!!.dogName)
+        assertEquals("Park Loop", fakeDao.updatedWorkout!!.routeTag)
+        assertEquals("Good walk", fakeDao.updatedWorkout!!.notes)
+    }
+
+    @Test
+    fun `updateDogWalkMetadata returns early when workout not found`() = runTest {
+        fakeDao.workoutToReturn = null
+
+        saveManager.updateDogWalkMetadata(
+            workoutId = "missing",
+            dogName = "Juniper",
+            routeTag = null,
+            weatherCondition = null,
+            weatherTemp = null,
+            energyLevel = null,
+            notes = null,
+        )
+
+        assertEquals(0, fakeDao.updateWorkoutCallCount)
+    }
+
+    // --- Cloud Sync Tests ---
+
+    @Test
+    fun `cloud sync failure does not prevent save result`() = runTest {
+        val mockSync = mockk<FirestoreSync>(relaxed = true)
+        coEvery { mockSync.pushWorkout(any()) } throws RuntimeException("Sync failed")
+        val manager = WorkoutSaveManager(
+            fakeDao, CharacterRepository(fakeCharacterDao), WorkoutRepository(fakeDao), mockSync,
+        )
+
+        val result = manager.saveCompletedWorkout(createSnapshot())
+
+        assertNotNull("Save should succeed even when cloud sync throws", result)
+    }
+
+    // --- SaveResult Content Tests ---
+
+    @Test
+    fun `save result has non-negative streak days and multiplier`() = runTest {
+        val result = saveManager.saveCompletedWorkout(createSnapshot())
+
+        assertNotNull(result)
+        assertTrue("Streak days should be non-negative", result!!.streakDays >= 0)
+        assertTrue("Streak multiplier should be at least 1.0", result.streakMultiplier >= 1.0)
+    }
+
+    @Test
+    fun `save result xp earned is positive for a completed workout`() = runTest {
+        val result = saveManager.saveCompletedWorkout(createSnapshot())
+
+        assertNotNull(result)
+        assertTrue("XP earned should be positive", result!!.xpEarned > 0)
+    }
 }
 
 /**
@@ -231,6 +359,9 @@ class FakeWorkoutDao : WorkoutDao {
     var savedLaps: List<LapEntity> = emptyList()
     var savedGpsPoints: List<GpsPointEntity> = emptyList()
     var shouldThrowOnSave: Boolean = false
+    var workoutToReturn: WorkoutEntity? = null
+    var updatedWorkout: WorkoutEntity? = null
+    var updateWorkoutCallCount: Int = 0
 
     override suspend fun saveWorkoutTransaction(
         workout: WorkoutEntity,
@@ -252,10 +383,13 @@ class FakeWorkoutDao : WorkoutDao {
     override suspend fun insertLap(lap: LapEntity) {}
     override suspend fun insertGpsPoint(point: GpsPointEntity) {}
     override suspend fun insertGpsPoints(points: List<GpsPointEntity>) {}
-    override suspend fun updateWorkout(workout: WorkoutEntity) {}
+    override suspend fun updateWorkout(workout: WorkoutEntity) {
+        updatedWorkout = workout
+        updateWorkoutCallCount++
+    }
     override suspend fun updatePhase(phase: WorkoutPhaseEntity) {}
     override suspend fun updateLap(lap: LapEntity) {}
-    override suspend fun getWorkoutById(workoutId: String): WorkoutEntity? = null
+    override suspend fun getWorkoutById(workoutId: String): WorkoutEntity? = workoutToReturn
     override suspend fun getPhasesForWorkout(workoutId: String): List<WorkoutPhaseEntity> = emptyList()
     override suspend fun getLapsForPhase(phaseId: String): List<LapEntity> = emptyList()
     override suspend fun getGpsPointsForWorkout(workoutId: String): List<GpsPointEntity> = emptyList()

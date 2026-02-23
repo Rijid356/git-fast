@@ -163,6 +163,44 @@ class HomeViewModelTest {
         assertEquals(3, viewModel.characterProfile.value.level)
     }
 
+    @Test
+    fun `characterProfile streak is computed from workout history`() = runTest {
+        val zone = java.time.ZoneId.systemDefault()
+        val today = java.time.LocalDate.now(zone)
+        val workouts = (0 until 3).map { i ->
+            createTestWorkout("w$i", ActivityType.RUN).copy(
+                startTime = today.minusDays(i.toLong()).atStartOfDay(zone).toInstant()
+                    .plusSeconds(3600),
+            )
+        }
+        every { workoutRepository.getCompletedWorkouts() } returns flowOf(workouts)
+
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository)
+
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.characterProfile.collect {}
+        }
+
+        val profile = viewModel.characterProfile.value
+        assertTrue("Streak should be >= 1, got ${profile.currentStreak}", profile.currentStreak >= 1)
+        assertTrue("Multiplier should be >= 1.0, got ${profile.streakMultiplier}", profile.streakMultiplier >= 1.0)
+    }
+
+    @Test
+    fun `recentRuns xp defaults to zero when workout id not in map`() = runTest {
+        val workouts = listOf(createTestWorkout("w-unlisted", ActivityType.RUN))
+        every { workoutRepository.getCompletedWorkoutsByType(ActivityType.RUN) } returns flowOf(workouts)
+        every { characterRepository.getXpByWorkout() } returns flowOf(emptyMap())
+
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository)
+
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.recentRuns.collect {}
+        }
+
+        assertEquals(0, viewModel.recentRuns.value.first().xpEarned)
+    }
+
     private fun createTestWorkout(id: String, type: ActivityType): Workout {
         return Workout(
             id = id,
