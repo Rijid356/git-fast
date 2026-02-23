@@ -34,5 +34,8 @@ captures/
 .externalNativeBuild
 .cxx/
 
+# Firebase config (decoded from GitHub secret in CI)
+app/google-services.json
+
 # Claude Code
 .claude/
