@@ -4,6 +4,7 @@ import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.model.WorkoutStatus
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
@@ -361,5 +362,177 @@ class StatsCalculatorTest {
         assertTrue("Speed should be > 1, got ${stats.speed}", stats.speed > 1)
         assertTrue("Endurance should be > 1, got ${stats.endurance}", stats.endurance > 1)
         assertTrue("Consistency should be > 1, got ${stats.consistency}", stats.consistency > 1)
+    }
+
+    // =========================================================================
+    // calculateWalkSpeed Tests
+    // =========================================================================
+
+    @Test
+    fun `walkSpeed - empty list returns 1`() {
+        assertEquals(1, StatsCalculator.calculateWalkSpeed(emptyList()))
+    }
+
+    @Test
+    fun `walkSpeed - fast walk at 12 min per mile yields 99`() {
+        // 12:00/mi = 720s/mi → at the 99-bracket boundary
+        val walk = buildWorkout(distanceMeters = 1609.34, durationMillis = 12 * 60_000L)
+        assertEquals(99, StatsCalculator.calculateWalkSpeed(listOf(walk)))
+    }
+
+    @Test
+    fun `walkSpeed - slow walk over 30 min per mile yields 1`() {
+        // 31:00/mi = 1860s/mi → above 1800s (the 1-bracket floor)
+        val walk = buildWorkout(distanceMeters = 1609.34, durationMillis = 31 * 60_000L)
+        assertEquals(1, StatsCalculator.calculateWalkSpeed(listOf(walk)))
+    }
+
+    @Test
+    fun `walkSpeed - moderate walk at 18 min per mile yields around 50`() {
+        // 18:00/mi = 1080s/mi → at the 50-bracket boundary
+        val walk = buildWorkout(distanceMeters = 1609.34, durationMillis = 18 * 60_000L)
+        val stat = StatsCalculator.calculateWalkSpeed(listOf(walk))
+        assertTrue("18 min/mi should yield ~50, got $stat", stat in 45..55)
+    }
+
+    // =========================================================================
+    // calculateDogStats Tests
+    // =========================================================================
+
+    @Test
+    fun `dogStats - empty list returns all 1s`() {
+        val stats = StatsCalculator.calculateDogStats(emptyList())
+        assertEquals(1, stats.speed)
+        assertEquals(1, stats.endurance)
+        assertEquals(1, stats.consistency)
+    }
+
+    @Test
+    fun `dogStats - with data returns non-default stats`() {
+        val now = java.time.Instant.now()
+        val zone = ZoneId.systemDefault()
+        val today = now.atZone(zone).toLocalDate()
+        val walks = (0 until 10).map { i ->
+            val date = today.minusDays(i.toLong())
+            buildWorkout(
+                distanceMeters = 3 * 1609.34,
+                durationMillis = 45 * 60_000L,
+                activityType = ActivityType.DOG_WALK,
+                startTime = date.atStartOfDay(zone).toInstant().plusSeconds(3600),
+            )
+        }
+        val stats = StatsCalculator.calculateDogStats(walks)
+        assertTrue("Dog speed should be > 1, got ${stats.speed}", stats.speed > 1)
+        assertTrue("Dog endurance should be > 1, got ${stats.endurance}", stats.endurance > 1)
+        assertTrue("Dog consistency should be > 1, got ${stats.consistency}", stats.consistency > 1)
+    }
+
+    // =========================================================================
+    // speedBreakdown Tests
+    // =========================================================================
+
+    @Test
+    fun `speedBreakdown - with run workouts includes pace detail keys`() {
+        val run = buildWorkout(distanceMeters = 3 * 1609.34, durationMillis = 21 * 60_000L)
+        val breakdown = StatsCalculator.speedBreakdown(listOf(run), isWalk = false)
+        val keys = breakdown.details.map { it.first }
+        assertTrue("Should have Best pace", keys.contains("Best pace"))
+        assertTrue("Should have Median pace", keys.contains("Median pace"))
+        assertTrue("Should have Effective", keys.contains("Effective"))
+        assertTrue("Should have Workouts used", keys.contains("Workouts used"))
+        assertTrue("Run brackets should contain 5:00", breakdown.brackets.contains("5:00"))
+    }
+
+    @Test
+    fun `speedBreakdown - walk mode shows walk pace brackets`() {
+        val walk = buildWorkout(distanceMeters = 1609.34, durationMillis = 15 * 60_000L)
+        val breakdown = StatsCalculator.speedBreakdown(listOf(walk), isWalk = true)
+        assertTrue("Walk brackets should contain 12:00", breakdown.brackets.contains("12:00"))
+        assertTrue("Walk brackets should contain 30:00", breakdown.brackets.contains("30:00"))
+    }
+
+    @Test
+    fun `speedBreakdown - empty list shows only workouts used as zero`() {
+        val breakdown = StatsCalculator.speedBreakdown(emptyList(), isWalk = false)
+        assertEquals(1, breakdown.details.size)
+        assertEquals("Workouts used", breakdown.details[0].first)
+        assertEquals("0", breakdown.details[0].second)
+    }
+
+    // =========================================================================
+    // enduranceBreakdown Tests
+    // =========================================================================
+
+    @Test
+    fun `enduranceBreakdown - with data includes distance and duration detail keys`() {
+        val workout = buildWorkout(distanceMeters = 5 * 1609.34, durationMillis = 40 * 60_000L)
+        val breakdown = StatsCalculator.enduranceBreakdown(listOf(workout))
+        val keys = breakdown.details.map { it.first }
+        assertTrue("Should have Max distance", keys.contains("Max distance"))
+        assertTrue("Should have Recent avg dist", keys.contains("Recent avg dist"))
+        assertTrue("Should have Max duration", keys.contains("Max duration"))
+        assertTrue("Should have Recent avg dur", keys.contains("Recent avg dur"))
+    }
+
+    @Test
+    fun `enduranceBreakdown - empty list shows no data message`() {
+        val breakdown = StatsCalculator.enduranceBreakdown(emptyList())
+        assertEquals(1, breakdown.details.size)
+        assertEquals("No data", breakdown.details[0].first)
+        assertEquals("Complete a workout!", breakdown.details[0].second)
+    }
+
+    // =========================================================================
+    // consistencyBreakdown Tests
+    // =========================================================================
+
+    @Test
+    fun `consistencyBreakdown - with recent workouts includes streak detail keys`() {
+        val now = java.time.Instant.now()
+        val zone = ZoneId.systemDefault()
+        val today = now.atZone(zone).toLocalDate()
+        val workouts = (0 until 5).map { i ->
+            val date = today.minusDays(i.toLong())
+            buildWorkout(startTime = date.atStartOfDay(zone).toInstant().plusSeconds(3600))
+        }
+        val breakdown = StatsCalculator.consistencyBreakdown(workouts, now)
+        val keys = breakdown.details.map { it.first }
+        assertTrue("Should have 30-day count", keys.contains("30-day count"))
+        assertTrue("Should have Current streak", keys.contains("Current streak"))
+        assertTrue("Should have Longest streak", keys.contains("Longest streak"))
+    }
+
+    // =========================================================================
+    // formatPace via speedBreakdown
+    // =========================================================================
+
+    @Test
+    fun `speedBreakdown - formats best pace as minutes colon seconds per mile`() {
+        // 7:00/mi = 420s: 3 miles in 21 min → single workout: best=median=effective=420s
+        val run = buildWorkout(distanceMeters = 3 * 1609.34, durationMillis = 21 * 60_000L)
+        val breakdown = StatsCalculator.speedBreakdown(listOf(run), isWalk = false)
+        val bestPace = breakdown.details.find { it.first == "Best pace" }?.second
+        assertNotNull("Best pace detail should exist", bestPace)
+        assertEquals("7:00/mi", bestPace)
+    }
+
+    // =========================================================================
+    // interpolateBrackets edge cases (via calculateSpeed)
+    // =========================================================================
+
+    @Test
+    fun `speed - exact 300s boundary pace yields 99`() {
+        // 5:00/mi = 300s exactly → at or below the 99-cap boundary
+        val run = buildWorkout(distanceMeters = 1609.34, durationMillis = 5 * 60_000L)
+        assertEquals(99, StatsCalculator.calculateSpeed(listOf(run)))
+    }
+
+    @Test
+    fun `speed - midpoint 450s pace interpolates to around 69`() {
+        // 7:30/mi = 450s: between 420(75) and 540(50)
+        // t = (450-420)/(540-420) = 0.25, stat = 75 + 0.25*(50-75) ≈ 69
+        val run = buildWorkout(distanceMeters = 2 * 1609.34, durationMillis = 15 * 60_000L)
+        val stat = StatsCalculator.calculateSpeed(listOf(run))
+        assertTrue("7:30/mi should interpolate to ~69, got $stat", stat in 65..73)
     }
 }

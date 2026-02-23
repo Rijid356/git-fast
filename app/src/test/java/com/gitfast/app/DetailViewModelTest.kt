@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -118,6 +119,46 @@ class DetailViewModelTest {
         // RouteComparisonAnalyzer always includes the current walk as first item
         assertEquals(1, state.routeComparison.size)
         assertTrue(state.routeComparison.first().isCurrentWalk)
+    }
+
+    @Test
+    fun `loaded state xp defaults to zero when no transaction`() = runTest {
+        val workout = createTestWorkout("w1")
+        coEvery { workoutRepository.getWorkoutWithDetails("w1") } returns workout
+        coEvery { characterRepository.getXpTransactionForWorkout("w1") } returns null
+
+        val viewModel = createViewModel("w1")
+
+        val state = viewModel.uiState.value as DetailUiState.Loaded
+        assertEquals(0, state.detail.xpEarned)
+        assertNull(state.detail.xpBreakdown)
+    }
+
+    @Test
+    fun `deleteLap calls repository and reloads workout`() = runTest {
+        val workout = createTestWorkout("w1")
+        coEvery { workoutRepository.getWorkoutWithDetails("w1") } returns workout
+        coEvery { characterRepository.getXpTransactionForWorkout("w1") } returns null
+        coEvery { workoutRepository.deleteLap(any()) } returns Unit
+
+        val viewModel = createViewModel("w1")
+        viewModel.deleteLap("lap-1")
+
+        coVerify { workoutRepository.deleteLap("lap-1") }
+        coVerify(exactly = 2) { workoutRepository.getWorkoutWithDetails("w1") }
+        assertTrue(viewModel.uiState.value is DetailUiState.Loaded)
+    }
+
+    @Test
+    fun `dog walk without route tag has empty route comparison`() = runTest {
+        val workout = createTestWorkout("dw1", activityType = ActivityType.DOG_WALK, routeTag = null)
+        coEvery { workoutRepository.getWorkoutWithDetails("dw1") } returns workout
+        coEvery { characterRepository.getXpTransactionForWorkout("dw1") } returns null
+
+        val viewModel = createViewModel("dw1")
+
+        val state = viewModel.uiState.value as DetailUiState.Loaded
+        assertTrue(state.routeComparison.isEmpty())
     }
 
     private fun createViewModel(workoutId: String): DetailViewModel {
