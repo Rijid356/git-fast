@@ -11,6 +11,7 @@ import com.gitfast.app.ui.analytics.AnalyticsHubScreen
 import com.gitfast.app.ui.analytics.routeoverlay.RouteOverlayScreen
 import com.gitfast.app.ui.analytics.records.PersonalRecordsScreen
 import com.gitfast.app.ui.analytics.routeperformance.RoutePerformanceScreen
+import com.gitfast.app.ui.analytics.trends.TrendsScreen
 import com.gitfast.app.ui.character.CharacterSheetScreen
 import com.gitfast.app.ui.detail.DetailScreen
 import com.gitfast.app.ui.dogwalk.DogWalkSummaryScreen
@@ -37,6 +38,7 @@ sealed class Screen(val route: String) {
     data object RouteOverlay : Screen("route_overlay")
     data object RoutePerformance : Screen("route_performance")
     data object PersonalRecords : Screen("personal_records")
+    data object Trends : Screen("trends")
     data object CharacterSheet : Screen("character_sheet")
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
         fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
@@ -117,6 +119,9 @@ fun GitFastNavGraph(navController: NavHostController) {
                 onRecordsClick = {
                     navController.navigate(Screen.PersonalRecords.route)
                 },
+                onTrendsClick = {
+                    navController.navigate(Screen.Trends.route)
+                },
             )
         }
         composable(Screen.RouteOverlay.route) {
@@ -133,6 +138,13 @@ fun GitFastNavGraph(navController: NavHostController) {
                 },
                 onWorkoutClick = { workoutId ->
                     navController.navigate(Screen.Detail.createRoute(workoutId))
+                },
+            )
+        }
+        composable(Screen.Trends.route) {
+            TrendsScreen(
+                onBackClick = {
+                    navController.popBackStack()
                 },
             )
         }
