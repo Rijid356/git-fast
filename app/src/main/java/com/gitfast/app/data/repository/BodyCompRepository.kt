@@ -38,44 +38,48 @@ class BodyCompRepository @Inject constructor(
             return
         }
 
-        val end = Instant.now()
-        val start = end.minus(SYNC_DAYS, ChronoUnit.DAYS)
+        try {
+            val end = Instant.now()
+            val start = end.minus(SYNC_DAYS, ChronoUnit.DAYS)
 
-        val weights = healthConnectManager.readWeightRecords(start, end)
-        val bodyFats = healthConnectManager.readBodyFatRecords(start, end)
-        val leanMasses = healthConnectManager.readLeanBodyMassRecords(start, end)
-        val boneMasses = healthConnectManager.readBoneMassRecords(start, end)
-        val bmrs = healthConnectManager.readBmrRecords(start, end)
-        val heights = healthConnectManager.readHeightRecords(start, end)
+            val weights = healthConnectManager.readWeightRecords(start, end)
+            val bodyFats = healthConnectManager.readBodyFatRecords(start, end)
+            val leanMasses = healthConnectManager.readLeanBodyMassRecords(start, end)
+            val boneMasses = healthConnectManager.readBoneMassRecords(start, end)
+            val bmrs = healthConnectManager.readBmrRecords(start, end)
+            val heights = healthConnectManager.readHeightRecords(start, end)
 
-        // Build entries keyed by weight record (primary anchor)
-        val entries = weights.map { weight ->
-            val ts = weight.time
-            val windowStart = ts.minus(5, ChronoUnit.MINUTES)
-            val windowEnd = ts.plus(5, ChronoUnit.MINUTES)
+            // Build entries keyed by weight record (primary anchor)
+            val entries = weights.map { weight ->
+                val ts = weight.time
+                val windowStart = ts.minus(5, ChronoUnit.MINUTES)
+                val windowEnd = ts.plus(5, ChronoUnit.MINUTES)
 
-            val bodyFat = bodyFats.find { it.time in windowStart..windowEnd }
-            val leanMass = leanMasses.find { it.time in windowStart..windowEnd }
-            val boneMass = boneMasses.find { it.time in windowStart..windowEnd }
-            val bmr = bmrs.find { it.time in windowStart..windowEnd }
-            val height = heights.find { it.time in windowStart..windowEnd }
+                val bodyFat = bodyFats.find { it.time in windowStart..windowEnd }
+                val leanMass = leanMasses.find { it.time in windowStart..windowEnd }
+                val boneMass = boneMasses.find { it.time in windowStart..windowEnd }
+                val bmr = bmrs.find { it.time in windowStart..windowEnd }
+                val height = heights.find { it.time in windowStart..windowEnd }
 
-            BodyCompEntry(
-                id = weight.metadata.id,
-                timestamp = ts.toEpochMilli(),
-                weightKg = weight.weight.inKilograms,
-                bodyFatPercent = bodyFat?.percentage?.value,
-                leanBodyMassKg = leanMass?.mass?.inKilograms,
-                boneMassKg = boneMass?.mass?.inKilograms,
-                bmrKcalPerDay = bmr?.basalMetabolicRate?.inKilocaloriesPerDay,
-                heightMeters = height?.height?.inMeters,
-                source = "health_connect",
-            )
-        }
+                BodyCompEntry(
+                    id = weight.metadata.id,
+                    timestamp = ts.toEpochMilli(),
+                    weightKg = weight.weight.inKilograms,
+                    bodyFatPercent = bodyFat?.percentage?.value,
+                    leanBodyMassKg = leanMass?.mass?.inKilograms,
+                    boneMassKg = boneMass?.mass?.inKilograms,
+                    bmrKcalPerDay = bmr?.basalMetabolicRate?.inKilocaloriesPerDay,
+                    heightMeters = height?.height?.inMeters,
+                    source = "health_connect",
+                )
+            }
 
-        if (entries.isNotEmpty()) {
-            bodyCompDao.insertAll(entries)
-            Log.d(TAG, "Synced ${entries.size} body comp entries from Health Connect")
+            if (entries.isNotEmpty()) {
+                bodyCompDao.insertAll(entries)
+                Log.d(TAG, "Synced ${entries.size} body comp entries from Health Connect")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error syncing from Health Connect", e)
         }
     }
 

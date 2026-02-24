@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.model.DistanceUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -184,7 +185,7 @@ fun SettingsScreen(
                 latestWeightDate = uiState.latestWeightDate,
                 onConnect = {
                     healthConnectPermissionLauncher.launch(
-                        viewModel.healthConnectManager.requiredPermissions
+                        HealthConnectManager.PERMISSIONS
                     )
                 },
                 onSyncNow = { viewModel.syncHealthConnect() },
