@@ -144,6 +144,9 @@ dependencies {
     // Lifecycle Service
     implementation("androidx.lifecycle:lifecycle-service:2.8.7")
 
+    // Health Connect
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha11")
+
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
     implementation("com.google.firebase:firebase-auth")

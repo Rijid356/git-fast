@@ -9,6 +9,7 @@ import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
+import com.gitfast.app.data.local.entity.BodyCompEntry
 import com.gitfast.app.data.local.entity.UnlockedAchievementEntity
 import com.gitfast.app.data.local.entity.XpTransactionEntity
 
@@ -22,12 +23,14 @@ import com.gitfast.app.data.local.entity.XpTransactionEntity
         CharacterProfileEntity::class,
         XpTransactionEntity::class,
         UnlockedAchievementEntity::class,
+        BodyCompEntry::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class GitFastDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
     abstract fun characterDao(): CharacterDao
+    abstract fun bodyCompDao(): BodyCompDao
 }
