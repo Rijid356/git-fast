@@ -59,8 +59,6 @@ class SettingsViewModelTest {
         every { mockSettingsStore.autoLapAnchorRadiusMeters } returns 15
         every { mockSettingsStore.homeArrivalEnabled } returns false
         every { mockSettingsStore.hasHomeLocation } returns false
-        every { mockSettingsStore.homeArrivalRadiusMeters } returns 30
-
         every { mockGoogleAuthManager.currentUser } returns currentUserFlow
         every { mockSyncStatusStore.syncStatus } returns syncStatusFlow
         every { mockSyncStatusStore.lastSyncedAt } returns 0L
@@ -95,7 +93,6 @@ class SettingsViewModelTest {
         assertEquals(15, state.autoLapAnchorRadiusMeters)
         assertFalse(state.homeArrivalEnabled)
         assertFalse(state.hasHomeLocation)
-        assertEquals(30, state.homeArrivalRadiusMeters)
     }
 
     @Test
@@ -107,7 +104,6 @@ class SettingsViewModelTest {
         every { mockSettingsStore.autoLapAnchorRadiusMeters } returns 25
         every { mockSettingsStore.homeArrivalEnabled } returns true
         every { mockSettingsStore.hasHomeLocation } returns true
-        every { mockSettingsStore.homeArrivalRadiusMeters } returns 50
 
         val vm = createViewModel()
         val state = vm.uiState.value
@@ -119,7 +115,6 @@ class SettingsViewModelTest {
         assertEquals(25, state.autoLapAnchorRadiusMeters)
         assertTrue(state.homeArrivalEnabled)
         assertTrue(state.hasHomeLocation)
-        assertEquals(50, state.homeArrivalRadiusMeters)
     }
 
     @Test
@@ -271,16 +266,6 @@ class SettingsViewModelTest {
 
         verify { mockSettingsStore.homeArrivalEnabled = true }
         assertTrue(vm.uiState.value.homeArrivalEnabled)
-    }
-
-    @Test
-    fun `setHomeArrivalRadius persists and updates state`() {
-        val vm = createViewModel()
-
-        vm.setHomeArrivalRadius(50)
-
-        verify { mockSettingsStore.homeArrivalRadiusMeters = 50 }
-        assertEquals(50, vm.uiState.value.homeArrivalRadiusMeters)
     }
 
     // =========================================================================

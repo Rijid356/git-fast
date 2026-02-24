@@ -80,7 +80,7 @@ class SettingsStore @Inject constructor(
         }
 
     var homeArrivalRadiusMeters: Int
-        get() = prefs.getInt(KEY_HOME_ARRIVAL_RADIUS, 30)
+        get() = prefs.getInt(KEY_HOME_ARRIVAL_RADIUS, 15)
         set(value) {
             prefs.edit().putInt(KEY_HOME_ARRIVAL_RADIUS, value).apply()
         }

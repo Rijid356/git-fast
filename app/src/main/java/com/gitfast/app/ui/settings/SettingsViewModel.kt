@@ -28,7 +28,6 @@ data class SettingsUiState(
     val autoLapAnchorRadiusMeters: Int = 15,
     val homeArrivalEnabled: Boolean = false,
     val hasHomeLocation: Boolean = false,
-    val homeArrivalRadiusMeters: Int = 30,
     val isCapturingLocation: Boolean = false,
     val isSignedIn: Boolean = false,
     val userEmail: String? = null,
@@ -55,7 +54,6 @@ class SettingsViewModel @Inject constructor(
             autoLapAnchorRadiusMeters = settingsStore.autoLapAnchorRadiusMeters,
             homeArrivalEnabled = settingsStore.homeArrivalEnabled,
             hasHomeLocation = settingsStore.hasHomeLocation,
-            homeArrivalRadiusMeters = settingsStore.homeArrivalRadiusMeters,
             isSignedIn = googleAuthManager.currentUser.value != null,
             userEmail = googleAuthManager.currentUser.value?.email,
             lastSyncedAt = syncStatusStore.lastSyncedAt,
@@ -135,11 +133,6 @@ class SettingsViewModel @Inject constructor(
     fun setHomeArrivalEnabled(enabled: Boolean) {
         settingsStore.homeArrivalEnabled = enabled
         _uiState.value = _uiState.value.copy(homeArrivalEnabled = enabled)
-    }
-
-    fun setHomeArrivalRadius(radius: Int) {
-        settingsStore.homeArrivalRadiusMeters = radius
-        _uiState.value = _uiState.value.copy(homeArrivalRadiusMeters = radius)
     }
 
     @SuppressLint("MissingPermission")
