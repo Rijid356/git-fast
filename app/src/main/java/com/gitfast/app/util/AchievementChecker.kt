@@ -93,6 +93,13 @@ object AchievementChecker {
             AchievementDef.JUNIPER_TRAIL_MASTER -> snapshot.dogWalkCount >= 50
             AchievementDef.JUNIPER_GOOD_GIRL -> snapshot.characterLevel >= 5
 
+            // Body comp — checked separately by BodyCompRepository integration
+            AchievementDef.FIRST_WEIGH_IN -> false
+            AchievementDef.WEEK_TRACKER -> false
+            AchievementDef.MONTH_TRACKER -> false
+            AchievementDef.BODY_AWARE -> false
+            AchievementDef.CENTURION_SCALE -> false
+
             // Leveling
             AchievementDef.LEVEL_5 -> snapshot.characterLevel >= 5
             AchievementDef.LEVEL_10 -> snapshot.characterLevel >= 10

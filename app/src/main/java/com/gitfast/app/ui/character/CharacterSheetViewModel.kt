@@ -20,6 +20,18 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
+/**
+ * Data class for VIT stat UI state.
+ * Encapsulates Health Connect connection status and vitality data.
+ */
+data class VitalityUiState(
+    val healthConnectConnected: Boolean = false,
+    val weighInCount30d: Int = 0,
+    val bodyFatTrendPercent: Double? = null,
+    val vitalityStat: Int = 1,
+    val breakdown: StatBreakdown? = null,
+)
+
 @HiltViewModel
 class CharacterSheetViewModel @Inject constructor(
     private val characterRepository: CharacterRepository,
@@ -65,7 +77,7 @@ class CharacterSheetViewModel @Inject constructor(
             .map { list -> list.map { it.achievementId }.toSet() }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
-    // Stat breakdowns for user
+    // Stat breakdowns for user (includes VIT)
     val statBreakdowns: StateFlow<Map<String, StatBreakdown>> =
         workoutRepository.getCompletedWorkouts()
             .map { workouts ->
@@ -80,7 +92,7 @@ class CharacterSheetViewModel @Inject constructor(
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    // Stat breakdowns for Juniper
+    // Stat breakdowns for Juniper (no VIT — Juniper doesn't weigh in)
     val juniperStatBreakdowns: StateFlow<Map<String, StatBreakdown>> =
         workoutRepository.getCompletedWorkoutsByType(ActivityType.DOG_WALK)
             .map { walks ->
@@ -91,6 +103,39 @@ class CharacterSheetViewModel @Inject constructor(
                 )
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    // VIT stat state — only for user profile (ME tab)
+    // Will be wired to BodyCompRepository + HealthConnectManager when Step 1 is integrated.
+    // For now, exposes the UI state with defaults that show "Connect Health Connect" prompt.
+    private val _vitalityState = MutableStateFlow(VitalityUiState())
+    val vitalityState: StateFlow<VitalityUiState> = _vitalityState.asStateFlow()
+
+    /**
+     * Called by BodyCompRepository integration to update VIT stat data.
+     * This method will be called when Health Connect data is synced.
+     */
+    fun updateVitalityData(
+        connected: Boolean,
+        weighInCount30d: Int,
+        bodyFatTrendPercent: Double?,
+    ) {
+        val stat = if (connected) {
+            StatsCalculator.calculateVitality(weighInCount30d, bodyFatTrendPercent)
+        } else {
+            1
+        }
+        _vitalityState.value = VitalityUiState(
+            healthConnectConnected = connected,
+            weighInCount30d = weighInCount30d,
+            bodyFatTrendPercent = bodyFatTrendPercent,
+            vitalityStat = stat,
+            breakdown = if (connected) {
+                StatsCalculator.vitalityBreakdown(weighInCount30d, bodyFatTrendPercent, stat)
+            } else {
+                null
+            },
+        )
+    }
 
     fun selectTab(index: Int) {
         _selectedTab.value = index
