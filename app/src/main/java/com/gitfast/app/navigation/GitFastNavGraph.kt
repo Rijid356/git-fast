@@ -110,6 +110,9 @@ fun GitFastNavGraph(navController: NavHostController) {
                 onGoalsClick = {
                     navController.navigate(Screen.Goals.route)
                 },
+                onBodyCompClick = {
+                    navController.navigate(Screen.BodyComp.route)
+                },
             )
         }
         composable(Screen.Analytics.route) {
