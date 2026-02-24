@@ -280,5 +280,9 @@ class RouteOverlayViewModelTest {
         override suspend fun deleteWorkout(workoutId: String) {}
         override suspend fun deleteLap(lapId: String) {}
         override suspend fun getRecentWorkoutsWithLaps(limit: Int): List<WorkoutEntity> = emptyList()
+        override fun getCompletedWorkoutsBetween(startMillis: Long, endMillis: Long): Flow<List<WorkoutEntity>> = flowOf(emptyList())
+        override fun getActiveMillisBetween(startMillis: Long, endMillis: Long): Flow<Long> = flowOf(0L)
+        override fun getDistanceMetersBetween(startMillis: Long, endMillis: Long): Flow<Double> = flowOf(0.0)
+        override fun getActiveDayCountBetween(startMillis: Long, endMillis: Long): Flow<Int> = flowOf(0)
     }
 }

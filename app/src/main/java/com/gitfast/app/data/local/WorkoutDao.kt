@@ -109,6 +109,20 @@ interface WorkoutDao {
     """)
     suspend fun getRecentWorkoutsWithLaps(limit: Int): List<WorkoutEntity>
 
+    // --- Queries: Daily/weekly activity goals ---
+
+    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND startTime >= :startMillis AND startTime < :endMillis ORDER BY startTime DESC")
+    fun getCompletedWorkoutsBetween(startMillis: Long, endMillis: Long): Flow<List<WorkoutEntity>>
+
+    @Query("SELECT COALESCE(SUM(endTime - startTime), 0) FROM workouts WHERE status = 'COMPLETED' AND endTime IS NOT NULL AND startTime >= :startMillis AND startTime < :endMillis")
+    fun getActiveMillisBetween(startMillis: Long, endMillis: Long): Flow<Long>
+
+    @Query("SELECT COALESCE(SUM(distanceMeters), 0.0) FROM workouts WHERE status = 'COMPLETED' AND startTime >= :startMillis AND startTime < :endMillis")
+    fun getDistanceMetersBetween(startMillis: Long, endMillis: Long): Flow<Double>
+
+    @Query("SELECT COUNT(DISTINCT date(startTime / 1000, 'unixepoch', 'localtime')) FROM workouts WHERE status = 'COMPLETED' AND startTime >= :startMillis AND startTime < :endMillis")
+    fun getActiveDayCountBetween(startMillis: Long, endMillis: Long): Flow<Int>
+
     // --- Queries: Active workout recovery ---
 
     @Query("SELECT * FROM workouts WHERE status IN ('ACTIVE', 'PAUSED') LIMIT 1")

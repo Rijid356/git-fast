@@ -2,9 +2,11 @@ package com.gitfast.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.CharacterProfile
+import com.gitfast.app.data.model.DailyActivityMetrics
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.service.WorkoutService
@@ -26,6 +28,7 @@ class HomeViewModel @Inject constructor(
     private val workoutStateStore: WorkoutStateStore,
     workoutRepository: WorkoutRepository,
     characterRepository: CharacterRepository,
+    settingsStore: SettingsStore,
 ) : ViewModel() {
 
     private val _showRecoveryDialog = MutableStateFlow(false)
@@ -42,6 +45,24 @@ class HomeViewModel @Inject constructor(
                 streakMultiplier = StreakCalculator.getMultiplier(streak),
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CharacterProfile())
+
+    val dailyMetrics: StateFlow<DailyActivityMetrics> =
+        combine(
+            workoutRepository.getTodaysActiveMillis(),
+            workoutRepository.getTodaysDistanceMeters(),
+            workoutRepository.getWeeklyActiveDayCount(),
+        ) { activeMillis, distanceMeters, activeDays ->
+            val activeMinutes = (activeMillis / 60_000).toInt()
+            val distanceMiles = distanceMeters * 0.000621371
+            DailyActivityMetrics(
+                activeMinutes = activeMinutes,
+                activeMinutesGoal = settingsStore.dailyActiveMinutesGoal,
+                distanceMiles = distanceMiles,
+                distanceGoal = settingsStore.dailyDistanceGoalMiles,
+                activeDaysThisWeek = activeDays,
+                activeDaysGoal = settingsStore.weeklyActiveDaysGoal,
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DailyActivityMetrics())
 
     private val xpByWorkout = characterRepository.getXpByWorkout()
 
