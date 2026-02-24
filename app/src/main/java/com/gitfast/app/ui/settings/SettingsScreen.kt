@@ -1,5 +1,6 @@
 package com.gitfast.app.ui.settings
 
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,12 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    val healthConnectPermissionLauncher = rememberLauncherForActivityResult(
+        contract = viewModel.healthConnectManager.getPermissionContract(),
+    ) { granted ->
+        viewModel.onHealthConnectPermissionResult(granted)
+    }
 
     Scaffold(
         topBar = {
@@ -161,6 +168,26 @@ fun SettingsScreen(
                 onSignIn = { viewModel.signIn(context) },
                 onSignOut = { viewModel.signOut() },
                 onSyncNow = { viewModel.syncNow() },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Health Connect section ---
+            SectionHeader(text = "Health Connect")
+
+            HealthConnectSection(
+                isAvailable = uiState.healthConnectAvailable,
+                isConnected = uiState.healthConnectConnected,
+                isSyncing = uiState.healthConnectSyncing,
+                lastSyncedAt = uiState.healthConnectLastSync,
+                latestWeight = uiState.latestWeight,
+                latestWeightDate = uiState.latestWeightDate,
+                onConnect = {
+                    healthConnectPermissionLauncher.launch(
+                        viewModel.healthConnectManager.requiredPermissions
+                    )
+                },
+                onSyncNow = { viewModel.syncHealthConnect() },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
