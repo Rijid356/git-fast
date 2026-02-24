@@ -55,6 +55,7 @@ import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.ui.theme.AmberAccent
 import com.gitfast.app.ui.theme.CyanAccent
+import com.gitfast.app.ui.theme.MagentaAccent
 import com.gitfast.app.ui.theme.NeonGreen
 import com.gitfast.app.util.StatBreakdown
 import com.gitfast.app.util.AchievementCategory
@@ -87,6 +88,9 @@ fun CharacterSheetScreen(
     // Stat breakdowns
     val userBreakdowns by viewModel.statBreakdowns.collectAsStateWithLifecycle()
     val juniperBreakdowns by viewModel.juniperStatBreakdowns.collectAsStateWithLifecycle()
+
+    // VIT stat (user only)
+    val vitalityState by viewModel.vitalityState.collectAsStateWithLifecycle()
 
     // Active data based on selected tab
     val activeProfile = if (selectedTab == 0) profile else juniperProfile
@@ -167,7 +171,11 @@ fun CharacterSheetScreen(
             }
 
             item {
-                StatsSection(profile = activeProfile, breakdowns = activeBreakdowns)
+                StatsSection(
+                    profile = activeProfile,
+                    breakdowns = activeBreakdowns,
+                    vitalityState = if (selectedTab == 0) vitalityState else null,
+                )
             }
 
             item {
@@ -287,6 +295,7 @@ private fun XpProgressSection(profile: CharacterProfile) {
 private fun StatsSection(
     profile: CharacterProfile,
     breakdowns: Map<String, StatBreakdown>,
+    vitalityState: VitalityUiState?,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(8.dp))
@@ -301,6 +310,53 @@ private fun StatsSection(
         StatBar(label = "END", value = profile.enduranceStat, color = AmberAccent, breakdown = breakdowns["END"])
         Spacer(modifier = Modifier.height(8.dp))
         StatBar(label = "CON", value = profile.consistencyStat, color = NeonGreen, breakdown = breakdowns["CON"])
+
+        // VIT stat — only shown on ME tab (vitalityState is null for Juniper)
+        if (vitalityState != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            if (vitalityState.healthConnectConnected) {
+                StatBar(
+                    label = "VIT",
+                    value = vitalityState.vitalityStat,
+                    color = MagentaAccent,
+                    breakdown = vitalityState.breakdown,
+                )
+            } else {
+                HealthConnectPrompt()
+            }
+        }
+    }
+}
+
+@Composable
+private fun HealthConnectPrompt() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RectangleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "VIT",
+            style = MaterialTheme.typography.labelMedium,
+            color = MagentaAccent.copy(alpha = 0.5f),
+            modifier = Modifier.width(36.dp),
+        )
+        Text(
+            text = "?",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(32.dp),
+            textAlign = TextAlign.End,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Connect Health Connect in Settings",
+            style = MaterialTheme.typography.bodySmall,
+            color = MagentaAccent.copy(alpha = 0.7f),
+        )
     }
 }
 
@@ -583,6 +639,7 @@ private fun categoryLabel(category: AchievementCategory): String {
         AchievementCategory.STREAK -> "STREAKS"
         AchievementCategory.LAPS -> "LAPS"
         AchievementCategory.DOG_WALK -> "DOG WALKS"
+        AchievementCategory.BODY_COMP -> "BODY COMP"
         AchievementCategory.LEVELING -> "LEVELING"
     }
 }

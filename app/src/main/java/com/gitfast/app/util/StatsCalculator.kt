@@ -39,6 +39,53 @@ object StatsCalculator {
         )
     }
 
+    /**
+     * Calculate VIT (Vitality) stat based on weigh-in consistency and body fat trend.
+     * 50/50 blend of frequency and trend components.
+     *
+     * @param weighInCount Number of weigh-ins in the last 30 days
+     * @param bodyFatTrendPercent Body fat % change over 30 days (negative = improving).
+     *                            Null if no body fat data available.
+     */
+    fun calculateVitality(weighInCount: Int, bodyFatTrendPercent: Double?): Int {
+        val frequencyComponent = weighInFrequencyToStat(weighInCount)
+        val trendComponent = bodyFatTrendToStat(bodyFatTrendPercent)
+        return ((frequencyComponent * 0.5 + trendComponent * 0.5).roundToInt()).coerceIn(MIN_STAT, MAX_STAT)
+    }
+
+    private fun weighInFrequencyToStat(count: Int): Int {
+        // 1 day→1 | 7 days→25 | 14 days→50 | 21 days→75 | 28 days→99
+        return interpolateBrackets(
+            value = count.toDouble(),
+            brackets = listOf(
+                1.0 to 1,
+                7.0 to 25,
+                14.0 to 50,
+                21.0 to 75,
+                28.0 to 99,
+            ),
+            inverted = false,
+        )
+    }
+
+    private fun bodyFatTrendToStat(trendPercent: Double?): Int {
+        if (trendPercent == null) return 50 // neutral default when no data
+        // Improving (≥1% drop) → 99, Stable (±0.5%) → 75, Slight gain (0.5-2%) → 50,
+        // Moderate gain (2-4%) → 25, Significant gain (>4%) → 1
+        return interpolateBrackets(
+            value = trendPercent,
+            brackets = listOf(
+                -1.0 to 99,
+                -0.5 to 75,
+                0.5 to 75,
+                2.0 to 50,
+                4.0 to 25,
+                6.0 to 1,
+            ),
+            inverted = true, // lower (more negative) = better
+        )
+    }
+
     fun calculateSpeed(recentRuns: List<Workout>): Int {
         val validPaces = recentRuns.mapNotNull { it.averagePaceSecondsPerMile }
             .filter { it > 0 }
@@ -356,6 +403,35 @@ object StatsCalculator {
             brackets = "Freq: 1\u21921 | 6\u219225 | 12\u219250 | 20\u219275 | 28\u219299\n" +
                 "Streak: 1d\u21921 | 3d\u219225 | 7d\u219250 | 10d\u219275 | 14d\u219299",
             decayNote = "Actively decays \u2014 uses a 30-day rolling window.",
+        )
+    }
+
+    fun vitalityBreakdown(
+        weighInCount: Int,
+        bodyFatTrendPercent: Double?,
+        effectiveScore: Int,
+    ): StatBreakdown {
+        val trendLabel = when {
+            bodyFatTrendPercent == null -> "No data"
+            bodyFatTrendPercent <= -1.0 -> "Improving (%.1f%%)".format(bodyFatTrendPercent)
+            bodyFatTrendPercent <= 0.5 -> "Stable (%+.1f%%)".format(bodyFatTrendPercent)
+            bodyFatTrendPercent <= 2.0 -> "Slight gain (+%.1f%%)".format(bodyFatTrendPercent)
+            bodyFatTrendPercent <= 4.0 -> "Moderate gain (+%.1f%%)".format(bodyFatTrendPercent)
+            else -> "Significant gain (+%.1f%%)".format(bodyFatTrendPercent)
+        }
+
+        val details = listOf(
+            "Weigh-ins (30d)" to "$weighInCount",
+            "Body fat trend" to trendLabel,
+            "Effective score" to "$effectiveScore",
+        )
+
+        return StatBreakdown(
+            description = "Weigh-in frequency (50%) + body fat trend (50%)",
+            details = details,
+            brackets = "Freq: 1\u21921 | 7\u219225 | 14\u219250 | 21\u219275 | 28\u219299\n" +
+                "Trend: \u22651% drop\u219299 | stable\u219275 | +2%\u219250 | +4%\u219225 | +6%\u21921",
+            decayNote = "Actively decays \u2014 uses a 30-day rolling window. Track consistently!",
         )
     }
 

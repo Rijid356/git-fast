@@ -10,6 +10,7 @@ data class CharacterProfile(
     val speedStat: Int = 1,
     val enduranceStat: Int = 1,
     val consistencyStat: Int = 1,
+    val vitalityStat: Int = 1,
     val currentStreak: Int = 0,
     val streakMultiplier: Double = 1.0,
 )
