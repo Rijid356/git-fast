@@ -6,8 +6,8 @@ enum class AchievementCategory {
     STREAK,
     LAPS,
     DOG_WALK,
-    LEVELING,
     BODY_COMP,
+    LEVELING,
 }
 
 enum class AchievementDef(
