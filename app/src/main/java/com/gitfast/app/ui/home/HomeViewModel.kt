@@ -7,6 +7,8 @@ import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.DailyActivityMetrics
+import com.gitfast.app.data.model.BodyCompReading
+import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.service.WorkoutService
@@ -28,6 +30,7 @@ class HomeViewModel @Inject constructor(
     private val workoutStateStore: WorkoutStateStore,
     workoutRepository: WorkoutRepository,
     characterRepository: CharacterRepository,
+    bodyCompRepository: BodyCompRepository,
     settingsStore: SettingsStore,
 ) : ViewModel() {
 
@@ -63,6 +66,10 @@ class HomeViewModel @Inject constructor(
                 activeDaysGoal = settingsStore.weeklyActiveDaysGoal,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DailyActivityMetrics())
+
+    val latestWeight: StateFlow<BodyCompReading?> =
+        bodyCompRepository.getLatestReading()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val xpByWorkout = characterRepository.getXpByWorkout()
 

@@ -27,5 +27,8 @@ val ErrorRed = Color(0xFFF85149)
 // Outline / Divider
 val OutlineGray = Color(0xFF30363D)
 
+// Vitality – Magenta/Purple (body comp / Health Connect accent)
+val MagentaAccent = Color(0xFFBB86FC)
+
 // High-contrast text for outdoor/sunlight readability
 val HighContrastText = Color.White
