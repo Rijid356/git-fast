@@ -243,6 +243,70 @@ object StatsCalculator {
         )
     }
 
+    // --- Vitality ---
+
+    fun calculateVitality(
+        weighInDates: List<LocalDate>,
+        bodyFatReadings: List<Pair<LocalDate, Double>>,
+        now: Instant = Instant.now(),
+    ): Int {
+        val zone = ZoneId.systemDefault()
+        val today = now.atZone(zone).toLocalDate()
+        val thirtyDaysAgo = today.minusDays(30)
+
+        // 50% weigh-in frequency (days with readings in last 30 days)
+        val recentWeighIns = weighInDates.filter { !it.isBefore(thirtyDaysAgo) && !it.isAfter(today) }
+            .distinct()
+            .size
+        val frequencyStat = weighInFrequencyToStat(recentWeighIns)
+
+        // 50% body fat trend
+        val trendStat = bodyFatTrendToStat(bodyFatReadings, thirtyDaysAgo, today)
+
+        return ((frequencyStat * 0.5 + trendStat * 0.5).roundToInt()).coerceIn(MIN_STAT, MAX_STAT)
+    }
+
+    private fun weighInFrequencyToStat(daysWithReadings: Int): Int {
+        // 1d→1 | 7d→25 | 14d→50 | 21d→75 | 28d→99
+        return interpolateBrackets(
+            value = daysWithReadings.toDouble(),
+            brackets = listOf(
+                1.0 to 1,
+                7.0 to 25,
+                14.0 to 50,
+                21.0 to 75,
+                28.0 to 99,
+            ),
+            inverted = false,
+        )
+    }
+
+    private fun bodyFatTrendToStat(
+        bodyFatReadings: List<Pair<LocalDate, Double>>,
+        windowStart: LocalDate,
+        windowEnd: LocalDate,
+    ): Int {
+        val recentReadings = bodyFatReadings
+            .filter { !it.first.isBefore(windowStart) && !it.first.isAfter(windowEnd) }
+            .sortedBy { it.first }
+
+        if (recentReadings.size < 2) return 50 // no data → neutral default
+
+        // Compare earliest vs latest reading in the window
+        val earliest = recentReadings.first().second
+        val latest = recentReadings.last().second
+        val change = latest - earliest // positive = gain, negative = drop
+
+        return when {
+            change <= -1.0 -> 99      // ≥1% drop → excellent
+            change <= -0.5 -> 87      // slight drop → great
+            change <= 0.5 -> 75       // stable ±0.5% → good
+            change <= 2.0 -> 50       // 0.5-2% gain → moderate
+            change <= 4.0 -> 25       // 2-4% gain → concerning
+            else -> 1                  // >4% gain → low
+        }
+    }
+
     // --- Breakdown methods ---
 
     fun speedBreakdown(recentRuns: List<Workout>, isWalk: Boolean): StatBreakdown {
@@ -355,6 +419,53 @@ object StatsCalculator {
             details = details,
             brackets = "Freq: 1\u21921 | 6\u219225 | 12\u219250 | 20\u219275 | 28\u219299\n" +
                 "Streak: 1d\u21921 | 3d\u219225 | 7d\u219250 | 10d\u219275 | 14d\u219299",
+            decayNote = "Actively decays \u2014 uses a 30-day rolling window.",
+        )
+    }
+
+    fun vitalityBreakdown(
+        weighInDates: List<LocalDate>,
+        bodyFatReadings: List<Pair<LocalDate, Double>>,
+        now: Instant = Instant.now(),
+    ): StatBreakdown {
+        val zone = ZoneId.systemDefault()
+        val today = now.atZone(zone).toLocalDate()
+        val thirtyDaysAgo = today.minusDays(30)
+
+        val recentDays = weighInDates
+            .filter { !it.isBefore(thirtyDaysAgo) && !it.isAfter(today) }
+            .distinct()
+            .size
+
+        val recentReadings = bodyFatReadings
+            .filter { !it.first.isBefore(thirtyDaysAgo) && !it.first.isAfter(today) }
+            .sortedBy { it.first }
+
+        val details = mutableListOf<Pair<String, String>>()
+        details.add("Weigh-ins (30d)" to "$recentDays days")
+
+        if (recentReadings.size >= 2) {
+            val earliest = recentReadings.first().second
+            val latest = recentReadings.last().second
+            val change = latest - earliest
+            val direction = when {
+                change <= -1.0 -> "Dropping (great!)"
+                change <= 0.5 -> "Stable"
+                change <= 2.0 -> "Slight gain"
+                change <= 4.0 -> "Moderate gain"
+                else -> "Significant gain"
+            }
+            details.add("Body fat trend" to direction)
+            details.add("BF% change" to "%+.1f%%".format(change))
+        } else {
+            details.add("Body fat trend" to "Not enough data")
+        }
+
+        return StatBreakdown(
+            description = "Weigh-in frequency (50%) + body fat trend (50%)",
+            details = details,
+            brackets = "Freq: 1d\u21921 | 7d\u219225 | 14d\u219250 | 21d\u219275 | 28d\u219299\n" +
+                "Trend: \u22651% drop\u219299 | stable\u219275 | 0.5-2% gain\u219250 | 2-4%\u219225 | >4%\u21921",
             decayNote = "Actively decays \u2014 uses a 30-day rolling window.",
         )
     }
