@@ -414,6 +414,10 @@ class FakeWorkoutDao : WorkoutDao {
     override suspend fun getTotalDogWalkDistanceMeters(): Double = 0.0
     override suspend fun getTotalDistanceMeters(): Double = 0.0
     override suspend fun getTotalDurationMillis(): Long = 0L
+    override fun getCompletedWorkoutsBetween(startMillis: Long, endMillis: Long): Flow<List<WorkoutEntity>> = flowOf(emptyList())
+    override fun getActiveMillisBetween(startMillis: Long, endMillis: Long): Flow<Long> = flowOf(0L)
+    override fun getDistanceMetersBetween(startMillis: Long, endMillis: Long): Flow<Double> = flowOf(0.0)
+    override fun getActiveDayCountBetween(startMillis: Long, endMillis: Long): Flow<Int> = flowOf(0)
 }
 
 class FakeCharacterDao : CharacterDao {
