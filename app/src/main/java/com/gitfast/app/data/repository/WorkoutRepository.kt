@@ -12,6 +12,9 @@ import com.gitfast.app.data.model.Workout
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 class WorkoutRepository @Inject constructor(
@@ -181,6 +184,40 @@ class WorkoutRepository @Inject constructor(
             }
             entity.toDomain(phases, emptyList())
         }
+    }
+
+    // --- Daily/weekly activity goals ---
+
+    fun getTodaysActiveMillis(): Flow<Long> {
+        val (start, end) = todayRange()
+        return workoutDao.getActiveMillisBetween(start, end)
+    }
+
+    fun getTodaysDistanceMeters(): Flow<Double> {
+        val (start, end) = todayRange()
+        return workoutDao.getDistanceMetersBetween(start, end)
+    }
+
+    fun getWeeklyActiveDayCount(): Flow<Int> {
+        val (start, end) = weekRange()
+        return workoutDao.getActiveDayCountBetween(start, end)
+    }
+
+    private fun todayRange(): Pair<Long, Long> {
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val start = today.atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        return start to end
+    }
+
+    private fun weekRange(): Pair<Long, Long> {
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val monday = today.with(DayOfWeek.MONDAY)
+        val start = monday.atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        return start to end
     }
 
     suspend fun getRecentWorkoutsWithLaps(limit: Int): List<Workout> {
