@@ -86,7 +86,18 @@ class CharacterRepository @Inject constructor(
                 speedStat = stats.speed,
                 enduranceStat = stats.endurance,
                 consistencyStat = stats.consistency,
+                vitalityStat = stats.vitality,
             )
+        )
+    }
+
+    suspend fun updateVitality(profileId: Int = 1, vitality: Int) {
+        val profile = characterDao.getProfileOnce(profileId)
+            ?: CharacterProfileEntity(id = profileId).also {
+                characterDao.insertProfile(it)
+            }
+        characterDao.updateProfile(
+            profile.copy(vitalityStat = vitality)
         )
     }
 
@@ -105,6 +116,7 @@ class CharacterRepository @Inject constructor(
             speedStat = speedStat,
             enduranceStat = enduranceStat,
             consistencyStat = consistencyStat,
+            vitalityStat = vitalityStat,
         )
     }
 

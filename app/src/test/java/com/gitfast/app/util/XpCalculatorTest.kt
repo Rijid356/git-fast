@@ -4,6 +4,7 @@ import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -236,5 +237,86 @@ class XpCalculatorTest {
         assertEquals(50, XpCalculator.xpCostForLevel(1))
         assertEquals(100, XpCalculator.xpCostForLevel(2))
         assertEquals(500, XpCalculator.xpCostForLevel(10))
+    }
+
+    // =========================================================================
+    // Weigh-in XP Tests
+    // =========================================================================
+
+    @Test
+    fun `weigh-in XP returns base 5 XP with no streak`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 0)
+        assertEquals(5, result.totalXp)
+    }
+
+    @Test
+    fun `weigh-in XP returns base 5 XP for day 1 streak`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 1)
+        assertEquals(5, result.totalXp)
+    }
+
+    @Test
+    fun `weigh-in XP applies 1_1x streak multiplier for day 2`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 2)
+        // base 5 * 1.1 = 5.5 → 5 (int truncation)
+        assertEquals(5, result.totalXp)
+        assertEquals(2, result.streakDays)
+        assertEquals(1.1, result.streakMultiplier, 0.01)
+    }
+
+    @Test
+    fun `weigh-in XP applies 1_3x streak multiplier for day 4`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 4)
+        // base 5 * 1.3 = 6.5 → 6
+        assertEquals(6, result.totalXp)
+        assertEquals(4, result.streakDays)
+        assertEquals(1.3, result.streakMultiplier, 0.01)
+    }
+
+    @Test
+    fun `weigh-in XP caps streak multiplier at 1_5x for day 6`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 6)
+        // base 5 * 1.5 = 7.5 → 7
+        assertEquals(7, result.totalXp)
+        assertEquals(1.5, result.streakMultiplier, 0.01)
+    }
+
+    @Test
+    fun `weigh-in XP caps streak multiplier at 1_5x for day 10`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 10)
+        // base 5 * 1.5 = 7.5 → 7
+        assertEquals(7, result.totalXp)
+        assertEquals(1.5, result.streakMultiplier, 0.01)
+    }
+
+    @Test
+    fun `weigh-in XP never returns less than minimum`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 0)
+        assertTrue("Weigh-in XP should be >= 5, got ${result.totalXp}", result.totalXp >= 5)
+    }
+
+    @Test
+    fun `weigh-in XP breakdown describes daily weigh-in`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 1)
+        assertTrue(
+            "Breakdown should mention weigh-in",
+            result.breakdown.any { it.lowercase().contains("weigh") },
+        )
+    }
+
+    @Test
+    fun `weigh-in XP breakdown includes streak info for multi-day streak`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 5)
+        assertTrue(
+            "Breakdown should mention streak for day 5",
+            result.breakdown.any { it.lowercase().contains("streak") },
+        )
+    }
+
+    @Test
+    fun `weigh-in XP breakdown does not mention streak for day 1`() {
+        val result = XpCalculator.calculateWeighInXp(streakDays = 1)
+        val hasStreak = result.breakdown.any { it.lowercase().contains("streak") }
+        assertFalse("Day 1 should not have streak bonus in breakdown", hasStreak)
     }
 }

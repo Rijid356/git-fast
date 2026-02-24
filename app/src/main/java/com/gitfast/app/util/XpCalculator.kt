@@ -148,6 +148,34 @@ object XpCalculator {
         return multiplier
     }
 
+    private const val XP_PER_WEIGH_IN = 5
+
+    /**
+     * Calculate XP earned from a daily weigh-in.
+     * Base: +5 XP. Streak multiplier applied same as workouts.
+     */
+    fun calculateWeighInXp(streakDays: Int = 0): XpResult {
+        val breakdown = mutableListOf<String>()
+        var rawXp = XP_PER_WEIGH_IN
+        breakdown.add("+$XP_PER_WEIGH_IN XP: daily weigh-in")
+
+        val streakMultiplier = StreakCalculator.getMultiplier(streakDays)
+        if (streakMultiplier > 1.0) {
+            val bonusXp = ((rawXp * streakMultiplier) - rawXp).toInt()
+            if (bonusXp > 0) {
+                breakdown.add("+$bonusXp XP: $streakDays-day streak (${StreakCalculator.getMultiplierLabel(streakDays)})")
+            }
+            rawXp = (rawXp * streakMultiplier).toInt()
+        }
+
+        return XpResult(
+            totalXp = max(rawXp, MINIMUM_XP),
+            breakdown = breakdown,
+            streakDays = streakDays,
+            streakMultiplier = streakMultiplier,
+        )
+    }
+
     /**
      * Total XP needed to reach a given level.
      * Level 1 = 0 XP, Level 2 = 100, Level 3 = 250, Level 4 = 450...

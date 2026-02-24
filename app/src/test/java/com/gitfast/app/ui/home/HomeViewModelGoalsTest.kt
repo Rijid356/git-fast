@@ -3,6 +3,7 @@ package com.gitfast.app.ui.home
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.model.CharacterProfile
+import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import io.mockk.every
@@ -26,6 +27,7 @@ class HomeViewModelGoalsTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var workoutRepository: WorkoutRepository
     private lateinit var characterRepository: CharacterRepository
+    private lateinit var bodyCompRepository: BodyCompRepository
     private lateinit var workoutStateStore: WorkoutStateStore
     private lateinit var settingsStore: SettingsStore
 
@@ -34,8 +36,11 @@ class HomeViewModelGoalsTest {
         Dispatchers.setMain(testDispatcher)
         workoutRepository = mockk()
         characterRepository = mockk()
+        bodyCompRepository = mockk()
         workoutStateStore = mockk()
         settingsStore = mockk()
+
+        every { bodyCompRepository.getLatestReading() } returns flowOf(null)
 
         every { workoutStateStore.hasActiveWorkout() } returns false
         every { characterRepository.getProfile() } returns flowOf(CharacterProfile())
@@ -62,6 +67,7 @@ class HomeViewModelGoalsTest {
             workoutStateStore = workoutStateStore,
             workoutRepository = workoutRepository,
             characterRepository = characterRepository,
+            bodyCompRepository = bodyCompRepository,
             settingsStore = settingsStore,
         )
 
@@ -91,6 +97,7 @@ class HomeViewModelGoalsTest {
             workoutStateStore = workoutStateStore,
             workoutRepository = workoutRepository,
             characterRepository = characterRepository,
+            bodyCompRepository = bodyCompRepository,
             settingsStore = settingsStore,
         )
 
@@ -117,6 +124,7 @@ class HomeViewModelGoalsTest {
             workoutStateStore = workoutStateStore,
             workoutRepository = workoutRepository,
             characterRepository = characterRepository,
+            bodyCompRepository = bodyCompRepository,
             settingsStore = settingsStore,
         )
 

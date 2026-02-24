@@ -535,4 +535,183 @@ class StatsCalculatorTest {
         val stat = StatsCalculator.calculateSpeed(listOf(run))
         assertTrue("7:30/mi should interpolate to ~69, got $stat", stat in 65..73)
     }
+
+    // =========================================================================
+    // Vitality (VIT) Tests
+    // =========================================================================
+
+    @Test
+    fun `vitality - zero weigh-in days returns low stat`() {
+        // frequency: 0 → below brackets → 1, trend: null → 50
+        // blend: (1 * 0.5 + 50 * 0.5) = 25.5 → 26
+        val stat = StatsCalculator.calculateVitality(weighInCount = 0, bodyFatTrendPercent = null)
+        assertTrue("Zero weigh-ins + null trend should yield ~26, got $stat", stat in 20..30)
+    }
+
+    @Test
+    fun `vitality - 1 weigh-in day with no trend data yields low stat`() {
+        // frequency: 1 day → 1, trend: null → 50
+        // blend: (1 + 50) / 2 ≈ 26
+        val stat = StatsCalculator.calculateVitality(weighInCount = 1, bodyFatTrendPercent = null)
+        assertTrue("1 day + null trend should yield ~26, got $stat", stat in 20..30)
+    }
+
+    @Test
+    fun `vitality - 7 weigh-in days yields frequency around 25`() {
+        // frequency: 7 days → 25, trend: null → 50
+        // blend: (25 + 50) / 2 ≈ 38
+        val stat = StatsCalculator.calculateVitality(weighInCount = 7, bodyFatTrendPercent = null)
+        assertTrue("7 days + null trend should yield ~38, got $stat", stat in 30..45)
+    }
+
+    @Test
+    fun `vitality - 14 weigh-in days yields frequency around 50`() {
+        // frequency: 14 days → 50, trend: null → 50
+        // blend: (50 + 50) / 2 = 50
+        val stat = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = null)
+        assertTrue("14 days + null trend should yield ~50, got $stat", stat in 45..55)
+    }
+
+    @Test
+    fun `vitality - 21 weigh-in days yields frequency around 75`() {
+        // frequency: 21 days → 75, trend: null → 50
+        // blend: (75 + 50) / 2 ≈ 63
+        val stat = StatsCalculator.calculateVitality(weighInCount = 21, bodyFatTrendPercent = null)
+        assertTrue("21 days + null trend should yield ~63, got $stat", stat in 55..70)
+    }
+
+    @Test
+    fun `vitality - 28 weigh-in days yields frequency around 99`() {
+        // frequency: 28 days → 99, trend: null → 50
+        // blend: (99 + 50) / 2 ≈ 75
+        val stat = StatsCalculator.calculateVitality(weighInCount = 28, bodyFatTrendPercent = null)
+        assertTrue("28 days + null trend should yield ~75, got $stat", stat in 70..80)
+    }
+
+    @Test
+    fun `vitality - improving body fat trend yields high trend component`() {
+        // frequency: 14 → 50, trend: -1.5% drop → 99
+        // blend: (50 + 99) / 2 ≈ 75
+        val stat = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = -1.5)
+        assertTrue("Improving trend should yield high stat, got $stat", stat >= 65)
+    }
+
+    @Test
+    fun `vitality - stable body fat yields moderate-high trend`() {
+        // frequency: 14 → 50, trend: 0.0% change → 75
+        // blend: (50 + 75) / 2 ≈ 63
+        val stat = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = 0.0)
+        assertTrue("Stable trend should yield ~63, got $stat", stat in 55..70)
+    }
+
+    @Test
+    fun `vitality - slight gain in body fat yields moderate trend`() {
+        // frequency: 14 → 50, trend: 1.25% gain → interpolates 0.5→75, 2.0→50, gives ~63
+        // blend: (50 + 63) / 2 ≈ 57
+        val stat = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = 1.25)
+        assertTrue("Slight gain should yield ~57, got $stat", stat in 50..65)
+    }
+
+    @Test
+    fun `vitality - moderate gain in body fat yields low trend`() {
+        // frequency: 14 → 50, trend: 3.0% gain → 25
+        // blend: (50 + 25) / 2 ≈ 38
+        val stat = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = 3.0)
+        assertTrue("Moderate gain should yield ~38, got $stat", stat in 30..45)
+    }
+
+    @Test
+    fun `vitality - significant gain in body fat yields minimum trend`() {
+        // frequency: 14 → 50, trend: 5.0%+ gain → 1
+        // blend: (50 + 1) / 2 ≈ 26
+        val stat = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = 5.0)
+        assertTrue("Significant gain should yield low stat, got $stat", stat in 20..35)
+    }
+
+    @Test
+    fun `vitality - null body fat trend defaults to 50 for trend component`() {
+        // Verify null trend uses 50 as default
+        val statWithNull = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = null)
+        val statWithStable = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = 0.0)
+        // null defaults to 50 (neutral), stable ≈ 75, so statWithNull < statWithStable
+        assertTrue(
+            "Null trend (50) should yield lower stat than stable (75), got null=$statWithNull stable=$statWithStable",
+            statWithNull <= statWithStable,
+        )
+    }
+
+    @Test
+    fun `vitality - perfect consistency with improving trend yields near 99`() {
+        // frequency: 28 → 99, trend: -2.0% drop → 99
+        // blend: (99 + 99) / 2 = 99
+        val stat = StatsCalculator.calculateVitality(weighInCount = 28, bodyFatTrendPercent = -2.0)
+        assertTrue("Perfect consistency + improving should be near 99, got $stat", stat >= 90)
+    }
+
+    @Test
+    fun `vitality - zero data returns low stat`() {
+        // frequency: 0 → below brackets → 1, trend: null → 50
+        // blend: (1 * 0.5 + 50 * 0.5) = 25.5 → 26
+        val stat = StatsCalculator.calculateVitality(weighInCount = 0, bodyFatTrendPercent = null)
+        assertTrue("Zero data should yield ~26, got $stat", stat in 20..30)
+    }
+
+    @Test
+    fun `vitality - stat clamped to 1-99 range`() {
+        // Test extreme values don't exceed range
+        val high = StatsCalculator.calculateVitality(weighInCount = 30, bodyFatTrendPercent = -5.0)
+        val low = StatsCalculator.calculateVitality(weighInCount = 0, bodyFatTrendPercent = 10.0)
+        assertTrue("High VIT should be <= 99, got $high", high <= 99)
+        assertTrue("Low VIT should be >= 1, got $low", low >= 1)
+    }
+
+    @Test
+    fun `vitality - frequency only (no body fat data) still works`() {
+        // 21 days of weigh-ins, no body fat data
+        val stat = StatsCalculator.calculateVitality(weighInCount = 21, bodyFatTrendPercent = null)
+        // frequency ≈ 75, trend = 50 (default), blend ≈ 63
+        assertTrue("Frequency-only VIT should be moderate, got $stat", stat in 50..70)
+    }
+
+    @Test
+    fun `vitality - 50-50 blend verified with known inputs`() {
+        // 28 days → freq 99, stable 0.0% → trend 75
+        // expected: (99 + 75) / 2 ≈ 87
+        val stat = StatsCalculator.calculateVitality(weighInCount = 28, bodyFatTrendPercent = 0.0)
+        assertTrue("28d + stable should blend to ~87, got $stat", stat in 80..92)
+    }
+
+    // =========================================================================
+    // vitalityBreakdown Tests
+    // =========================================================================
+
+    @Test
+    fun `vitalityBreakdown includes weigh-in count detail`() {
+        val breakdown = StatsCalculator.vitalityBreakdown(weighInCount = 14, bodyFatTrendPercent = -0.5, effectiveScore = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = -0.5))
+        val keys = breakdown.details.map { it.first }
+        assertTrue("Should include weigh-in count", keys.any { it.contains("eigh") || it.contains("count") || it.contains("frequency") })
+    }
+
+    @Test
+    fun `vitalityBreakdown includes trend detail`() {
+        val breakdown = StatsCalculator.vitalityBreakdown(weighInCount = 14, bodyFatTrendPercent = -0.5, effectiveScore = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = -0.5))
+        val keys = breakdown.details.map { it.first }
+        assertTrue("Should include trend info", keys.any { it.contains("rend") || it.contains("fat") || it.contains("direction") })
+    }
+
+    @Test
+    fun `vitalityBreakdown shows no trend data message when null`() {
+        val breakdown = StatsCalculator.vitalityBreakdown(weighInCount = 14, bodyFatTrendPercent = null, effectiveScore = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = null))
+        val values = breakdown.details.map { it.second }
+        assertTrue(
+            "Should indicate no trend data",
+            values.any { it.contains("o data") || it.contains("neutral") || it.contains("N/A") || it.contains("50") },
+        )
+    }
+
+    @Test
+    fun `vitalityBreakdown brackets string is not empty`() {
+        val breakdown = StatsCalculator.vitalityBreakdown(weighInCount = 14, bodyFatTrendPercent = 0.0, effectiveScore = StatsCalculator.calculateVitality(weighInCount = 14, bodyFatTrendPercent = 0.0))
+        assertTrue("Brackets should not be empty", breakdown.brackets.isNotEmpty())
+    }
 }

@@ -109,6 +109,12 @@ class SettingsStore @Inject constructor(
             prefs.edit().putInt(KEY_WEEKLY_ACTIVE_DAYS_GOAL, value).apply()
         }
 
+    var healthConnectLastSync: Long
+        get() = prefs.getLong(KEY_HC_LAST_SYNC, 0L)
+        set(value) {
+            prefs.edit().putLong(KEY_HC_LAST_SYNC, value).apply()
+        }
+
     fun clearHomeLocation() {
         prefs.edit()
             .remove(KEY_HOME_LATITUDE)
@@ -130,5 +136,6 @@ class SettingsStore @Inject constructor(
         private const val KEY_DAILY_ACTIVE_MINUTES_GOAL = "daily_active_minutes_goal"
         private const val KEY_DAILY_DISTANCE_GOAL_MILES = "daily_distance_goal_miles"
         private const val KEY_WEEKLY_ACTIVE_DAYS_GOAL = "weekly_active_days_goal"
+        private const val KEY_HC_LAST_SYNC = "health_connect_last_sync"
     }
 }
