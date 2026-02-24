@@ -42,10 +42,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.DailyActivityMetrics
 import com.gitfast.app.ui.components.ActivityRings
 import com.gitfast.app.ui.theme.AmberAccent
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
@@ -56,6 +59,7 @@ fun HomeScreen(
     onCharacterClick: () -> Unit,
     onAnalyticsClick: () -> Unit,
     onGoalsClick: () -> Unit,
+    onBodyCompClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
@@ -63,6 +67,7 @@ fun HomeScreen(
     val recentDogWalks by viewModel.recentDogWalks.collectAsStateWithLifecycle()
     val characterProfile by viewModel.characterProfile.collectAsStateWithLifecycle()
     val dailyMetrics by viewModel.dailyMetrics.collectAsStateWithLifecycle()
+    val latestWeight by viewModel.latestWeight.collectAsStateWithLifecycle()
 
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
@@ -117,6 +122,10 @@ fun HomeScreen(
                 metrics = dailyMetrics,
                 onGoalsClick = onGoalsClick,
             )
+
+            latestWeight?.let { reading ->
+                WeightQuickStat(reading = reading, onClick = onBodyCompClick)
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -241,6 +250,25 @@ fun HomeScreen(
             },
         )
     }
+}
+
+@Composable
+private fun WeightQuickStat(
+    reading: BodyCompReading,
+    onClick: () -> Unit,
+) {
+    val weightText = reading.weightLbs?.let { "%.1f lbs".format(it) } ?: return
+    val dateText = reading.timestamp
+        .atZone(ZoneId.systemDefault())
+        .format(DateTimeFormatter.ofPattern("MMM d"))
+
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+        text = "$weightText \u00B7 $dateText",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.clickable(onClick = onClick),
+    )
 }
 
 @Composable
