@@ -53,10 +53,11 @@
 | 2026-02-23 | Increase test coverage 33.8%→35.4% line, 32.7%→33.9% branch: 28 new tests across StatsCalculator, WorkoutSaveManager, HomeViewModel, DetailViewModel; raised Kover thresholds to 32%/28% | 5 | 0 | +437/-15 |
 | 2026-02-24 | Easy-win test coverage 35.8%→36.9% line: 81 new tests — SettingsViewModel (22), CharacterRepository (24), WorkoutRepository +13, WorkoutStateManager branches (22); merged PR #74 | 10 | 1 | +1411/-0 |
 | 2026-02-24 | GitHub issue workflow: created issues #72 (Roborazzi) and #73 (Weight Tracking) from plan files, added Plans→GitHub Issues bidirectional sync rule to global CLAUDE.md | 0 | 0 | +0/-0 |
+| 2026-02-24 | Remove home arrival radius selector, hardcode 15m (~50ft): dropped HomeArrivalRadiusItem composable, removed setHomeArrivalRadius from ViewModel/UiState, updated tests; merged PR #87 | 4 | 1 | +2/-68 |
 
 ## Totals
-- **Total Sessions:** 42
-- **Total Commits:** 60
-- **Total Files Changed:** 480
-- **Total Lines Added:** 26440
-- **Total Lines Removed:** 1745
+- **Total Sessions:** 43
+- **Total Commits:** 61
+- **Total Files Changed:** 484
+- **Total Lines Added:** 26442
+- **Total Lines Removed:** 1813
