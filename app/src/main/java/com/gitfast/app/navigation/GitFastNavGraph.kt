@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.ui.analytics.AnalyticsHubScreen
+import com.gitfast.app.ui.analytics.bodycomp.BodyCompScreen
 import com.gitfast.app.ui.analytics.routeoverlay.RouteOverlayScreen
 import com.gitfast.app.ui.analytics.records.PersonalRecordsScreen
 import com.gitfast.app.ui.analytics.routeperformance.RoutePerformanceScreen
@@ -40,6 +41,7 @@ sealed class Screen(val route: String) {
     data object RoutePerformance : Screen("route_performance")
     data object PersonalRecords : Screen("personal_records")
     data object Trends : Screen("trends")
+    data object BodyComp : Screen("body_comp")
     data object Goals : Screen("goals")
     data object CharacterSheet : Screen("character_sheet")
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
@@ -127,6 +129,9 @@ fun GitFastNavGraph(navController: NavHostController) {
                 onTrendsClick = {
                     navController.navigate(Screen.Trends.route)
                 },
+                onBodyCompClick = {
+                    navController.navigate(Screen.BodyComp.route)
+                },
             )
         }
         composable(Screen.RouteOverlay.route) {
@@ -143,6 +148,13 @@ fun GitFastNavGraph(navController: NavHostController) {
                 },
                 onWorkoutClick = { workoutId ->
                     navController.navigate(Screen.Detail.createRoute(workoutId))
+                },
+            )
+        }
+        composable(Screen.BodyComp.route) {
+            BodyCompScreen(
+                onBackClick = {
+                    navController.popBackStack()
                 },
             )
         }
