@@ -54,10 +54,11 @@
 | 2026-02-24 | Easy-win test coverage 35.8%→36.9% line: 81 new tests — SettingsViewModel (22), CharacterRepository (24), WorkoutRepository +13, WorkoutStateManager branches (22); merged PR #74 | 10 | 1 | +1411/-0 |
 | 2026-02-24 | GitHub issue workflow: created issues #72 (Roborazzi) and #73 (Weight Tracking) from plan files, added Plans→GitHub Issues bidirectional sync rule to global CLAUDE.md | 0 | 0 | +0/-0 |
 | 2026-02-24 | Remove home arrival radius selector, hardcode 15m (~50ft): dropped HomeArrivalRadiusItem composable, removed setHomeArrivalRadius from ViewModel/UiState, updated tests; merged PR #87 | 4 | 1 | +2/-68 |
+| 2026-02-24 | FirestoreSync test coverage 0%→100%: 29 new tests covering all push/pull methods, auth guards, error handling, edge cases; overall 36.9%→38.9% line; merged PR #88 | 2 | 1 | +700/-5 |
 
 ## Totals
-- **Total Sessions:** 43
-- **Total Commits:** 61
-- **Total Files Changed:** 484
-- **Total Lines Added:** 26442
-- **Total Lines Removed:** 1813
+- **Total Sessions:** 44
+- **Total Commits:** 62
+- **Total Files Changed:** 486
+- **Total Lines Added:** 27142
+- **Total Lines Removed:** 1818
