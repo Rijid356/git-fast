@@ -7,6 +7,7 @@ enum class AchievementCategory {
     LAPS,
     DOG_WALK,
     LEVELING,
+    BODY_COMP,
 }
 
 enum class AchievementDef(
@@ -236,6 +237,48 @@ enum class AchievementDef(
         icon = "[JG]",
         category = AchievementCategory.LEVELING,
         profileId = 2,
+    ),
+
+    // Body Composition
+    FIRST_WEIGH_IN(
+        id = "body_first_weigh_in",
+        title = "First Weigh-In",
+        description = "Sync your first weight reading",
+        xpReward = 10,
+        icon = "[W1]",
+        category = AchievementCategory.BODY_COMP,
+    ),
+    WEEK_TRACKER(
+        id = "body_week_tracker",
+        title = "Week Tracker",
+        description = "7-day weigh-in streak",
+        xpReward = 30,
+        icon = "[W7]",
+        category = AchievementCategory.BODY_COMP,
+    ),
+    MONTH_TRACKER(
+        id = "body_month_tracker",
+        title = "Month Tracker",
+        description = "28-day weigh-in streak",
+        xpReward = 75,
+        icon = "[W28]",
+        category = AchievementCategory.BODY_COMP,
+    ),
+    BODY_AWARE(
+        id = "body_aware",
+        title = "Body Aware",
+        description = "Record 50 weigh-ins",
+        xpReward = 50,
+        icon = "[B50]",
+        category = AchievementCategory.BODY_COMP,
+    ),
+    CENTURION_SCALE(
+        id = "body_centurion_scale",
+        title = "Centurion Scale",
+        description = "Record 100 weigh-ins",
+        xpReward = 150,
+        icon = "[B100]",
+        category = AchievementCategory.BODY_COMP,
     ),
 
     // Leveling
