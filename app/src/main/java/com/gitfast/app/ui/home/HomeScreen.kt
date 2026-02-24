@@ -43,6 +43,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.CharacterProfile
+import com.gitfast.app.data.model.DailyActivityMetrics
+import com.gitfast.app.ui.components.ActivityRings
 import com.gitfast.app.ui.theme.AmberAccent
 
 @Composable
@@ -53,12 +55,14 @@ fun HomeScreen(
     onSettingsClick: () -> Unit,
     onCharacterClick: () -> Unit,
     onAnalyticsClick: () -> Unit,
+    onGoalsClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
     val recentRuns by viewModel.recentRuns.collectAsStateWithLifecycle()
     val recentDogWalks by viewModel.recentDogWalks.collectAsStateWithLifecycle()
     val characterProfile by viewModel.characterProfile.collectAsStateWithLifecycle()
+    val dailyMetrics by viewModel.dailyMetrics.collectAsStateWithLifecycle()
 
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
@@ -107,7 +111,14 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            ActivityRings(
+                metrics = dailyMetrics,
+                onGoalsClick = onGoalsClick,
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = { onStartWorkout(ActivityType.RUN) },

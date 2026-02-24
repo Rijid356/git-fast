@@ -88,6 +88,27 @@ class SettingsStore @Inject constructor(
     val hasHomeLocation: Boolean
         get() = homeLatitude != null && homeLongitude != null
 
+    var dailyActiveMinutesGoal: Int
+        get() = prefs.getInt(KEY_DAILY_ACTIVE_MINUTES_GOAL, 22)
+        set(value) {
+            prefs.edit().putInt(KEY_DAILY_ACTIVE_MINUTES_GOAL, value).apply()
+        }
+
+    var dailyDistanceGoalMiles: Double
+        get() {
+            val raw = prefs.getString(KEY_DAILY_DISTANCE_GOAL_MILES, null) ?: return 1.5
+            return raw.toDoubleOrNull() ?: 1.5
+        }
+        set(value) {
+            prefs.edit().putString(KEY_DAILY_DISTANCE_GOAL_MILES, value.toString()).apply()
+        }
+
+    var weeklyActiveDaysGoal: Int
+        get() = prefs.getInt(KEY_WEEKLY_ACTIVE_DAYS_GOAL, 5)
+        set(value) {
+            prefs.edit().putInt(KEY_WEEKLY_ACTIVE_DAYS_GOAL, value).apply()
+        }
+
     fun clearHomeLocation() {
         prefs.edit()
             .remove(KEY_HOME_LATITUDE)
@@ -106,5 +127,8 @@ class SettingsStore @Inject constructor(
         private const val KEY_HOME_LATITUDE = "home_latitude"
         private const val KEY_HOME_LONGITUDE = "home_longitude"
         private const val KEY_HOME_ARRIVAL_RADIUS = "home_arrival_radius"
+        private const val KEY_DAILY_ACTIVE_MINUTES_GOAL = "daily_active_minutes_goal"
+        private const val KEY_DAILY_DISTANCE_GOAL_MILES = "daily_distance_goal_miles"
+        private const val KEY_WEEKLY_ACTIVE_DAYS_GOAL = "weekly_active_days_goal"
     }
 }
