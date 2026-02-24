@@ -96,7 +96,7 @@ class HealthConnectManagerTest {
     fun `hasPermissions returns true when all required permissions granted`() = runTest {
         coEvery {
             mockPermissionController.getGrantedPermissions()
-        } returns HealthConnectManager.REQUIRED_PERMISSIONS
+        } returns HealthConnectManager.PERMISSIONS
 
         assertTrue(manager.hasPermissions())
     }

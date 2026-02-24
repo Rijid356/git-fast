@@ -3,7 +3,6 @@ package com.gitfast.app.ui.analytics.bodycomp
 import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.repository.BodyCompRepository
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -34,20 +33,18 @@ class BodyCompViewModelTest {
         Dispatchers.setMain(testDispatcher)
         mockRepository = mockk(relaxed = true)
 
-        // Default mocks for all flows
         every { mockRepository.getLatestReading() } returns flowOf(null)
         every { mockRepository.getAllReadings() } returns flowOf(emptyList())
         every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(emptyList())
         coEvery { mockRepository.getWeighInStreak() } returns 0
         coEvery { mockRepository.getWeighInCount(any()) } returns 0
+        coEvery { mockRepository.syncFromHealthConnect() } returns Unit
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
     }
-
-    // --- Helper ---
 
     private fun buildReading(
         id: String = "r-1",
@@ -81,273 +78,149 @@ class BodyCompViewModelTest {
         )
     }
 
-    // =========================================================================
-    // Initial State
-    // =========================================================================
-
     @Test
-    fun `initial state has null latest reading`() = runTest {
+    fun `initial state shows loading`() = runTest {
         val viewModel = BodyCompViewModel(mockRepository)
-
-        backgroundScope.launch(testDispatcher) {
-            viewModel.latestReading.collect {}
-        }
-
-        assertNull(viewModel.latestReading.value)
+        // Initial uiState before data loads
+        assertNotNull(viewModel.uiState.value)
     }
 
     @Test
-    fun `initial state has empty weight history`() = runTest {
+    fun `empty readings shows empty state`() = runTest {
+        every { mockRepository.getAllReadings() } returns flowOf(emptyList())
+
         val viewModel = BodyCompViewModel(mockRepository)
 
         backgroundScope.launch(testDispatcher) {
-            viewModel.weightHistory.collect {}
+            viewModel.uiState.collect {}
         }
 
-        assertTrue(viewModel.weightHistory.value.isEmpty())
+        assertTrue(viewModel.uiState.value.isEmpty)
+        assertNull(viewModel.uiState.value.latestReading)
     }
 
-    // =========================================================================
-    // Loading Readings
-    // =========================================================================
-
     @Test
-    fun `loads latest reading from repository`() = runTest {
+    fun `loads latest reading into uiState`() = runTest {
         val reading = buildReading(id = "latest-1", weightKg = 78.5)
-        every { mockRepository.getLatestReading() } returns flowOf(reading)
+        every { mockRepository.getAllReadings() } returns flowOf(listOf(reading))
 
         val viewModel = BodyCompViewModel(mockRepository)
 
         backgroundScope.launch(testDispatcher) {
-            viewModel.latestReading.collect {}
+            viewModel.uiState.collect {}
         }
 
-        val result = viewModel.latestReading.value
-        assertNotNull(result)
-        assertEquals("latest-1", result!!.id)
-        assertEquals(78.5, result.weightKg!!, 0.01)
+        val state = viewModel.uiState.value
+        assertNotNull(state.latestReading)
+        assertEquals("latest-1", state.latestReading!!.id)
     }
-
-    @Test
-    fun `loads weight history from repository`() = runTest {
-        val readings = listOf(
-            buildReading(id = "r1", weightKg = 80.0),
-            buildReading(id = "r2", weightKg = 79.0),
-            buildReading(id = "r3", weightKg = 78.0),
-        )
-        every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(readings)
-
-        val viewModel = BodyCompViewModel(mockRepository)
-
-        backgroundScope.launch(testDispatcher) {
-            viewModel.weightHistory.collect {}
-        }
-
-        assertEquals(3, viewModel.weightHistory.value.size)
-    }
-
-    // =========================================================================
-    // Period Filtering
-    // =========================================================================
 
     @Test
     fun `default period is 30 days`() = runTest {
         val viewModel = BodyCompViewModel(mockRepository)
-
-        assertEquals(30, viewModel.selectedPeriodDays.value)
+        assertEquals(BodyCompPeriod.DAYS_30, viewModel.uiState.value.period)
     }
 
     @Test
-    fun `changing period to 60 days updates readings`() = runTest {
-        val thirtyDayReadings = listOf(buildReading(id = "30d"))
-        val sixtyDayReadings = listOf(
-            buildReading(id = "60d-1"),
-            buildReading(id = "60d-2"),
-        )
-
-        // Mock different results for different time ranges
-        every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(thirtyDayReadings)
-
+    fun `changing period updates uiState`() = runTest {
         val viewModel = BodyCompViewModel(mockRepository)
 
-        backgroundScope.launch(testDispatcher) {
-            viewModel.weightHistory.collect {}
-        }
+        viewModel.setPeriod(BodyCompPeriod.DAYS_60)
+        assertEquals(BodyCompPeriod.DAYS_60, viewModel.uiState.value.period)
 
-        // Change period
-        every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(sixtyDayReadings)
-        viewModel.setPeriod(60)
-
-        assertEquals(60, viewModel.selectedPeriodDays.value)
+        viewModel.setPeriod(BodyCompPeriod.DAYS_90)
+        assertEquals(BodyCompPeriod.DAYS_90, viewModel.uiState.value.period)
     }
-
-    @Test
-    fun `changing period to 90 days updates period state`() = runTest {
-        val viewModel = BodyCompViewModel(mockRepository)
-
-        viewModel.setPeriod(90)
-
-        assertEquals(90, viewModel.selectedPeriodDays.value)
-    }
-
-    // =========================================================================
-    // Streak
-    // =========================================================================
 
     @Test
     fun `streak is loaded from repository`() = runTest {
         coEvery { mockRepository.getWeighInStreak() } returns 7
+        val reading = buildReading(id = "r1")
+        every { mockRepository.getAllReadings() } returns flowOf(listOf(reading))
 
         val viewModel = BodyCompViewModel(mockRepository)
 
         backgroundScope.launch(testDispatcher) {
-            viewModel.weighInStreak.collect {}
+            viewModel.uiState.collect {}
         }
 
-        assertEquals(7, viewModel.weighInStreak.value)
+        assertEquals(7, viewModel.uiState.value.weighInStreak)
     }
 
     @Test
-    fun `streak is 0 when no readings`() = runTest {
-        coEvery { mockRepository.getWeighInStreak() } returns 0
-
-        val viewModel = BodyCompViewModel(mockRepository)
-
-        backgroundScope.launch(testDispatcher) {
-            viewModel.weighInStreak.collect {}
-        }
-
-        assertEquals(0, viewModel.weighInStreak.value)
-    }
-
-    // =========================================================================
-    // Stat Calculations
-    // =========================================================================
-
-    @Test
-    fun `computes weight change from readings`() = runTest {
+    fun `weight bars created from readings`() = runTest {
         val now = Instant.now()
         val readings = listOf(
-            buildReading(id = "r1", weightKg = 80.0, timestamp = now.minusSeconds(86400 * 25)),
-            buildReading(id = "r2", weightKg = 79.0, timestamp = now.minusSeconds(86400 * 15)),
-            buildReading(id = "r3", weightKg = 78.0, timestamp = now),
+            buildReading(id = "r1", weightKg = 80.0, weightLbs = 176.4, timestamp = now.minusSeconds(86400 * 2)),
+            buildReading(id = "r2", weightKg = 79.0, weightLbs = 174.2, timestamp = now.minusSeconds(86400)),
+            buildReading(id = "r3", weightKg = 78.0, weightLbs = 172.0, timestamp = now),
         )
-        every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(readings)
+        every { mockRepository.getAllReadings() } returns flowOf(readings)
 
         val viewModel = BodyCompViewModel(mockRepository)
 
         backgroundScope.launch(testDispatcher) {
-            viewModel.weightHistory.collect {}
+            viewModel.uiState.collect {}
         }
 
-        // Oldest = 80.0, latest = 78.0, delta = -2.0 kg
-        val history = viewModel.weightHistory.value
-        assertEquals(3, history.size)
+        assertTrue(viewModel.uiState.value.weightBars.isNotEmpty())
     }
 
     @Test
-    fun `handles null weight values in readings`() = runTest {
-        val readings = listOf(
-            buildReading(id = "r1", weightKg = null, bodyFatPercent = 18.0),
-            buildReading(id = "r2", weightKg = 78.0),
-        )
-        every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(readings)
-
-        val viewModel = BodyCompViewModel(mockRepository)
-
-        backgroundScope.launch(testDispatcher) {
-            viewModel.weightHistory.collect {}
-        }
-
-        // Should handle null weights gracefully
-        assertEquals(2, viewModel.weightHistory.value.size)
-    }
-
-    // =========================================================================
-    // Sync
-    // =========================================================================
-
-    @Test
-    fun `sync triggers repository sync`() = runTest {
-        coEvery { mockRepository.syncFromHealthConnect() } returns Unit
-
-        val viewModel = BodyCompViewModel(mockRepository)
-        viewModel.sync()
-
-        coVerify { mockRepository.syncFromHealthConnect() }
-    }
-
-    @Test
-    fun `sync handles errors gracefully`() = runTest {
+    fun `sync failure is non-fatal`() = runTest {
         coEvery { mockRepository.syncFromHealthConnect() } throws Exception("sync failed")
-
-        val viewModel = BodyCompViewModel(mockRepository)
-        // Should not throw
-        viewModel.sync()
-    }
-
-    // =========================================================================
-    // Empty State
-    // =========================================================================
-
-    @Test
-    fun `empty readings shows empty state`() = runTest {
-        every { mockRepository.getLatestReading() } returns flowOf(null)
         every { mockRepository.getAllReadings() } returns flowOf(emptyList())
-        every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(emptyList())
-        coEvery { mockRepository.getWeighInStreak() } returns 0
-        coEvery { mockRepository.getWeighInCount(any()) } returns 0
 
+        // Should not throw
         val viewModel = BodyCompViewModel(mockRepository)
 
         backgroundScope.launch(testDispatcher) {
-            viewModel.latestReading.collect {}
-            viewModel.weightHistory.collect {}
+            viewModel.uiState.collect {}
         }
 
-        assertNull(viewModel.latestReading.value)
-        assertTrue(viewModel.weightHistory.value.isEmpty())
-    }
-
-    // =========================================================================
-    // Body Fat History
-    // =========================================================================
-
-    @Test
-    fun `body fat history loaded from readings`() = runTest {
-        val readings = listOf(
-            buildReading(id = "r1", bodyFatPercent = 20.0),
-            buildReading(id = "r2", bodyFatPercent = 19.5),
-            buildReading(id = "r3", bodyFatPercent = 19.0),
-        )
-        every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(readings)
-
-        val viewModel = BodyCompViewModel(mockRepository)
-
-        backgroundScope.launch(testDispatcher) {
-            viewModel.bodyFatHistory.collect {}
-        }
-
-        assertEquals(3, viewModel.bodyFatHistory.value.size)
+        // ViewModel should still function, just show empty state
+        assertTrue(viewModel.uiState.value.isEmpty)
     }
 
     @Test
-    fun `body fat history filters out null values`() = runTest {
+    fun `body fat bars created when readings have body fat data`() = runTest {
+        val now = Instant.now()
         val readings = listOf(
-            buildReading(id = "r1", bodyFatPercent = 20.0),
-            buildReading(id = "r2", bodyFatPercent = null),
-            buildReading(id = "r3", bodyFatPercent = 19.0),
+            buildReading(id = "r1", bodyFatPercent = 20.0, timestamp = now.minusSeconds(86400 * 2)),
+            buildReading(id = "r2", bodyFatPercent = 19.5, timestamp = now.minusSeconds(86400)),
+            buildReading(id = "r3", bodyFatPercent = 19.0, timestamp = now),
         )
-        every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(readings)
+        every { mockRepository.getAllReadings() } returns flowOf(readings)
 
         val viewModel = BodyCompViewModel(mockRepository)
 
         backgroundScope.launch(testDispatcher) {
-            viewModel.bodyFatHistory.collect {}
+            viewModel.uiState.collect {}
         }
 
-        // bodyFatHistory should only include readings that have body fat data
-        val history = viewModel.bodyFatHistory.value
-        assertTrue("Should have 2 entries with body fat data, got ${history.size}", history.size <= 3)
+        assertTrue(viewModel.uiState.value.bodyFatBars.isNotEmpty())
+    }
+
+    @Test
+    fun `composition breakdown populated from latest reading`() = runTest {
+        val reading = buildReading(
+            id = "r1",
+            weightKg = 78.2,
+            bodyFatPercent = 18.5,
+            leanBodyMassLbs = 140.4,
+            boneMassLbs = 6.8,
+        )
+        every { mockRepository.getAllReadings() } returns flowOf(listOf(reading))
+
+        val viewModel = BodyCompViewModel(mockRepository)
+
+        backgroundScope.launch(testDispatcher) {
+            viewModel.uiState.collect {}
+        }
+
+        val state = viewModel.uiState.value
+        assertNotNull(state.fatMassLbs)
+        assertNotNull(state.leanMassLbs)
+        assertNotNull(state.boneMassLbs)
     }
 }

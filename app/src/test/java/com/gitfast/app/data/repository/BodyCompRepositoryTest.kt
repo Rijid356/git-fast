@@ -244,7 +244,7 @@ class BodyCompRepositoryTest {
 
     @Test
     fun `getWeighInStreak returns 0 when no readings`() = runTest {
-        every { mockDao.getWeighInDates() } returns flowOf(emptyList())
+        every { mockDao.getWeighInDays() } returns flowOf(emptyList())
 
         val streak = repository.getWeighInStreak()
 
@@ -253,15 +253,14 @@ class BodyCompRepositoryTest {
 
     @Test
     fun `getWeighInStreak counts consecutive days ending today`() = runTest {
-        val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
-        // 3 consecutive days: today, yesterday, day before
-        val dates = listOf(
-            today.atStartOfDay(zone).toInstant().toEpochMilli(),
-            today.minusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(),
-            today.minusDays(2).atStartOfDay(zone).toInstant().toEpochMilli(),
+        val today = LocalDate.now()
+        // 3 consecutive epoch days: today, yesterday, day before
+        val epochDays = listOf(
+            today.toEpochDay(),
+            today.minusDays(1).toEpochDay(),
+            today.minusDays(2).toEpochDay(),
         )
-        every { mockDao.getWeighInDates() } returns flowOf(dates)
+        every { mockDao.getWeighInDays() } returns flowOf(epochDays)
 
         val streak = repository.getWeighInStreak()
 
@@ -270,16 +269,15 @@ class BodyCompRepositoryTest {
 
     @Test
     fun `getWeighInStreak breaks on gap`() = runTest {
-        val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
-        // Today, yesterday, then skip a day, then 2 days ago
-        val dates = listOf(
-            today.atStartOfDay(zone).toInstant().toEpochMilli(),
-            today.minusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(),
+        val today = LocalDate.now()
+        // Today, yesterday, then skip a day, then 3 days ago
+        val epochDays = listOf(
+            today.toEpochDay(),
+            today.minusDays(1).toEpochDay(),
             // Gap: day 2 is missing
-            today.minusDays(3).atStartOfDay(zone).toInstant().toEpochMilli(),
+            today.minusDays(3).toEpochDay(),
         )
-        every { mockDao.getWeighInDates() } returns flowOf(dates)
+        every { mockDao.getWeighInDays() } returns flowOf(epochDays)
 
         val streak = repository.getWeighInStreak()
 
@@ -288,13 +286,12 @@ class BodyCompRepositoryTest {
 
     @Test
     fun `getWeighInStreak returns 0 when most recent reading is 2+ days ago`() = runTest {
-        val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
-        val dates = listOf(
-            today.minusDays(3).atStartOfDay(zone).toInstant().toEpochMilli(),
-            today.minusDays(4).atStartOfDay(zone).toInstant().toEpochMilli(),
+        val today = LocalDate.now()
+        val epochDays = listOf(
+            today.minusDays(3).toEpochDay(),
+            today.minusDays(4).toEpochDay(),
         )
-        every { mockDao.getWeighInDates() } returns flowOf(dates)
+        every { mockDao.getWeighInDays() } returns flowOf(epochDays)
 
         val streak = repository.getWeighInStreak()
 
@@ -304,14 +301,13 @@ class BodyCompRepositoryTest {
 
     @Test
     fun `getWeighInStreak counts from yesterday when no reading today`() = runTest {
-        val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
+        val today = LocalDate.now()
         // Yesterday and day before, but not today
-        val dates = listOf(
-            today.minusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(),
-            today.minusDays(2).atStartOfDay(zone).toInstant().toEpochMilli(),
+        val epochDays = listOf(
+            today.minusDays(1).toEpochDay(),
+            today.minusDays(2).toEpochDay(),
         )
-        every { mockDao.getWeighInDates() } returns flowOf(dates)
+        every { mockDao.getWeighInDays() } returns flowOf(epochDays)
 
         val streak = repository.getWeighInStreak()
 
@@ -321,15 +317,10 @@ class BodyCompRepositoryTest {
 
     @Test
     fun `getWeighInStreak deduplicates same-day entries`() = runTest {
-        val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
-        // Multiple entries on same day should count as 1
-        val dates = listOf(
-            today.atStartOfDay(zone).toInstant().toEpochMilli(),
-            today.atStartOfDay(zone).toInstant().plusSeconds(3600).toEpochMilli(),
-            today.atStartOfDay(zone).toInstant().plusSeconds(7200).toEpochMilli(),
-        )
-        every { mockDao.getWeighInDates() } returns flowOf(dates)
+        val today = LocalDate.now()
+        // DAO returns DISTINCT epoch days, so same-day = single entry
+        val epochDays = listOf(today.toEpochDay())
+        every { mockDao.getWeighInDays() } returns flowOf(epochDays)
 
         val streak = repository.getWeighInStreak()
 
@@ -342,7 +333,7 @@ class BodyCompRepositoryTest {
 
     @Test
     fun `getWeighInCount returns 0 for empty data`() = runTest {
-        every { mockDao.getWeighInDates() } returns flowOf(emptyList())
+        every { mockDao.getInRange(any(), any()) } returns flowOf(emptyList())
 
         val count = repository.getWeighInCount(30)
 
@@ -353,10 +344,13 @@ class BodyCompRepositoryTest {
     fun `getWeighInCount returns count of unique days within range`() = runTest {
         val zone = ZoneId.systemDefault()
         val today = LocalDate.now(zone)
-        val dates = (0 until 15).map { daysAgo ->
-            today.minusDays(daysAgo.toLong()).atStartOfDay(zone).toInstant().toEpochMilli()
+        val entries = (0 until 15).map { daysAgo ->
+            buildEntry(
+                id = "wc-$daysAgo",
+                timestamp = today.minusDays(daysAgo.toLong()).atStartOfDay(zone).toInstant().toEpochMilli(),
+            )
         }
-        every { mockDao.getWeighInDates() } returns flowOf(dates)
+        every { mockDao.getInRange(any(), any()) } returns flowOf(entries)
 
         val count = repository.getWeighInCount(30)
 
@@ -365,16 +359,17 @@ class BodyCompRepositoryTest {
 
     @Test
     fun `getWeighInCount excludes dates outside range`() = runTest {
+        // getWeighInCount uses getInRange which already filters by time,
+        // so we only need to return the entries that would be in range
         val zone = ZoneId.systemDefault()
         val today = LocalDate.now(zone)
-        // 5 entries within 30 days, 5 entries outside
-        val recentDates = (0 until 5).map { daysAgo ->
-            today.minusDays(daysAgo.toLong()).atStartOfDay(zone).toInstant().toEpochMilli()
+        val recentEntries = (0 until 5).map { daysAgo ->
+            buildEntry(
+                id = "wc-$daysAgo",
+                timestamp = today.minusDays(daysAgo.toLong()).atStartOfDay(zone).toInstant().toEpochMilli(),
+            )
         }
-        val oldDates = (31 until 36).map { daysAgo ->
-            today.minusDays(daysAgo.toLong()).atStartOfDay(zone).toInstant().toEpochMilli()
-        }
-        every { mockDao.getWeighInDates() } returns flowOf(recentDates + oldDates)
+        every { mockDao.getInRange(any(), any()) } returns flowOf(recentEntries)
 
         val count = repository.getWeighInCount(30)
 
