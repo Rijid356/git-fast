@@ -19,15 +19,17 @@ Toolchain: AGP 8.13.2 | Kotlin 2.1.0 | KSP 2.1.0-1.0.29 | Hilt 2.53.1 | Compose 
 ./gradlew test --tests "*.DistanceCalculatorTest"        # Run a single test class
 ./gradlew test --tests "*.DistanceCalculatorTest.test*"  # Run a single test method
 ./gradlew koverHtmlReportDebug                           # Generate code coverage report
+./gradlew koverXmlReportDebug                            # Generate XML coverage report (for CI)
+./gradlew koverVerifyDebug                               # Verify coverage thresholds (50% line, 25% branch)
 ```
 
 Testing stack: JUnit 4.13.2, MockK 1.13.13, Robolectric 4.14.1, coroutines-test 1.7.3. `unitTests.isReturnDefaultValues = true` and `isIncludeAndroidResources = true` are set in build config. Instrumented tests use Espresso 3.6.1, Compose UI testing, and Room testing 2.6.1.
 
-Code coverage via Kover 0.9.7 — excludes Hilt/Room/Compose generated code, DI modules, entity/model data classes, and migrations. No lint tools configured; uses `kotlin.code.style=official` only.
+Code coverage via Kover 0.9.7 — excludes Hilt/Room/Compose generated code, DI modules, entity/model data classes, and migrations. Verification thresholds: 28% line coverage, 25% branch coverage (enforced by `koverVerifyDebug`). No lint tools configured; uses `kotlin.code.style=official` only.
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`) runs on PRs to main: builds debug APK and runs unit tests with Java 17 (temurin). Uploads test failure reports as artifacts. Instrumented tests are **not** run in CI (device/emulator required).
+GitHub Actions (`.github/workflows/ci.yml`) runs on PRs to main: builds debug APK, runs unit tests, generates XML coverage report, and verifies coverage thresholds with Java 17 (temurin). Uploads test failure reports and coverage XML as artifacts. Coverage verification is `continue-on-error` (WARN, not BLOCK). Instrumented tests are **not** run in CI (device/emulator required).
 
 ## Architecture
 

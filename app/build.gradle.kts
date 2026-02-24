@@ -97,10 +97,10 @@ kover {
         }
         verify {
             rule {
-                minBound(32) // Line coverage >= 32%
+                minBound(35) // Line coverage >= 35%
             }
             rule {
-                minBound(28, kotlinx.kover.gradle.plugin.dsl.CoverageUnit.BRANCH) // Branch coverage >= 28%
+                minBound(33, kotlinx.kover.gradle.plugin.dsl.CoverageUnit.BRANCH) // Branch coverage >= 33%
             }
         }
     }

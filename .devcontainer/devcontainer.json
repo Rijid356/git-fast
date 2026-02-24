@@ -30,14 +30,20 @@
   "mounts": [
     "source=gitfast-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
     "source=${localEnv:USERPROFILE}/.claude,target=/home/node/.claude,type=bind,consistency=cached",
-    "source=${localEnv:USERPROFILE}/claude-config/claude,target=/mnt/host/c/Users/Ryan/claude-config/claude,type=bind,consistency=cached"
+    "source=${localEnv:USERPROFILE}/claude-config/claude,target=/mnt/host/c/Users/Ryan/claude-config/claude,type=bind,consistency=cached",
+    "source=${localEnv:USERPROFILE}/.claude.json,target=/home/node/.claude.json,type=bind,consistency=cached"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
-    "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude",
+    "GH_TOKEN": "${localEnv:GH_TOKEN}"
   },
   "postCreateCommand": "sudo bash .devcontainer/init-firewall.sh && echo 'Container ready!'",
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "installGradle": "false"
+    }
   }
 }
