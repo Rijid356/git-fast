@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-02-23
+- **Last Active:** 2026-02-24
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose
 
@@ -51,10 +51,12 @@
 | 2026-02-23 | Remove google-services.json from git tracking, add to .gitignore, CI decodes from GitHub secret | 3 | 1 | +6/-47 |
 | 2026-02-23 | Ship analytics trends: PR #66 merged — TrendsCalculator, pixel bar charts, TrendsScreen, navigation, tests | 9 | 1 | +1228/-1 |
 | 2026-02-23 | Increase test coverage 33.8%→35.4% line, 32.7%→33.9% branch: 28 new tests across StatsCalculator, WorkoutSaveManager, HomeViewModel, DetailViewModel; raised Kover thresholds to 32%/28% | 5 | 0 | +437/-15 |
+| 2026-02-24 | Easy-win test coverage 35.8%→36.9% line: 81 new tests — SettingsViewModel (22), CharacterRepository (24), WorkoutRepository +13, WorkoutStateManager branches (22); merged PR #74 | 10 | 1 | +1411/-0 |
+| 2026-02-24 | GitHub issue workflow: created issues #72 (Roborazzi) and #73 (Weight Tracking) from plan files, added Plans→GitHub Issues bidirectional sync rule to global CLAUDE.md | 0 | 0 | +0/-0 |
 
 ## Totals
-- **Total Sessions:** 40
-- **Total Commits:** 59
-- **Total Files Changed:** 470
-- **Total Lines Added:** 25029
+- **Total Sessions:** 42
+- **Total Commits:** 60
+- **Total Files Changed:** 480
+- **Total Lines Added:** 26440
 - **Total Lines Removed:** 1745
