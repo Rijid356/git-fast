@@ -109,7 +109,7 @@ fun SettingsScreen(
 
             SwitchSettingItem(
                 title = "Home Arrival",
-                subtitle = "Auto-pause when you arrive home",
+                subtitle = "Auto-pause when you arrive home (~50ft)",
                 checked = uiState.homeArrivalEnabled,
                 onCheckedChange = { viewModel.setHomeArrivalEnabled(it) },
             )
@@ -122,15 +122,6 @@ fun SettingsScreen(
                 onCapture = { viewModel.captureCurrentLocation() },
                 onClear = { viewModel.clearHomeLocation() },
             )
-
-            if (uiState.hasHomeLocation && uiState.homeArrivalEnabled) {
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                HomeArrivalRadiusItem(
-                    selectedMeters = uiState.homeArrivalRadiusMeters,
-                    onSelect = { viewModel.setHomeArrivalRadius(it) },
-                )
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -324,41 +315,6 @@ private fun SetHomeLocationItem(
                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
             )
         }
-    }
-}
-
-@Composable
-private fun HomeArrivalRadiusItem(
-    selectedMeters: Int,
-    onSelect: (Int) -> Unit,
-) {
-    val options = listOf(15 to "15m", 30 to "30m", 50 to "50m", 75 to "75m")
-    val currentLabel = options.find { it.first == selectedMeters }?.second ?: "${selectedMeters}m"
-    val nextIndex = (options.indexOfFirst { it.first == selectedMeters } + 1) % options.size
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSelect(options[nextIndex].first) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "Home Radius",
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            Text(
-                text = "Tap to cycle: 15m, 30m, 50m, 75m",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            )
-        }
-        Text(
-            text = currentLabel,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
     }
 }
 
