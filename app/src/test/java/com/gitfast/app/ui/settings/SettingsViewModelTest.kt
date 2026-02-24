@@ -2,8 +2,10 @@ package com.gitfast.app.ui.settings
 
 import android.app.Application
 import com.gitfast.app.auth.GoogleAuthManager
+import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.DistanceUnit
+import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.data.sync.SyncStatus
 import com.gitfast.app.data.sync.SyncStatusStore
@@ -38,6 +40,8 @@ class SettingsViewModelTest {
     private lateinit var mockGoogleAuthManager: GoogleAuthManager
     private lateinit var mockFirestoreSync: FirestoreSync
     private lateinit var mockSyncStatusStore: SyncStatusStore
+    private lateinit var mockHealthConnectManager: HealthConnectManager
+    private lateinit var mockBodyCompRepository: BodyCompRepository
 
     private val currentUserFlow = MutableStateFlow<FirebaseUser?>(null)
     private val syncStatusFlow = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
@@ -51,6 +55,8 @@ class SettingsViewModelTest {
         mockGoogleAuthManager = mockk(relaxed = true)
         mockFirestoreSync = mockk(relaxed = true)
         mockSyncStatusStore = mockk(relaxed = true)
+        mockHealthConnectManager = mockk(relaxed = true)
+        mockBodyCompRepository = mockk(relaxed = true)
 
         every { mockSettingsStore.autoPauseEnabled } returns true
         every { mockSettingsStore.distanceUnit } returns DistanceUnit.MILES
@@ -75,6 +81,8 @@ class SettingsViewModelTest {
         googleAuthManager = mockGoogleAuthManager,
         firestoreSync = mockFirestoreSync,
         syncStatusStore = mockSyncStatusStore,
+        healthConnectManager = mockHealthConnectManager,
+        bodyCompRepository = mockBodyCompRepository,
     )
 
     // =========================================================================

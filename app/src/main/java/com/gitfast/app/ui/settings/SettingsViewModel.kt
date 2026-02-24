@@ -6,8 +6,10 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.auth.GoogleAuthManager
+import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.DistanceUnit
+import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.data.sync.SyncStatus
 import com.gitfast.app.data.sync.SyncStatusStore
@@ -18,6 +20,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 data class SettingsUiState(
@@ -34,6 +39,13 @@ data class SettingsUiState(
     val syncStatus: SyncStatus = SyncStatus.Idle,
     val lastSyncedAt: Long = 0L,
     val isSyncing: Boolean = false,
+    // Health Connect
+    val healthConnectAvailable: Boolean = false,
+    val healthConnectConnected: Boolean = false,
+    val healthConnectSyncing: Boolean = false,
+    val healthConnectLastSync: Long = 0L,
+    val latestWeight: String? = null,
+    val latestWeightDate: String? = null,
 )
 
 @HiltViewModel
@@ -43,6 +55,8 @@ class SettingsViewModel @Inject constructor(
     private val googleAuthManager: GoogleAuthManager,
     private val firestoreSync: FirestoreSync,
     private val syncStatusStore: SyncStatusStore,
+    val healthConnectManager: HealthConnectManager,
+    private val bodyCompRepository: BodyCompRepository,
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(
@@ -57,9 +71,13 @@ class SettingsViewModel @Inject constructor(
             isSignedIn = googleAuthManager.currentUser.value != null,
             userEmail = googleAuthManager.currentUser.value?.email,
             lastSyncedAt = syncStatusStore.lastSyncedAt,
+            healthConnectAvailable = healthConnectManager.isAvailable(),
+            healthConnectLastSync = settingsStore.healthConnectLastSync,
         )
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+
+    private val dateFormatter = DateTimeFormatter.ofPattern("MMM d")
 
     init {
         // Observe auth state
@@ -80,6 +98,72 @@ class SettingsViewModel @Inject constructor(
                     isSyncing = status is SyncStatus.Syncing,
                     lastSyncedAt = syncStatusStore.lastSyncedAt,
                 )
+            }
+        }
+
+        // Check Health Connect status
+        checkHealthConnectStatus()
+
+        // Observe latest body comp reading
+        viewModelScope.launch {
+            bodyCompRepository.getLatestReading().collect { reading ->
+                if (reading != null) {
+                    val weightText = reading.weightLbs?.let {
+                        "%.1f lbs".format(it)
+                    } ?: reading.weightKg?.let {
+                        "%.1f kg".format(it)
+                    }
+                    val dateText = dateFormatter.format(
+                        reading.timestamp.atZone(ZoneId.systemDefault())
+                    )
+                    _uiState.value = _uiState.value.copy(
+                        latestWeight = weightText,
+                        latestWeightDate = dateText,
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        latestWeight = null,
+                        latestWeightDate = null,
+                    )
+                }
+            }
+        }
+    }
+
+    fun checkHealthConnectStatus() {
+        viewModelScope.launch {
+            val available = healthConnectManager.isAvailable()
+            val connected = if (available) healthConnectManager.hasPermissions() else false
+            _uiState.value = _uiState.value.copy(
+                healthConnectAvailable = available,
+                healthConnectConnected = connected,
+            )
+        }
+    }
+
+    fun onHealthConnectPermissionResult(granted: Set<String>) {
+        viewModelScope.launch {
+            val connected = healthConnectManager.hasPermissions()
+            _uiState.value = _uiState.value.copy(healthConnectConnected = connected)
+            if (connected) {
+                syncHealthConnect()
+            }
+        }
+    }
+
+    fun syncHealthConnect() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(healthConnectSyncing = true)
+            try {
+                bodyCompRepository.syncFromHealthConnect()
+                val now = System.currentTimeMillis()
+                settingsStore.healthConnectLastSync = now
+                _uiState.value = _uiState.value.copy(
+                    healthConnectSyncing = false,
+                    healthConnectLastSync = now,
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(healthConnectSyncing = false)
             }
         }
     }

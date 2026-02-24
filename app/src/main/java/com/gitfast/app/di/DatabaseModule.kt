@@ -2,6 +2,8 @@ package com.gitfast.app.di
 
 import android.content.Context
 import androidx.room.Room
+import com.gitfast.app.data.healthconnect.HealthConnectManager
+import com.gitfast.app.data.local.BodyCompDao
 import com.gitfast.app.data.local.CharacterDao
 import com.gitfast.app.data.local.GitFastDatabase
 import com.gitfast.app.data.local.WorkoutDao
@@ -12,6 +14,8 @@ import com.gitfast.app.data.local.migrations.MIGRATION_3_4
 import com.gitfast.app.data.local.migrations.MIGRATION_4_5
 import com.gitfast.app.data.local.migrations.MIGRATION_5_6
 import com.gitfast.app.data.local.migrations.MIGRATION_6_7
+import com.gitfast.app.data.local.migrations.MIGRATION_7_8
+import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
@@ -34,7 +38,7 @@ object DatabaseModule {
             context,
             GitFastDatabase::class.java,
             "gitfast-database"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
          .build()
     }
 
@@ -75,5 +79,19 @@ object DatabaseModule {
     @Singleton
     fun provideWorkoutStateStore(@ApplicationContext context: Context): WorkoutStateStore {
         return WorkoutStateStore(context)
+    }
+
+    @Provides
+    fun provideBodyCompDao(database: GitFastDatabase): BodyCompDao {
+        return database.bodyCompDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBodyCompRepository(
+        bodyCompDao: BodyCompDao,
+        healthConnectManager: HealthConnectManager,
+    ): BodyCompRepository {
+        return BodyCompRepository(bodyCompDao, healthConnectManager)
     }
 }
