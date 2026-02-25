@@ -196,6 +196,7 @@ fun CharacterSheetScreen(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             if (activeTransactions.isEmpty()) {
@@ -238,11 +239,13 @@ private fun LevelSection(profile: CharacterProfile, isJuniper: Boolean) {
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "${profile.level}",
             style = MaterialTheme.typography.displayLarge,
             color = MaterialTheme.colorScheme.primary,
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "${profile.totalXp} total XP",
             style = MaterialTheme.typography.bodyMedium,
@@ -304,7 +307,7 @@ private fun StatsSection(
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         StatBar(label = "SPD", value = profile.speedStat, color = CyanAccent, breakdown = breakdowns["SPD"])
         Spacer(modifier = Modifier.height(8.dp))
         StatBar(label = "END", value = profile.enduranceStat, color = AmberAccent, breakdown = breakdowns["END"])
@@ -479,7 +482,7 @@ private fun StreakSection(profile: CharacterProfile) {
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -572,7 +575,7 @@ private fun AchievementsSection(unlockedIds: Set<String>, profileId: Int) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         for ((category, achievements) in byCategory) {
             Text(
@@ -617,6 +620,7 @@ private fun AchievementRow(achievement: AchievementDef, isUnlocked: Boolean) {
                 color = if (isUnlocked) MaterialTheme.colorScheme.onSurface
                 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = achievement.description,
                 style = MaterialTheme.typography.bodySmall,
@@ -663,6 +667,7 @@ private fun XpTransactionRow(transaction: XpTransaction) {
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = transaction.timestamp.atZone(ZoneId.systemDefault()).format(dateFormatter),
                 style = MaterialTheme.typography.bodySmall,

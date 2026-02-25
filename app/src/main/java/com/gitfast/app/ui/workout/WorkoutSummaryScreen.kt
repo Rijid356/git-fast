@@ -79,7 +79,7 @@ fun WorkoutSummaryScreen(
                 }
 
                 if (streakDays >= 2) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "$streakDays-day streak! ${StreakCalculator.getMultiplierLabel(streakDays)} multiplier",
                         style = MaterialTheme.typography.bodyMedium,
