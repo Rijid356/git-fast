@@ -20,7 +20,7 @@ abstract class ScreenshotTestBase {
 
     private val roborazziOptions = RoborazziOptions(
         compareOptions = RoborazziOptions.CompareOptions(
-            changeThreshold = 0.01f, // 1% tolerance for cross-platform rendering differences
+            changeThreshold = 0.05f, // 5% tolerance for cross-platform font rasterization differences
         ),
     )
 
