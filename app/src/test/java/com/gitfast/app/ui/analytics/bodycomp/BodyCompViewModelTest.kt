@@ -38,7 +38,7 @@ class BodyCompViewModelTest {
         every { mockRepository.getReadingsInRange(any(), any()) } returns flowOf(emptyList())
         coEvery { mockRepository.getWeighInStreak() } returns 0
         coEvery { mockRepository.getWeighInCount(any()) } returns 0
-        coEvery { mockRepository.syncFromHealthConnect() } returns Unit
+        coEvery { mockRepository.syncFromHealthConnect() } returns BodyCompRepository.SyncResult.Success(0)
     }
 
     @After
@@ -168,7 +168,7 @@ class BodyCompViewModelTest {
 
     @Test
     fun `sync failure is non-fatal`() = runTest {
-        coEvery { mockRepository.syncFromHealthConnect() } throws Exception("sync failed")
+        coEvery { mockRepository.syncFromHealthConnect() } returns BodyCompRepository.SyncResult.Error("sync failed")
         every { mockRepository.getAllReadings() } returns flowOf(emptyList())
 
         // Should not throw
