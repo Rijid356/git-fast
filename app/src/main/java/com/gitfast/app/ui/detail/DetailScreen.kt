@@ -155,8 +155,8 @@ private fun DetailContent(
     phases: List<com.gitfast.app.util.PhaseAnalyzer.PhaseDisplayItem>,
     lapAnalysis: LapAnalysis?,
     routeComparison: List<RouteComparisonAnalyzer.RouteComparisonItem>,
-    onDeleteLap: (String) -> Unit = {},
     modifier: Modifier = Modifier,
+    onDeleteLap: (String) -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -410,7 +410,7 @@ private fun GpsQualityFooter(
     pointCount: Int,
     avgAccuracy: Float?,
 ) {
-    val accuracyText = avgAccuracy?.let { String.format("%.0fm avg accuracy", it) } ?: ""
+    val accuracyText = avgAccuracy?.let { String.format(java.util.Locale.US, "%.0fm avg accuracy", it) } ?: ""
     val text = buildString {
         append("$pointCount GPS points")
         if (accuracyText.isNotEmpty()) {

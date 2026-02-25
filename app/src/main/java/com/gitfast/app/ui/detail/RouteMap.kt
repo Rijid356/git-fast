@@ -120,7 +120,7 @@ fun RouteMap(
                 )
 
                 Marker(
-                    state = MarkerState(position = latLngPoints.first()),
+                    state = remember { MarkerState(position = latLngPoints.first()) },
                     title = "Start",
                     icon = BitmapDescriptorFactory.defaultMarker(
                         BitmapDescriptorFactory.HUE_GREEN,
@@ -128,7 +128,7 @@ fun RouteMap(
                 )
 
                 Marker(
-                    state = MarkerState(position = latLngPoints.last()),
+                    state = remember { MarkerState(position = latLngPoints.last()) },
                     title = "End",
                     icon = BitmapDescriptorFactory.defaultMarker(
                         BitmapDescriptorFactory.HUE_RED,

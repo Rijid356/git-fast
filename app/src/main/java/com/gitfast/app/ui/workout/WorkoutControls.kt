@@ -27,9 +27,7 @@ import com.gitfast.app.data.model.PhaseType
 fun WorkoutControls(
     isActive: Boolean,
     isPaused: Boolean,
-    isAutoPaused: Boolean = false,
     phase: PhaseType,
-    activityType: ActivityType = ActivityType.RUN,
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -39,6 +37,8 @@ fun WorkoutControls(
     onMarkLap: () -> Unit,
     onEndLaps: () -> Unit,
     modifier: Modifier = Modifier,
+    isAutoPaused: Boolean = false,
+    activityType: ActivityType = ActivityType.RUN,
 ) {
     var showStopConfirmation by remember { mutableStateOf(false) }
     val resumeButtonText = if (isAutoPaused) "AUTO-PAUSED" else "RESUME"
