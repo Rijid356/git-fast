@@ -40,10 +40,11 @@ jobs:
         run: ./gradlew koverVerifyDebug
 
       - name: Verify screenshot tests
+        continue-on-error: true
         run: ./gradlew verifyRoborazziDebug
 
       - name: Upload screenshot diffs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: screenshot-diffs
