@@ -41,11 +41,15 @@ class GoogleAuthManager @Inject constructor(
      */
     suspend fun signIn(activityContext: Context): Result<FirebaseUser> {
         return try {
-            val webClientId = activityContext.getString(
-                activityContext.resources.getIdentifier(
-                    "default_web_client_id", "string", activityContext.packageName
-                )
+            val resId = activityContext.resources.getIdentifier(
+                "default_web_client_id", "string", activityContext.packageName
             )
+            if (resId == 0) {
+                throw IllegalStateException(
+                    "Google Sign-In not configured — missing default_web_client_id from google-services.json"
+                )
+            }
+            val webClientId = activityContext.getString(resId)
 
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)

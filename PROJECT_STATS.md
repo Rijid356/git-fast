@@ -5,7 +5,7 @@
 - **Started:** 2026-02-17
 - **Last Active:** 2026-02-26
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
-- **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose
+- **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 
 ## Activity Log
 
@@ -57,10 +57,11 @@
 | 2026-02-24 | FirestoreSync test coverage 0%→100%: 29 new tests covering all push/pull methods, auth guards, error handling, edge cases; overall 36.9%→38.9% line; merged PR #88 | 2 | 1 | +700/-5 |
 | 2026-02-24 | Checkpoint 15: Daily activity goals & activity rings — 3-ring visualization (minutes/distance/active days) on home screen, Goals Settings screen with AHA defaults, date-range DAO queries, 9 new tests; Phase 5 milestone + 4 skeleton issues created; merged PR #94 | 19 | 1 | +920/-12 |
 | 2026-02-26 | Health Connect body comp tracking: 7-agent parallel implementation — HC data layer, Body Comp screen with trend charts, VIT stat + weigh-in XP + achievements, Character Sheet VIT bar, Home weight display, Settings HC permissions, 873 tests passing; merged PR #97 | 53 | 15 | +4024/-20 |
+| 2026-02-26 | Settings cleanup + UX fixes: remove anchor radius selector (hardcode 5m), remove distance unit selector (hardcode Miles), Body Comp "Sync Now" button on empty state, Cloud Backup sign-in error feedback, 2 new tests; merged PR #98 | 19 | 1 | +132/-185 |
 
 ## Totals
-- **Total Sessions:** 46
-- **Total Commits:** 78
-- **Total Files Changed:** 558
-- **Total Lines Added:** 32086
-- **Total Lines Removed:** 1850
+- **Total Sessions:** 47
+- **Total Commits:** 79
+- **Total Files Changed:** 577
+- **Total Lines Added:** 32218
+- **Total Lines Removed:** 2035
