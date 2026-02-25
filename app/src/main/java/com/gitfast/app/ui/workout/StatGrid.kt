@@ -73,8 +73,8 @@ fun LapStatGrid(
     distanceFormatted: String,
     lapCount: Int,
     averageLapTimeFormatted: String?,
-    ghostLapTimeFormatted: String? = null,
     modifier: Modifier = Modifier,
+    ghostLapTimeFormatted: String? = null,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
