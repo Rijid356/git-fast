@@ -114,7 +114,7 @@ class WorkoutService : LifecycleService() {
         // Configure auto-lap GPS anchor from settings
         workoutStateManager.setAutoLapConfig(
             enabled = settingsStore.autoLapEnabled,
-            anchorRadiusMeters = settingsStore.autoLapAnchorRadiusMeters
+            anchorRadiusMeters = SettingsStore.AUTO_LAP_ANCHOR_RADIUS_METERS
         )
 
         workoutStateStore.setActiveWorkout(workoutId, Instant.now().toEpochMilli())

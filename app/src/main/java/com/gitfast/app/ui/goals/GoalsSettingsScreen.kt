@@ -96,7 +96,7 @@ fun GoalsSettingsScreen(
                 onValueChange = { viewModel.setDailyDistanceGoal(it / 2.0) },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- Weekly Goals ---
             SectionHeader(text = "Weekly Goals")
@@ -106,7 +106,7 @@ fun GoalsSettingsScreen(
                 onSelect = { viewModel.setWeeklyActiveDaysGoal(it) },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- AHA Guidelines ---
             SectionHeader(text = "Guidelines")
@@ -132,7 +132,7 @@ private fun SectionHeader(text: String) {
         text = text,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
     )
 }
 
@@ -160,6 +160,7 @@ private fun SliderGoalItem(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
@@ -206,6 +207,7 @@ private fun ActiveDaysItem(
                 text = "Active Days",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Days with at least one workout per week. Tap to change.",
                 style = MaterialTheme.typography.bodySmall,

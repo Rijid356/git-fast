@@ -499,7 +499,7 @@ class WorkoutStateManager @Inject constructor() {
 
     // Auto-lap GPS anchor settings (injected from SettingsStore via WorkoutService)
     private var autoLapEnabled: Boolean = false
-    private var autoLapAnchorRadiusMeters: Int = 15
+    private var autoLapAnchorRadiusMeters: Int = 5
     private var anchorLatitude: Double? = null
     private var anchorLongitude: Double? = null
     private var hasLeftAnchorRadius: Boolean = false

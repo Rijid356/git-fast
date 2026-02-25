@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gitfast.app.data.healthconnect.HealthConnectManager
-import com.gitfast.app.data.model.DistanceUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,28 +89,12 @@ fun SettingsScreen(
 
             SwitchSettingItem(
                 title = "Auto Lap",
-                subtitle = "Auto-mark laps when you return to your start/finish line",
+                subtitle = "Auto-mark laps within 5m of your start/finish line",
                 checked = uiState.autoLapEnabled,
                 onCheckedChange = { viewModel.setAutoLapEnabled(it) },
             )
 
-            if (uiState.autoLapEnabled) {
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-                AutoLapRadiusItem(
-                    selectedMeters = uiState.autoLapAnchorRadiusMeters,
-                    onSelect = { viewModel.setAutoLapAnchorRadius(it) },
-                )
-            }
-
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-
-            DistanceUnitItem(
-                selected = uiState.distanceUnit,
-                onSelect = { viewModel.setDistanceUnit(it) },
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- Location section ---
             SectionHeader(text = "Location")
@@ -132,7 +115,7 @@ fun SettingsScreen(
                 onClear = { viewModel.clearHomeLocation() },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- Goals section ---
             SectionHeader(text = "Goals")
@@ -143,7 +126,7 @@ fun SettingsScreen(
                 onClick = onGoalsClick,
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- Display section ---
             SectionHeader(text = "Display")
@@ -155,7 +138,7 @@ fun SettingsScreen(
                 onCheckedChange = { viewModel.setKeepScreenOn(it) },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- Cloud Backup section ---
             SectionHeader(text = "Cloud Backup")
@@ -166,12 +149,13 @@ fun SettingsScreen(
                 syncStatus = uiState.syncStatus,
                 lastSyncedAt = uiState.lastSyncedAt,
                 isSyncing = uiState.isSyncing,
+                signInError = uiState.signInError,
                 onSignIn = { viewModel.signIn(context) },
                 onSignOut = { viewModel.signOut() },
                 onSyncNow = { viewModel.syncNow() },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- Health Connect section ---
             SectionHeader(text = "Health Connect")
@@ -191,7 +175,7 @@ fun SettingsScreen(
                 onSyncNow = { viewModel.syncHealthConnect() },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // --- About section ---
             SectionHeader(text = "About")
@@ -207,7 +191,7 @@ private fun SectionHeader(text: String) {
         text = text,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
     )
 }
 
@@ -230,6 +214,7 @@ private fun SwitchSettingItem(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
@@ -239,78 +224,6 @@ private fun SwitchSettingItem(
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
-        )
-    }
-}
-
-@Composable
-private fun DistanceUnitItem(
-    selected: DistanceUnit,
-    onSelect: (DistanceUnit) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                val next = if (selected == DistanceUnit.MILES) DistanceUnit.KILOMETERS else DistanceUnit.MILES
-                onSelect(next)
-            }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "Distance Unit",
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            Text(
-                text = "Tap to toggle between miles and kilometers",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            )
-        }
-        Text(
-            text = when (selected) {
-                DistanceUnit.MILES -> "Miles"
-                DistanceUnit.KILOMETERS -> "Kilometers"
-            },
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
-    }
-}
-
-@Composable
-private fun AutoLapRadiusItem(
-    selectedMeters: Int,
-    onSelect: (Int) -> Unit,
-) {
-    val options = listOf(10 to "10m", 15 to "15m", 20 to "20m", 25 to "25m")
-    val currentLabel = options.find { it.first == selectedMeters }?.second ?: "${selectedMeters}m"
-    val nextIndex = (options.indexOfFirst { it.first == selectedMeters } + 1) % options.size
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSelect(options[nextIndex].first) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "Anchor Radius",
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            Text(
-                text = "Tap to cycle: 10m, 15m, 20m, 25m",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            )
-        }
-        Text(
-            text = currentLabel,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
         )
     }
 }
@@ -336,6 +249,7 @@ private fun SetHomeLocationItem(
                 text = if (hasHomeLocation) "Home Location" else "Set Home Location",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = if (hasHomeLocation) "Tap to clear" else "Tap to capture current GPS position",
                 style = MaterialTheme.typography.bodySmall,
@@ -376,6 +290,7 @@ private fun NavigationSettingItem(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,

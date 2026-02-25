@@ -29,6 +29,7 @@ fun CloudBackupSection(
     syncStatus: SyncStatus,
     lastSyncedAt: Long,
     isSyncing: Boolean,
+    signInError: String? = null,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit,
     onSyncNow: () -> Unit,
@@ -46,6 +47,7 @@ fun CloudBackupSection(
                     text = "Sign In",
                     style = MaterialTheme.typography.bodyLarge,
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Back up your data to the cloud with Google",
                     style = MaterialTheme.typography.bodySmall,
@@ -60,6 +62,14 @@ fun CloudBackupSection(
             ) {
                 Text("Sign In")
             }
+        }
+        if (signInError != null) {
+            Text(
+                text = signInError,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
         }
         return
     }
@@ -76,6 +86,7 @@ fun CloudBackupSection(
                 text = "Account",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = userEmail ?: "Signed in",
                 style = MaterialTheme.typography.bodySmall,
@@ -99,6 +110,7 @@ fun CloudBackupSection(
                 text = "Sync Now",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formatSyncStatus(syncStatus, lastSyncedAt),
                 style = MaterialTheme.typography.bodySmall,
