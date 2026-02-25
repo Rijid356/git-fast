@@ -12,13 +12,17 @@ data class NotificationContent(
 
 fun buildNotificationContent(state: WorkoutTrackingState): NotificationContent {
     val isPaused = state.isPaused
-    val isDogWalk = state.activityType == ActivityType.DOG_WALK
+    val isDogActivity = state.activityType.isDogActivity
 
     val distance = formatDistance(state.distanceMeters)
     val currentPace = state.currentPaceSecondsPerMile?.let { formatPace(it) } ?: "-- /mi"
     val avgPace = state.averagePaceSecondsPerMile?.let { formatPace(it) } ?: "-- /mi"
 
-    val activityLabel = if (isDogWalk) "Dog Walk" else "Running"
+    val activityLabel = when (state.activityType) {
+        ActivityType.DOG_WALK -> "Dog Walk"
+        ActivityType.DOG_RUN -> "Dog Run"
+        else -> "Running"
+    }
 
     val title = if (state.isHomeArrivalPaused) {
         "git-fast \u2022 Home!"
@@ -28,7 +32,7 @@ fun buildNotificationContent(state: WorkoutTrackingState): NotificationContent {
         "git-fast \u2022 $activityLabel"
     }
 
-    val collapsedText = if (isDogWalk) {
+    val collapsedText = if (isDogActivity) {
         distance
     } else {
         "$distance \u2022 $currentPace"
@@ -36,7 +40,7 @@ fun buildNotificationContent(state: WorkoutTrackingState): NotificationContent {
 
     val expandedText = buildString {
         append("Distance    $distance")
-        if (!isDogWalk) {
+        if (!isDogActivity) {
             append("\n")
             append("Pace        $currentPace\n")
             append("Avg Pace    $avgPace")

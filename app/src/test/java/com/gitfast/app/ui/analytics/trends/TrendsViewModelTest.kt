@@ -174,6 +174,7 @@ class TrendsViewModelTest {
         override suspend fun getAllCompletedRunsOnce(): List<WorkoutEntity> =
             allWorkouts.filter { it.activityType == ActivityType.RUN }
         override fun getCompletedWorkoutsByType(activityType: String): Flow<List<WorkoutEntity>> = flowOf(emptyList())
+        override fun getCompletedDogActivityWorkouts(): Flow<List<WorkoutEntity>> = flowOf(emptyList())
         override fun getDogWalksByRoute(routeTag: String): Flow<List<WorkoutEntity>> = flowOf(emptyList())
         override suspend fun getCompletedWorkoutCount(): Int = allWorkouts.size
         override suspend fun getTotalLapCount(): Int = 0

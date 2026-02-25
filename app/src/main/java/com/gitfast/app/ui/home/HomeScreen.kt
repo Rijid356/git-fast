@@ -65,6 +65,7 @@ fun HomeScreen(
     val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
     val recentRuns by viewModel.recentRuns.collectAsStateWithLifecycle()
     val recentDogWalks by viewModel.recentDogWalks.collectAsStateWithLifecycle()
+    val recentDogRuns by viewModel.recentDogRuns.collectAsStateWithLifecycle()
     val characterProfile by viewModel.characterProfile.collectAsStateWithLifecycle()
     val dailyMetrics by viewModel.dailyMetrics.collectAsStateWithLifecycle()
     val latestWeight by viewModel.latestWeight.collectAsStateWithLifecycle()
@@ -161,6 +162,23 @@ fun HomeScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = { onStartWorkout(ActivityType.DOG_RUN) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AmberAccent,
+                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                ),
+            ) {
+                Text(
+                    text = "DOG RUN",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
@@ -207,6 +225,14 @@ fun HomeScreen(
                 title = "RECENT DOG WALKS",
                 emptyMessage = "No dog walks yet.",
                 recentWorkouts = recentDogWalks,
+                onWorkoutClick = onWorkoutClick,
+                onViewAllClick = onViewHistory,
+            )
+
+            RecentWorkoutsSection(
+                title = "RECENT DOG RUNS",
+                emptyMessage = "No dog runs yet. Hit DOG RUN to train with Juniper.",
+                recentWorkouts = recentDogRuns,
                 onWorkoutClick = onWorkoutClick,
                 onViewAllClick = onViewHistory,
             )

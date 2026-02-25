@@ -48,6 +48,44 @@ fun PaceDisplay(
 }
 
 @Composable
+fun SprintDisplay(
+    currentSprintTimeFormatted: String,
+    modifier: Modifier = Modifier,
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "sprint_pulse")
+    val textAlpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 800),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "sprintAlpha",
+    )
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = currentSprintTimeFormatted,
+            style = MaterialTheme.typography.displayLarge.copy(fontSize = 56.sp),
+            color = MaterialTheme.colorScheme.primary.copy(alpha = textAlpha),
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "SPRINTING",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
 fun PausedDisplay(
     elapsedTimeFormatted: String,
     modifier: Modifier = Modifier,

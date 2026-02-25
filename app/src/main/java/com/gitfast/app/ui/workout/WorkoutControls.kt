@@ -49,25 +49,29 @@ fun WorkoutControls(
                 onClick = onStart,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (activityType == ActivityType.DOG_WALK)
+                    containerColor = if (activityType.isDogActivity)
                         MaterialTheme.colorScheme.secondary
                     else
                         MaterialTheme.colorScheme.primary,
-                    contentColor = if (activityType == ActivityType.DOG_WALK)
+                    contentColor = if (activityType.isDogActivity)
                         MaterialTheme.colorScheme.onSecondary
                     else
                         MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
                 Text(
-                    text = if (activityType == ActivityType.DOG_WALK) "START DOG WALK" else "START RUN",
+                    text = when (activityType) {
+                        ActivityType.DOG_WALK -> "START DOG WALK"
+                        ActivityType.DOG_RUN -> "START DOG RUN"
+                        else -> "START RUN"
+                    },
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             }
         } else {
-            if (activityType == ActivityType.DOG_WALK) {
-                // Dog walk: simple Pause/Stop controls only
+            if (activityType.isDogActivity) {
+                // Dog activity: simple Pause/Stop controls only
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),

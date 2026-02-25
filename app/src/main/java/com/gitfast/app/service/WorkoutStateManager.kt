@@ -72,6 +72,15 @@ class WorkoutStateManager @Inject constructor() {
     private var externalGhostLapDuration: Int? = null
     private var useExternalGhost: Boolean = false
 
+    // Sprint tracking (for dog activities)
+    private var sprintActive: Boolean = false
+    private var sprintStartTime: Instant? = null
+    private var sprintStartDistance: Double = 0.0
+    private var sprintStartSteps: Int = 0
+    private var sprintStartGpsIndex: Int = 0
+    private var sprintLaps: MutableList<LapData> = mutableListOf()
+    private var sprintNumber: Int = 0
+
     // Phase history (for building entities at save time)
     private var completedPhases: MutableList<PhaseData> = mutableListOf()
 
@@ -152,6 +161,15 @@ class WorkoutStateManager @Inject constructor() {
         phaseStartStepCount = 0
         stepBaselineSet = false
 
+        // Reset sprint tracking
+        sprintActive = false
+        sprintStartTime = null
+        sprintStartDistance = 0.0
+        sprintStartSteps = 0
+        sprintStartGpsIndex = 0
+        sprintLaps.clear()
+        sprintNumber = 0
+
         _workoutState.value = WorkoutTrackingState(
             isActive = true,
             isPaused = false,
@@ -172,6 +190,8 @@ class WorkoutStateManager @Inject constructor() {
     }
 
     fun pauseWorkout() {
+        // Auto-end active sprint on pause
+        if (sprintActive) endSprint()
         pauseStartTime = Instant.now()
         _workoutState.value = _workoutState.value.copy(
             isPaused = true,
@@ -413,9 +433,78 @@ class WorkoutStateManager @Inject constructor() {
         }
     }
 
+    // --- Sprint tracking methods ---
+
+    fun startSprint() {
+        if (sprintActive) return
+        sprintActive = true
+        sprintNumber++
+        sprintStartTime = Instant.now()
+        sprintStartDistance = _workoutState.value.distanceMeters
+        sprintStartSteps = currentStepCount
+        sprintStartGpsIndex = _gpsPoints.value.size - 1
+
+        emitSprintState()
+    }
+
+    fun endSprint() {
+        if (!sprintActive) return
+        sprintActive = false
+        val now = Instant.now()
+        val startTime = sprintStartTime ?: return
+
+        val durationMs = now.toEpochMilli() - startTime.toEpochMilli()
+        // Discard micro-sprints (< 5 seconds)
+        if (durationMs < 5_000) {
+            sprintNumber--
+            emitSprintState()
+            return
+        }
+
+        val currentDistance = _workoutState.value.distanceMeters
+        val currentGpsIndex = (_gpsPoints.value.size - 1).coerceAtLeast(0)
+
+        sprintLaps.add(LapData(
+            lapNumber = sprintNumber,
+            startTime = startTime,
+            endTime = now,
+            distanceMeters = currentDistance - sprintStartDistance,
+            steps = currentStepCount - sprintStartSteps,
+            gpsStartIndex = sprintStartGpsIndex.coerceAtLeast(0),
+            gpsEndIndex = currentGpsIndex,
+        ))
+
+        sprintStartTime = null
+        emitSprintState()
+    }
+
+    fun getSprintLaps(): List<LapData> = sprintLaps.toList()
+
+    private fun emitSprintState() {
+        val totalSprintMs = sprintLaps.sumOf {
+            it.endTime.toEpochMilli() - it.startTime.toEpochMilli()
+        }
+        val longestMs = sprintLaps.maxOfOrNull {
+            it.endTime.toEpochMilli() - it.startTime.toEpochMilli()
+        } ?: 0L
+
+        _workoutState.value = _workoutState.value.copy(
+            isSprintActive = sprintActive,
+            sprintCount = sprintLaps.size,
+            currentSprintElapsedSeconds = if (sprintActive && sprintStartTime != null) {
+                ((Instant.now().toEpochMilli() - sprintStartTime!!.toEpochMilli()) / 1000).toInt()
+            } else 0,
+            totalSprintSeconds = (totalSprintMs / 1000).toInt(),
+            longestSprintSeconds = (longestMs / 1000).toInt(),
+        )
+    }
+
     fun stopWorkout(): WorkoutSnapshot {
         val endTime = Instant.now()
         val currentDistance = _workoutState.value.distanceMeters
+
+        // Auto-end active sprint
+        if (sprintActive) endSprint()
 
         // If stopping during LAPS phase, complete the in-progress lap and discard micro-laps
         if (currentPhase == PhaseType.LAPS) {
@@ -425,15 +514,20 @@ class WorkoutStateManager @Inject constructor() {
             discardMicroLap()
         }
 
-        // Close current phase
+        // Close current phase — attach sprint laps to WARMUP phase for dog activities
         phaseStartTime?.let { start ->
+            val phaseLaps = when {
+                currentPhase == PhaseType.LAPS -> laps.toList()
+                currentPhase == PhaseType.WARMUP && sprintLaps.isNotEmpty() -> sprintLaps.toList()
+                else -> emptyList()
+            }
             completedPhases.add(PhaseData(
                 type = currentPhase,
                 startTime = start,
                 endTime = endTime,
                 distanceMeters = currentDistance - phaseStartDistance,
                 steps = currentStepCount - phaseStartStepCount,
-                laps = if (currentPhase == PhaseType.LAPS) laps.toList() else emptyList()
+                laps = phaseLaps
             ))
         }
 
@@ -471,6 +565,13 @@ class WorkoutStateManager @Inject constructor() {
         anchorLongitude = null
         hasLeftAnchorRadius = false
         lastAutoLapTime = null
+        sprintActive = false
+        sprintStartTime = null
+        sprintStartDistance = 0.0
+        sprintStartSteps = 0
+        sprintStartGpsIndex = 0
+        sprintLaps.clear()
+        sprintNumber = 0
         _gpsPoints.value = emptyList()
         _workoutState.value = WorkoutTrackingState()
 
@@ -612,10 +713,15 @@ class WorkoutStateManager @Inject constructor() {
             lapElapsed - externalGhostLapDuration!!
         } else null
 
+        val sprintElapsed = if (sprintActive && sprintStartTime != null) {
+            ((now.toEpochMilli() - sprintStartTime!!.toEpochMilli()) / 1000).toInt()
+        } else 0
+
         _workoutState.value = _workoutState.value.copy(
             elapsedSeconds = (activeElapsed / 1000).toInt(),
             currentLapElapsedSeconds = lapElapsed,
             ghostDeltaSeconds = ghostDelta,
+            currentSprintElapsedSeconds = sprintElapsed,
         )
     }
 }
@@ -643,6 +749,12 @@ data class WorkoutTrackingState(
     val stepCount: Int = 0,
     val currentSpeedMph: Float? = null,
     val maxSpeedMph: Float = 0f,
+    // Sprint tracking
+    val isSprintActive: Boolean = false,
+    val sprintCount: Int = 0,
+    val currentSprintElapsedSeconds: Int = 0,
+    val totalSprintSeconds: Int = 0,
+    val longestSprintSeconds: Int = 0,
 )
 
 data class WorkoutSnapshot(

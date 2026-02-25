@@ -72,6 +72,7 @@ fun ActiveWorkoutBanner(
         val label = when {
             isPaused -> "PAUSED"
             workoutState.activityType == ActivityType.DOG_WALK -> "DOG WALK"
+            workoutState.activityType == ActivityType.DOG_RUN -> "DOG RUN"
             else -> "RUNNING"
         }
         Text(

@@ -26,9 +26,9 @@ fun Workout.toHistoryItem(): WorkoutHistoryItem {
     val duration = durationMillis?.let { (it / 1000).toInt() }
     val pace = averagePaceSecondsPerMile?.toInt()
 
-    val subtitle = when (activityType) {
-        ActivityType.DOG_WALK -> listOfNotNull(dogName, routeTag).joinToString(" \u00B7 ").ifEmpty { null }
-        ActivityType.RUN -> null
+    val subtitle = when {
+        activityType.isDogActivity -> listOfNotNull(dogName, routeTag).joinToString(" \u00B7 ").ifEmpty { null }
+        else -> null
     }
 
     return WorkoutHistoryItem(
