@@ -8,6 +8,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlinx.kover")
     id("com.google.gms.google-services")
+    id("io.github.takahirom.roborazzi")
 }
 
 // Read MAPS_API_KEY from local.properties (findProperty doesn't read local.properties)
@@ -110,6 +111,7 @@ dependencies {
     // Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
     implementation(composeBom)
+    testImplementation(composeBom)
     androidTestImplementation(composeBom)
 
     // Compose
@@ -164,6 +166,12 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.13")
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("androidx.test:core:1.6.1")
+    // Roborazzi screenshot testing
+    testImplementation("io.github.takahirom.roborazzi:roborazzi:1.59.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-compose:1.59.0")
+    testImplementation("io.github.takahirom.roborazzi:roborazzi-junit-rule:1.59.0")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("androidx.compose.ui:ui-test-manifest")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
