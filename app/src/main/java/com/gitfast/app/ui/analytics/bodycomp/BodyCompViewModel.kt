@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.repository.BodyCompRepository
+import com.gitfast.app.data.repository.BodyCompRepository.SyncResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,7 @@ data class BodyCompUiState(
     val isLoading: Boolean = true,
     val isEmpty: Boolean = false,
     val isSyncing: Boolean = false,
+    val syncMessage: String? = null,
     val period: BodyCompPeriod = BodyCompPeriod.DAYS_30,
     val latestReading: BodyCompReading? = null,
     val latestDateFormatted: String? = null,
@@ -68,14 +70,20 @@ class BodyCompViewModel @Inject constructor(
 
     fun sync() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isSyncing = true) }
-            try {
-                bodyCompRepository.syncFromHealthConnect()
-            } catch (_: Exception) {
-                // Sync failure is non-fatal
+            _uiState.update { it.copy(isSyncing = true, syncMessage = null) }
+            val message = when (val result = bodyCompRepository.syncFromHealthConnect()) {
+                is SyncResult.Success -> "Synced ${result.count} record${if (result.count != 1) "s" else ""}"
+                is SyncResult.NoPermissions -> "Permissions not granted \u2014 go to Settings and tap Connect"
+                is SyncResult.NotAvailable -> "Health Connect not installed on this device"
+                is SyncResult.NoData -> "No weight data found in Health Connect"
+                is SyncResult.Error -> "Sync error: ${result.message}"
             }
-            _uiState.update { it.copy(isSyncing = false) }
+            _uiState.update { it.copy(isSyncing = false, syncMessage = message) }
         }
+    }
+
+    fun clearSyncMessage() {
+        _uiState.update { it.copy(syncMessage = null) }
     }
 
     fun setPeriod(period: BodyCompPeriod) {
@@ -85,11 +93,13 @@ class BodyCompViewModel @Inject constructor(
 
     private fun loadData() {
         viewModelScope.launch {
-            // Trigger sync if needed
-            try {
-                bodyCompRepository.syncFromHealthConnect()
-            } catch (_: Exception) {
-                // Sync failure is non-fatal
+            val result = bodyCompRepository.syncFromHealthConnect()
+            if (result is SyncResult.NoPermissions || result is SyncResult.NotAvailable) {
+                _uiState.update { it.copy(syncMessage = when (result) {
+                    is SyncResult.NoPermissions -> "Permissions not granted \u2014 go to Settings and tap Connect"
+                    is SyncResult.NotAvailable -> "Health Connect not installed on this device"
+                    else -> null
+                }) }
             }
 
             bodyCompRepository.getAllReadings().collect { readings ->

@@ -27,18 +27,31 @@ class BodyCompRepository @Inject constructor(
         private const val SYNC_DAYS = 90L
     }
 
+    sealed class SyncResult {
+        data class Success(val count: Int) : SyncResult()
+        data object NoPermissions : SyncResult()
+        data object NotAvailable : SyncResult()
+        data object NoData : SyncResult()
+        data class Error(val message: String) : SyncResult()
+    }
+
     /**
      * Sync body composition data from Health Connect for the last 90 days.
      * Reads all 6 record types, merges by timestamp (nearest within 5 minutes),
      * and upserts locally using Health Connect record IDs.
      */
-    suspend fun syncFromHealthConnect() {
-        if (!healthConnectManager.hasPermissions()) {
-            Log.w(TAG, "Health Connect permissions not granted, skipping sync")
-            return
+    suspend fun syncFromHealthConnect(): SyncResult {
+        if (!healthConnectManager.isAvailable()) {
+            Log.w(TAG, "Health Connect not available")
+            return SyncResult.NotAvailable
         }
 
-        try {
+        if (!healthConnectManager.hasPermissions()) {
+            Log.w(TAG, "Health Connect permissions not granted, skipping sync")
+            return SyncResult.NoPermissions
+        }
+
+        return try {
             val end = Instant.now()
             val start = end.minus(SYNC_DAYS, ChronoUnit.DAYS)
 
@@ -77,9 +90,14 @@ class BodyCompRepository @Inject constructor(
             if (entries.isNotEmpty()) {
                 bodyCompDao.insertAll(entries)
                 Log.d(TAG, "Synced ${entries.size} body comp entries from Health Connect")
+                SyncResult.Success(entries.size)
+            } else {
+                Log.d(TAG, "No weight records found in Health Connect")
+                SyncResult.NoData
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error syncing from Health Connect", e)
+            SyncResult.Error(e.message ?: "Unknown error")
         }
     }
 
