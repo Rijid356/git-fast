@@ -47,5 +47,8 @@ replay_pid*.log
 # Bash crash dumps
 bash.exe.stackdump
 
+# Node (screenshot composites)
+screenshots/node_modules/
+
 # Claude Code
 .claude/
