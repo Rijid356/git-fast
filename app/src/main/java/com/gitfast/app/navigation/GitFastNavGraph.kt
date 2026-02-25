@@ -1,6 +1,7 @@
 package com.gitfast.app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -82,10 +83,11 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun GitFastNavGraph(navController: NavHostController) {
+fun GitFastNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
+        modifier = modifier,
     ) {
         composable(Screen.Home.route) {
             HomeScreen(
@@ -213,6 +215,12 @@ fun GitFastNavGraph(navController: NavHostController) {
 
             ActiveWorkoutScreen(
                 activityType = activityType,
+                onNavigateHome = {
+                    navController.popBackStack(
+                        route = Screen.Home.route,
+                        inclusive = false,
+                    )
+                },
                 onWorkoutComplete = { stats, workoutId ->
                     if (activityType == ActivityType.DOG_WALK && workoutId != null) {
                         navController.navigate(Screen.DogWalkSummary.createRoute(workoutId)) {

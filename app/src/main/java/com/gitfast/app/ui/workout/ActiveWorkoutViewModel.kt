@@ -185,6 +185,7 @@ class ActiveWorkoutViewModel @Inject constructor(
     }
 
     fun startWorkout() {
+        if (WorkoutService.isRunning) return
         val context = getApplication<Application>()
         val intent = Intent(context, WorkoutService::class.java).apply {
             action = WorkoutService.ACTION_START
