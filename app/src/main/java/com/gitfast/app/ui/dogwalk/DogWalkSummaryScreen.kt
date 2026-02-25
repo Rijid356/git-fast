@@ -31,6 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.ui.theme.AmberAccent
 
 @Composable
 fun DogWalkSummaryScreen(
@@ -61,10 +63,11 @@ fun DogWalkSummaryScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Header
+            val isDogRun = uiState.activityType == ActivityType.DOG_RUN
             Text(
-                text = "DOG WALK COMPLETE",
+                text = if (isDogRun) "DOG RUN COMPLETE" else "DOG WALK COMPLETE",
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.secondary,
+                color = if (isDogRun) AmberAccent else MaterialTheme.colorScheme.secondary,
                 textAlign = TextAlign.Center,
             )
 
@@ -82,6 +85,68 @@ fun DogWalkSummaryScreen(
                     StatRow(label = "DISTANCE", value = uiState.distanceFormatted)
                     Spacer(modifier = Modifier.height(8.dp))
                     StatRow(label = "AVG PACE", value = uiState.paceFormatted)
+                }
+            }
+
+            // Sprint summary (if any sprints detected)
+            if (uiState.sprintCount > 0) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "SPRINT SUMMARY",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                        )
+                        StatRow(label = "SPRINTS", value = uiState.sprintCount.toString())
+                        Spacer(modifier = Modifier.height(8.dp))
+                        uiState.totalSprintTimeFormatted?.let {
+                            StatRow(label = "TOTAL TIME", value = it)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        uiState.longestSprintTimeFormatted?.let {
+                            StatRow(label = "LONGEST", value = it)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        uiState.avgSprintTimeFormatted?.let {
+                            StatRow(label = "AVERAGE", value = it)
+                        }
+                    }
+                }
+
+                // Training tip
+                Spacer(modifier = Modifier.height(8.dp))
+                val longestSeconds = uiState.longestSprintTimeFormatted
+                val tip = when {
+                    longestSeconds == "00:00" -> null
+                    uiState.sprintCount == 0 -> "Try running intervals with Juniper — start with 30 seconds!"
+                    // Parse rough seconds from longest sprint for tip logic
+                    else -> {
+                        // Simple heuristic based on sprint count and longest time
+                        val parts = (uiState.longestSprintTimeFormatted ?: "0:00").split(":")
+                        val approxSec = (parts.getOrNull(0)?.toIntOrNull() ?: 0) * 60 +
+                            (parts.getOrNull(1)?.toIntOrNull() ?: 0)
+                        when {
+                            approxSec < 30 -> "Great start! Gradually build up to 1-minute runs."
+                            approxSec < 60 -> "Nice progress! Use 'With me' for position training."
+                            approxSec < 120 -> "Impressive endurance! Keep at 3 dog runs per week."
+                            else -> "Juniper's becoming a runner!"
+                        }
+                    }
+                }
+                tip?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
 
@@ -149,7 +214,11 @@ fun DogWalkSummaryScreen(
                 ),
             ) {
                 Text(
-                    text = if (uiState.isSaving) "SAVING..." else "SAVE DOG WALK",
+                    text = when {
+                        uiState.isSaving -> "SAVING..."
+                        uiState.activityType == ActivityType.DOG_RUN -> "SAVE DOG RUN"
+                        else -> "SAVE DOG WALK"
+                    },
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.padding(vertical = 8.dp),
                 )

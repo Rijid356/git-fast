@@ -222,7 +222,7 @@ fun GitFastNavGraph(navController: NavHostController, modifier: Modifier = Modif
                     )
                 },
                 onWorkoutComplete = { stats, workoutId ->
-                    if (activityType == ActivityType.DOG_WALK && workoutId != null) {
+                    if (activityType.isDogActivity && workoutId != null) {
                         navController.navigate(Screen.DogWalkSummary.createRoute(workoutId)) {
                             popUpTo(Screen.Home.route) { inclusive = false }
                         }

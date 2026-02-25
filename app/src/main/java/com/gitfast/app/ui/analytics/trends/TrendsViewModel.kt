@@ -57,7 +57,7 @@ class TrendsViewModel @Inject constructor(
         val filtered = when (state.filter) {
             ActivityFilter.ALL -> allWorkouts
             ActivityFilter.RUNS -> allWorkouts.filter { it.activityType == ActivityType.RUN }
-            ActivityFilter.WALKS -> allWorkouts.filter { it.activityType == ActivityType.DOG_WALK }
+            ActivityFilter.WALKS -> allWorkouts.filter { it.activityType.isDogActivity }
         }
 
         val summaries = when (state.period) {

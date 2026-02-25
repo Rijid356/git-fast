@@ -45,7 +45,10 @@ object XpCalculator {
 
         // Distance XP
         val miles = DistanceCalculator.metersToMiles(distanceMeters)
-        val xpPerMile = if (activityType == ActivityType.RUN) XP_PER_MILE_RUN else XP_PER_MILE_WALK
+        val xpPerMile = when (activityType) {
+            ActivityType.RUN, ActivityType.DOG_RUN -> XP_PER_MILE_RUN
+            else -> XP_PER_MILE_WALK
+        }
         val distanceXp = (miles * xpPerMile).toInt()
         if (distanceXp > 0) {
             breakdown.add("+$distanceXp XP: %.1f miles".format(miles))

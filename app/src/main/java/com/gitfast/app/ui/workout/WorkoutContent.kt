@@ -62,8 +62,22 @@ fun WorkoutContent(
         ) {
             // Phase label + lap indicator header
             if (uiState.isActive) {
-                if (uiState.activityType == ActivityType.DOG_WALK) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                if (uiState.activityType.isDogActivity) {
+                    if (uiState.isSprintActive) {
+                        Text(
+                            text = "SPRINT ${uiState.sprintCount}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    } else if (uiState.sprintCount > 0) {
+                        Text(
+                            text = "${uiState.sprintCount} SPRINT${if (uiState.sprintCount != 1) "S" else ""}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 } else {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -96,6 +110,11 @@ fun WorkoutContent(
                         elapsedTimeFormatted = uiState.elapsedTimeFormatted,
                     )
                 }
+                uiState.activityType.isDogActivity && uiState.isSprintActive && uiState.isActive -> {
+                    SprintDisplay(
+                        currentSprintTimeFormatted = uiState.currentSprintTimeFormatted,
+                    )
+                }
                 uiState.phase == PhaseType.LAPS && uiState.isActive -> {
                     LapPhaseContent(
                         currentLapTimeFormatted = uiState.currentLapTimeFormatted,
@@ -117,13 +136,22 @@ fun WorkoutContent(
 
             // Stat grid - phase-specific
             when {
-                uiState.activityType == ActivityType.DOG_WALK -> {
-                    StatGrid(
-                        elapsedTimeFormatted = uiState.elapsedTimeFormatted,
-                        distanceFormatted = uiState.distanceFormatted,
-                        averagePaceFormatted = uiState.averagePaceFormatted,
-                        stepCount = uiState.stepCount,
-                    )
+                uiState.activityType.isDogActivity -> {
+                    Column {
+                        StatGrid(
+                            elapsedTimeFormatted = uiState.elapsedTimeFormatted,
+                            distanceFormatted = uiState.distanceFormatted,
+                            averagePaceFormatted = uiState.averagePaceFormatted,
+                            stepCount = uiState.stepCount,
+                        )
+                        if (uiState.sprintCount > 0) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            SprintStatRow(
+                                sprintCount = uiState.sprintCount,
+                                totalSprintTimeFormatted = uiState.totalSprintTimeFormatted,
+                            )
+                        }
+                    }
                 }
                 uiState.phase == PhaseType.WARMUP -> {
                     Column {

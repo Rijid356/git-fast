@@ -31,9 +31,9 @@ fun RecordingIndicator(
             color = MaterialTheme.colorScheme.tertiary,
             modifier = modifier.padding(8.dp),
         )
-    } else if (activityType == ActivityType.DOG_WALK) {
+    } else if (activityType.isDogActivity) {
         Text(
-            text = "WALKING",
+            text = if (activityType == ActivityType.DOG_RUN) "DOG RUN" else "WALKING",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.secondary,
             modifier = modifier.padding(8.dp),

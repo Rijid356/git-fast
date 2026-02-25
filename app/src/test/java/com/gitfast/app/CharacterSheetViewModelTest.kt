@@ -57,7 +57,7 @@ class CharacterSheetViewModelTest {
 
         val workoutRepo = mockk<WorkoutRepository>()
         every { workoutRepo.getCompletedWorkouts() } returns flowOf(emptyList())
-        every { workoutRepo.getCompletedWorkoutsByType(ActivityType.DOG_WALK) } returns flowOf(emptyList())
+        every { workoutRepo.getCompletedDogActivityWorkouts() } returns flowOf(emptyList())
 
         // Default: Health Connect not available
         every { healthConnectManager.isAvailable() } returns false

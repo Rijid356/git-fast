@@ -40,6 +40,16 @@ class WorkoutRepository @Inject constructor(
         }
     }
 
+    fun getCompletedDogActivityWorkouts(): Flow<List<Workout>> {
+        return workoutDao.getCompletedDogActivityWorkouts().map { entities ->
+            entities.map { entity ->
+                val phases = workoutDao.getPhasesForWorkout(entity.id)
+                    .map { it.toDomain(emptyList()) }
+                entity.toDomain(phases, emptyList())
+            }
+        }
+    }
+
     fun getDogWalksByRoute(routeTag: String): Flow<List<Workout>> {
         return workoutDao.getDogWalksByRoute(routeTag).map { entities ->
             entities.map { entity ->

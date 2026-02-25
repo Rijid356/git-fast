@@ -8,6 +8,7 @@ import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
+import com.gitfast.app.data.model.Lap
 import com.gitfast.app.util.LapAnalyzer
 import com.gitfast.app.util.PhaseAnalyzer
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,11 +44,18 @@ class DetailViewModel @Inject constructor(
                 val lapsPhase = workout.phases.find { it.type == PhaseType.LAPS }
                 val lapAnalysis = lapsPhase?.laps?.let { LapAnalyzer.analyze(it) }
 
-                // Route comparison for dog walks
-                val routeComparison = if (workout.activityType == ActivityType.DOG_WALK && workout.routeTag != null) {
+                // Route comparison for dog activities
+                val routeComparison = if (workout.activityType.isDogActivity && workout.routeTag != null) {
                     val previousWalks = workoutRepository.getDogWalksByRouteOnce(workout.routeTag!!)
                         .filter { it.id != workout.id }
                     RouteComparisonAnalyzer.compare(workout, previousWalks)
+                } else {
+                    emptyList()
+                }
+
+                // Sprint analysis for dog activities (sprints stored as WARMUP phase laps)
+                val sprintLaps = if (workout.activityType.isDogActivity) {
+                    workout.phases.find { it.type == PhaseType.WARMUP }?.laps ?: emptyList()
                 } else {
                     emptyList()
                 }
@@ -82,6 +90,7 @@ class DetailViewModel @Inject constructor(
                     speedChartPoints = speedPoints,
                     averageSpeedMph = avgSpeed,
                     maxSpeedMph = maxSpeed,
+                    sprintLaps = sprintLaps,
                 )
             }
         }
@@ -114,5 +123,6 @@ sealed class DetailUiState {
         val speedChartPoints: List<SpeedChartPoint> = emptyList(),
         val averageSpeedMph: Float = 0f,
         val maxSpeedMph: Float = 0f,
+        val sprintLaps: List<Lap> = emptyList(),
     ) : DetailUiState()
 }

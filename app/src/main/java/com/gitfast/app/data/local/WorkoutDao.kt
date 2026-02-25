@@ -75,7 +75,10 @@ interface WorkoutDao {
     @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = :activityType ORDER BY startTime DESC")
     fun getCompletedWorkoutsByType(activityType: String): Flow<List<WorkoutEntity>>
 
-    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK' AND routeTag = :routeTag ORDER BY startTime DESC")
+    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType IN ('DOG_WALK', 'DOG_RUN') ORDER BY startTime DESC")
+    fun getCompletedDogActivityWorkouts(): Flow<List<WorkoutEntity>>
+
+    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType IN ('DOG_WALK', 'DOG_RUN') AND routeTag = :routeTag ORDER BY startTime DESC")
     fun getDogWalksByRoute(routeTag: String): Flow<List<WorkoutEntity>>
 
     @Query("SELECT COUNT(*) FROM workouts WHERE status = 'COMPLETED'")
@@ -84,13 +87,13 @@ interface WorkoutDao {
     @Query("SELECT COUNT(*) FROM laps")
     suspend fun getTotalLapCount(): Int
 
-    @Query("SELECT COUNT(*) FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK'")
+    @Query("SELECT COUNT(*) FROM workouts WHERE status = 'COMPLETED' AND activityType IN ('DOG_WALK', 'DOG_RUN')")
     suspend fun getCompletedDogWalkCount(): Int
 
-    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK' ORDER BY startTime DESC")
+    @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' AND activityType IN ('DOG_WALK', 'DOG_RUN') ORDER BY startTime DESC")
     suspend fun getCompletedDogWalksOnce(): List<WorkoutEntity>
 
-    @Query("SELECT COALESCE(SUM(distanceMeters), 0.0) FROM workouts WHERE status = 'COMPLETED' AND activityType = 'DOG_WALK'")
+    @Query("SELECT COALESCE(SUM(distanceMeters), 0.0) FROM workouts WHERE status = 'COMPLETED' AND activityType IN ('DOG_WALK', 'DOG_RUN')")
     suspend fun getTotalDogWalkDistanceMeters(): Double
 
     @Query("SELECT COALESCE(SUM(distanceMeters), 0.0) FROM workouts WHERE status = 'COMPLETED'")
