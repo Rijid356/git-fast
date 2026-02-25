@@ -19,3 +19,7 @@ fun formatDistance(meters: Double, unit: DistanceUnit): String {
         }
     }
 }
+
+fun formatSpeed(mph: Float): String {
+    return "%.1f MPH".format(mph)
+}
