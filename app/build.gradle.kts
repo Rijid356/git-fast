@@ -66,6 +66,29 @@ android {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
     }
+
+    lint {
+        abortOnError = true
+        warningsAsErrors = false
+        // Suppress dependency version / upgrade nags
+        disable += setOf(
+            "GradleDependency",
+            "NewerVersionAvailable",
+            "AndroidGradlePluginVersion",
+            "OldTargetApi",
+        )
+        // Suppress intentional design choices
+        disable += setOf(
+            "LockedOrientationActivity",
+            "ObsoleteSdkInt",
+            "UseKtx",
+            "InlinedApi",
+            "DiscouragedApi",
+            "TestManifestGradleConfiguration",
+        )
+        xmlReport = true
+        htmlReport = true
+    }
 }
 
 kover {

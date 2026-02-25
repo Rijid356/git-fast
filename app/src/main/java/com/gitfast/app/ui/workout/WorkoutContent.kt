@@ -31,7 +31,6 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun WorkoutContent(
     uiState: WorkoutUiState,
-    ghostSources: List<GhostSource> = emptyList(),
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
@@ -40,8 +39,9 @@ fun WorkoutContent(
     onStartLaps: () -> Unit,
     onMarkLap: () -> Unit,
     onEndLaps: () -> Unit,
-    onSelectGhost: (String?) -> Unit = {},
     modifier: Modifier = Modifier,
+    ghostSources: List<GhostSource> = emptyList(),
+    onSelectGhost: (String?) -> Unit = {},
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         if (uiState.isActive) {

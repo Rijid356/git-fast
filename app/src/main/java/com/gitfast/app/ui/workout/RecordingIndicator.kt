@@ -21,8 +21,8 @@ import com.gitfast.app.data.model.ActivityType
 @Composable
 fun RecordingIndicator(
     isPaused: Boolean,
-    activityType: ActivityType = ActivityType.RUN,
     modifier: Modifier = Modifier,
+    activityType: ActivityType = ActivityType.RUN,
 ) {
     if (isPaused) {
         Text(

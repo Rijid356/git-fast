@@ -4,6 +4,7 @@ import com.gitfast.app.data.model.Workout
 import com.gitfast.app.util.DateFormatter
 import com.gitfast.app.util.formatDistance
 import com.gitfast.app.util.formatElapsedTime
+import java.util.Locale
 
 object RouteComparisonAnalyzer {
 
@@ -62,7 +63,7 @@ object RouteComparisonAnalyzer {
         val minutes = absDelta / 60
         val seconds = absDelta % 60
         val formatted = if (minutes > 0) {
-            String.format("%d:%02d", minutes, seconds)
+            String.format(Locale.US, "%d:%02d", minutes, seconds)
         } else {
             "${seconds}s"
         }
