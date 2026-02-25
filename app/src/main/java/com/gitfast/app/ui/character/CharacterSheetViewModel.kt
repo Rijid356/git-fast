@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.XpTransaction
+import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.util.StatBreakdown
 import com.gitfast.app.util.StatsCalculator
@@ -17,7 +19,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /**
@@ -36,6 +42,8 @@ data class VitalityUiState(
 class CharacterSheetViewModel @Inject constructor(
     private val characterRepository: CharacterRepository,
     workoutRepository: WorkoutRepository,
+    private val bodyCompRepository: BodyCompRepository,
+    private val healthConnectManager: HealthConnectManager,
 ) : ViewModel() {
 
     private val _selectedTab = MutableStateFlow(0) // 0=ME, 1=JUNIPER
@@ -105,16 +113,44 @@ class CharacterSheetViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     // VIT stat state — only for user profile (ME tab)
-    // Will be wired to BodyCompRepository + HealthConnectManager when Step 1 is integrated.
-    // For now, exposes the UI state with defaults that show "Connect Health Connect" prompt.
     private val _vitalityState = MutableStateFlow(VitalityUiState())
     val vitalityState: StateFlow<VitalityUiState> = _vitalityState.asStateFlow()
 
+    init {
+        loadVitalityData()
+    }
+
+    private fun loadVitalityData() {
+        viewModelScope.launch {
+            val connected = healthConnectManager.isAvailable() && healthConnectManager.hasPermissions()
+            if (!connected) {
+                _vitalityState.value = VitalityUiState()
+                return@launch
+            }
+
+            val weighInCount = bodyCompRepository.getWeighInCount(30)
+
+            // Compute body fat trend: difference between earliest and latest reading in 30 days
+            val now = Instant.now()
+            val thirtyDaysAgo = now.minus(30, ChronoUnit.DAYS)
+            val readings = bodyCompRepository.getReadingsInRange(thirtyDaysAgo, now).first()
+            val bodyFatReadings = readings
+                .filter { it.bodyFatPercent != null }
+                .sortedBy { it.timestamp }
+            val bodyFatTrend = if (bodyFatReadings.size >= 2) {
+                bodyFatReadings.last().bodyFatPercent!! - bodyFatReadings.first().bodyFatPercent!!
+            } else {
+                null
+            }
+
+            updateVitalityData(connected, weighInCount, bodyFatTrend)
+        }
+    }
+
     /**
-     * Called by BodyCompRepository integration to update VIT stat data.
-     * This method will be called when Health Connect data is synced.
+     * Update VIT stat UI state from Health Connect data.
      */
-    fun updateVitalityData(
+    private fun updateVitalityData(
         connected: Boolean,
         weighInCount30d: Int,
         bodyFatTrendPercent: Double?,
