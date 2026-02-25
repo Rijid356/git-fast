@@ -98,8 +98,8 @@ class WorkoutSaveManager @Inject constructor(
             // Check for newly unlocked user achievements
             val newAchievements = checkAchievements()
 
-            // If dog walk, also award XP to Juniper (profileId=2)
-            if (snapshot.activityType == ActivityType.DOG_WALK) {
+            // If dog activity, also award XP to Juniper (profileId=2)
+            if (snapshot.activityType.isDogActivity) {
                 characterRepository.awardXp(
                     profileId = 2,
                     workoutId = snapshot.workoutId,

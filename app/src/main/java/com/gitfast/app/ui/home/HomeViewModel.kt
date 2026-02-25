@@ -89,6 +89,14 @@ class HomeViewModel @Inject constructor(
             list.take(3).map { it.toHistoryItem().copy(xpEarned = xpMap[it.id] ?: 0) }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val recentDogRuns: StateFlow<List<WorkoutHistoryItem>> =
+        combine(
+            workoutRepository.getCompletedWorkoutsByType(ActivityType.DOG_RUN),
+            xpByWorkout,
+        ) { list, xpMap ->
+            list.take(3).map { it.toHistoryItem().copy(xpEarned = xpMap[it.id] ?: 0) }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         checkForIncompleteWorkout()
     }

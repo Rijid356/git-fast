@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -57,8 +58,11 @@ fun DetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if ((uiState as? DetailUiState.Loaded)?.detail?.activityType == ActivityType.DOG_WALK)
-                            "Dog Walk" else "Run Details",
+                        text = when ((uiState as? DetailUiState.Loaded)?.detail?.activityType) {
+                            ActivityType.DOG_WALK -> "Dog Walk"
+                            ActivityType.DOG_RUN -> "Dog Run"
+                            else -> "Run Details"
+                        },
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
@@ -134,6 +138,7 @@ fun DetailScreen(
                     speedChartPoints = state.speedChartPoints,
                     averageSpeedMph = state.averageSpeedMph,
                     maxSpeedMph = state.maxSpeedMph,
+                    sprintLaps = state.sprintLaps,
                     onDeleteLap = viewModel::deleteLap,
                     modifier = Modifier.padding(innerPadding),
                 )
@@ -161,6 +166,7 @@ private fun DetailContent(
     speedChartPoints: List<SpeedChartPoint> = emptyList(),
     averageSpeedMph: Float = 0f,
     maxSpeedMph: Float = 0f,
+    sprintLaps: List<com.gitfast.app.data.model.Lap> = emptyList(),
     modifier: Modifier = Modifier,
     onDeleteLap: (String) -> Unit = {},
 ) {
@@ -194,9 +200,15 @@ private fun DetailContent(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Dog walk metadata (only for dog walks)
-        if (detail.activityType == ActivityType.DOG_WALK) {
+        // Dog activity metadata (for dog walks/runs)
+        if (detail.activityType.isDogActivity) {
             DogWalkMetadataSection(detail = detail)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Sprint analysis (for dog activities with sprints)
+        if (detail.activityType.isDogActivity && sprintLaps.isNotEmpty()) {
+            SprintAnalysisSection(sprintLaps = sprintLaps)
             Spacer(modifier = Modifier.height(24.dp))
         }
 
@@ -233,8 +245,8 @@ private fun DetailContent(
             NoRouteContent()
         }
 
-        // Route comparison (only for dog walks with route tag)
-        if (detail.activityType == ActivityType.DOG_WALK && routeComparison.isNotEmpty()) {
+        // Route comparison (only for dog activities with route tag)
+        if (detail.activityType.isDogActivity && routeComparison.isNotEmpty()) {
             Spacer(modifier = Modifier.height(24.dp))
             RouteComparisonSection(items = routeComparison)
         }
@@ -542,4 +554,84 @@ private fun DeleteConfirmationDialog(
             }
         },
     )
+}
+
+@Composable
+private fun SprintAnalysisSection(
+    sprintLaps: List<com.gitfast.app.data.model.Lap>,
+) {
+    val durations = sprintLaps.mapNotNull { it.durationMillis?.let { d -> (d / 1000).toInt() } }
+    if (durations.isEmpty()) return
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RectangleShape,
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "SPRINT ANALYSIS",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+
+            // Summary stats
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                    Text(text = "${durations.size}", style = MaterialTheme.typography.titleLarge, color = Color.White)
+                    Text(text = "SPRINTS", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                    Text(text = com.gitfast.app.util.formatElapsedTime(durations.sum()), style = MaterialTheme.typography.titleLarge, color = Color.White)
+                    Text(text = "TOTAL", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                    Text(text = com.gitfast.app.util.formatElapsedTime(durations.max()), style = MaterialTheme.typography.titleLarge, color = Color.White)
+                    Text(text = "LONGEST", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Individual sprint list
+            sprintLaps.forEachIndexed { index, lap ->
+                val durationSec = (lap.durationMillis ?: 0L) / 1000
+                val distanceText = lap.distanceMeters?.let {
+                    com.gitfast.app.util.formatDistance(it)
+                } ?: ""
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = "Sprint ${index + 1}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Row {
+                        if (distanceText.isNotEmpty()) {
+                            Text(
+                                text = distanceText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
+                        Text(
+                            text = com.gitfast.app.util.formatElapsedTime(durationSec.toInt()),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

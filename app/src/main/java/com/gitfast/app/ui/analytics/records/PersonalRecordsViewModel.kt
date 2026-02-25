@@ -35,7 +35,7 @@ class PersonalRecordsViewModel @Inject constructor(
             }
 
             val runs = allWorkouts.filter { it.activityType == ActivityType.RUN }
-            val walks = allWorkouts.filter { it.activityType == ActivityType.DOG_WALK }
+            val walks = allWorkouts.filter { it.activityType.isDogActivity }
             val runsWithLaps = workoutRepository.getAllRunsWithLaps()
             val totalRunDistance = workoutRepository.getTotalDistanceMeters() -
                 workoutRepository.getTotalDogWalkDistanceMeters()

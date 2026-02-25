@@ -39,7 +39,7 @@ class HistoryViewModel @Inject constructor(
         val workoutsFlow = when (filter) {
             ActivityFilter.ALL -> workoutRepository.getCompletedWorkouts()
             ActivityFilter.RUNS -> workoutRepository.getCompletedWorkoutsByType(ActivityType.RUN)
-            ActivityFilter.WALKS -> workoutRepository.getCompletedWorkoutsByType(ActivityType.DOG_WALK)
+            ActivityFilter.WALKS -> workoutRepository.getCompletedDogActivityWorkouts()
         }
         combine(workoutsFlow, xpByWorkout) { list, xpMap ->
             if (list.isEmpty()) {

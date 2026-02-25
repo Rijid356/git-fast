@@ -102,7 +102,7 @@ class CharacterSheetViewModel @Inject constructor(
 
     // Stat breakdowns for Juniper (no VIT — Juniper doesn't weigh in)
     val juniperStatBreakdowns: StateFlow<Map<String, StatBreakdown>> =
-        workoutRepository.getCompletedWorkoutsByType(ActivityType.DOG_WALK)
+        workoutRepository.getCompletedDogActivityWorkouts()
             .map { walks ->
                 mapOf(
                     "SPD" to StatsCalculator.speedBreakdown(walks.take(20), isWalk = true),

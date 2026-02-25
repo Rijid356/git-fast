@@ -179,6 +179,37 @@ fun CooldownStatGrid(
 }
 
 @Composable
+fun SprintStatRow(
+    sprintCount: Int,
+    totalSprintTimeFormatted: String,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RectangleShape,
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            StatItem(
+                label = "SPRINTS",
+                value = sprintCount.toString(),
+                modifier = Modifier.weight(1f),
+            )
+            StatItem(
+                label = "SPRINT TIME",
+                value = totalSprintTimeFormatted,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
 private fun StatItem(
     label: String,
     value: String,

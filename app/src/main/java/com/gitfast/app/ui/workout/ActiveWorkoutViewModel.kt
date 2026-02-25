@@ -65,6 +65,12 @@ data class WorkoutUiState(
     val autoLapAnchorSet: Boolean = false,
     // Speed
     val currentSpeedFormatted: String? = null,
+    // Sprint tracking
+    val isSprintActive: Boolean = false,
+    val sprintCount: Int = 0,
+    val currentSprintTimeFormatted: String = "00:00",
+    val totalSprintTimeFormatted: String = "00:00",
+    val longestSprintTimeFormatted: String = "00:00",
 )
 
 data class WorkoutSummaryStats(
@@ -80,6 +86,7 @@ data class WorkoutSummaryStats(
     val achievementNames: List<String> = emptyList(),
     val streakDays: Int = 0,
     val streakMultiplier: Double = 1.0,
+    val sprintCount: Int = 0,
 )
 
 data class GhostSource(
@@ -296,6 +303,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                 }
             },
             xpEarned = xpEarned,
+            sprintCount = trackingState?.sprintCount ?: 0,
         )
     }
 
@@ -369,6 +377,11 @@ class ActiveWorkoutViewModel @Inject constructor(
                         else "= 0s"
                     },
                     autoLapAnchorSet = state.autoLapAnchorSet,
+                    isSprintActive = state.isSprintActive,
+                    sprintCount = state.sprintCount,
+                    currentSprintTimeFormatted = formatElapsedTime(state.currentSprintElapsedSeconds),
+                    totalSprintTimeFormatted = formatElapsedTime(state.totalSprintSeconds),
+                    longestSprintTimeFormatted = formatElapsedTime(state.longestSprintSeconds),
                 )
             }
         }

@@ -105,7 +105,7 @@ class HistoryViewModelTest {
     fun `setFilter to WALKS queries dog walk workouts`() = runTest {
         every { workoutRepository.getCompletedWorkouts() } returns flowOf(emptyList())
         val walks = listOf(createTestWorkout("dw1", ActivityType.DOG_WALK))
-        every { workoutRepository.getCompletedWorkoutsByType(ActivityType.DOG_WALK) } returns flowOf(walks)
+        every { workoutRepository.getCompletedDogActivityWorkouts() } returns flowOf(walks)
 
         val viewModel = HistoryViewModel(workoutRepository, characterRepository)
 
