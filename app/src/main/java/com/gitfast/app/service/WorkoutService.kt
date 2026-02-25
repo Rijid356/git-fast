@@ -40,6 +40,7 @@ class WorkoutService : LifecycleService() {
     @Inject lateinit var workoutSaveManager: WorkoutSaveManager
     @Inject lateinit var workoutStateStore: WorkoutStateStore
     @Inject lateinit var autoPauseDetector: AutoPauseDetector
+    @Inject lateinit var autoSprintDetector: AutoSprintDetector
     @Inject lateinit var settingsStore: SettingsStore
 
     private var gpsCollectionJob: Job? = null
@@ -122,6 +123,7 @@ class WorkoutService : LifecycleService() {
         startForeground(NOTIFICATION_ID, buildNotification(workoutStateManager.workoutState.value))
 
         autoPauseDetector.reset()
+        autoSprintDetector.reset()
         hasLeftHomeRadius = false
         homeArrivalTriggered = false
 
@@ -130,6 +132,7 @@ class WorkoutService : LifecycleService() {
                 handleAutoPause(point, activityType)
                 handleHomeArrival(point)
                 workoutStateManager.addGpsPoint(point)
+                handleAutoSprint(point, activityType)
                 Log.d(
                     "WorkoutService",
                     "GPS: ${point.latitude}, ${point.longitude} " +
@@ -167,6 +170,7 @@ class WorkoutService : LifecycleService() {
 
     private fun pauseWorkout() {
         autoPauseDetector.reset()
+        autoSprintDetector.reset()
         workoutStateManager.pauseWorkout()
         gpsCollectionJob?.cancel()
         stepCollectionJob?.cancel()
@@ -175,13 +179,16 @@ class WorkoutService : LifecycleService() {
 
     private fun resumeWorkout() {
         autoPauseDetector.reset()
+        autoSprintDetector.reset()
         workoutStateManager.resumeWorkout()
 
         gpsCollectionJob = lifecycleScope.launch {
             gpsTracker.startTracking().collect { point ->
-                handleAutoPause(point, workoutStateManager.workoutState.value.activityType)
+                val currentActivityType = workoutStateManager.workoutState.value.activityType
+                handleAutoPause(point, currentActivityType)
                 handleHomeArrival(point)
                 workoutStateManager.addGpsPoint(point)
+                handleAutoSprint(point, currentActivityType)
             }
         }
 
@@ -269,6 +276,22 @@ class WorkoutService : LifecycleService() {
             homeArrivalTriggered = true
             workoutStateManager.homeArrivalPause()
             updateNotification()
+        }
+    }
+
+    private fun handleAutoSprint(point: GpsPoint, activityType: ActivityType) {
+        if (!activityType.isDogActivity) return
+
+        val state = workoutStateManager.workoutState.value
+        if (state.isPaused) return
+
+        val result = autoSprintDetector.analyzePoint(point, state.isSprintActive)
+
+        if (result.shouldStartSprint && !state.isSprintActive) {
+            workoutStateManager.startSprint()
+        }
+        if (result.shouldEndSprint && state.isSprintActive) {
+            workoutStateManager.endSprint()
         }
     }
 

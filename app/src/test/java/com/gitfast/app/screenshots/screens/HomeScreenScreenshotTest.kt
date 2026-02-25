@@ -113,6 +113,7 @@ class HomeScreenScreenshotTest : FullScreenScreenshotTestBase() {
                     ),
                 ),
             )
+            every { recentDogRuns } returns MutableStateFlow(emptyList())
         }
 
         captureScreenshot("Screen_Home") {

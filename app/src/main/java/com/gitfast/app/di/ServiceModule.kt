@@ -5,6 +5,7 @@ import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.location.GpsTracker
 import com.gitfast.app.location.StepTracker
 import com.gitfast.app.service.AutoPauseDetector
+import com.gitfast.app.service.AutoSprintDetector
 import com.gitfast.app.service.WorkoutStateManager
 import com.gitfast.app.util.PermissionManager
 import dagger.Module
@@ -46,6 +47,12 @@ object ServiceModule {
     @Singleton
     fun provideAutoPauseDetector(): AutoPauseDetector {
         return AutoPauseDetector()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAutoSprintDetector(): AutoSprintDetector {
+        return AutoSprintDetector()
     }
 
     @Provides

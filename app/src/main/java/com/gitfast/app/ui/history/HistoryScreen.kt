@@ -189,13 +189,17 @@ private fun WorkoutCard(
                     )
                 }
                 Text(
-                    text = workout.activityType.let {
-                        if (it == ActivityType.DOG_WALK) "Dog Walk" else "Run"
+                    text = when (workout.activityType) {
+                        ActivityType.DOG_WALK -> "Dog Walk"
+                        ActivityType.DOG_RUN -> "Dog Run"
+                        else -> "Run"
                     },
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (workout.activityType == ActivityType.DOG_WALK)
-                        MaterialTheme.colorScheme.secondary
-                    else MaterialTheme.colorScheme.primary,
+                    color = when (workout.activityType) {
+                        ActivityType.DOG_WALK -> MaterialTheme.colorScheme.secondary
+                        ActivityType.DOG_RUN -> com.gitfast.app.ui.theme.AmberAccent
+                        else -> MaterialTheme.colorScheme.primary
+                    },
                 )
             }
 

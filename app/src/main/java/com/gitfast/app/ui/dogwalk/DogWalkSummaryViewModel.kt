@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.local.entity.RouteTagEntity
+import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
@@ -35,6 +36,11 @@ data class DogWalkSummaryUiState(
     val timeFormatted: String = "--:--",
     val distanceFormatted: String = "0.00 mi",
     val paceFormatted: String = "-- /mi",
+    val activityType: ActivityType = ActivityType.DOG_WALK,
+    val sprintCount: Int = 0,
+    val totalSprintTimeFormatted: String? = null,
+    val longestSprintTimeFormatted: String? = null,
+    val avgSprintTimeFormatted: String? = null,
 )
 
 @HiltViewModel
@@ -67,10 +73,21 @@ class DogWalkSummaryViewModel @Inject constructor(
             val workout = workoutRepository.getWorkoutWithDetails(workoutId)
             workout?.let {
                 val durationSeconds = it.durationMillis?.let { d -> (d / 1000).toInt() }
+
+                // Compute sprint stats from WARMUP phase laps (sprint intervals)
+                val warmupPhase = it.phases.find { p -> p.type == com.gitfast.app.data.model.PhaseType.WARMUP }
+                val sprintLaps = warmupPhase?.laps ?: emptyList()
+                val sprintDurations = sprintLaps.mapNotNull { lap -> lap.durationMillis?.let { d -> (d / 1000).toInt() } }
+
                 _uiState.value = _uiState.value.copy(
                     timeFormatted = durationSeconds?.let { s -> formatElapsedTime(s) } ?: "--:--",
                     distanceFormatted = formatDistance(it.distanceMeters),
                     paceFormatted = it.averagePaceSecondsPerMile?.let { p -> formatPace(p.toInt()) } ?: "-- /mi",
+                    activityType = it.activityType,
+                    sprintCount = sprintDurations.size,
+                    totalSprintTimeFormatted = if (sprintDurations.isNotEmpty()) formatElapsedTime(sprintDurations.sum()) else null,
+                    longestSprintTimeFormatted = sprintDurations.maxOrNull()?.let { s -> formatElapsedTime(s) },
+                    avgSprintTimeFormatted = if (sprintDurations.isNotEmpty()) formatElapsedTime(sprintDurations.average().toInt()) else null,
                 )
             }
         }

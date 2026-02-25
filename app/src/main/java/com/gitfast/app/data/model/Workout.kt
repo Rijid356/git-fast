@@ -36,6 +36,7 @@ data class Workout(
         get() = when (activityType) {
             ActivityType.RUN -> "Run"
             ActivityType.DOG_WALK -> "Dog Walk"
+            ActivityType.DOG_RUN -> "Dog Run"
         }
 
     val weatherSummary: String?
