@@ -165,6 +165,18 @@ PlatformIO project (`watch/platformio.ini`): ESP32-S3 with `espressif32@6.10.0`,
 
 Detailed specs for each development phase live in `.claude/specs/` (00-14 plus architecture docs). Always read the relevant spec before implementing a checkpoint — they contain exact code, file paths, and test requirements.
 
+## UI Change Workflow
+
+**Any plan that modifies UI MUST include before/after screenshots.** This is mandatory, not optional.
+
+1. **Before**: Record current golden screenshots for affected screens (`./gradlew recordRoborazziDebug`)
+2. **Show the "before"** to the user as part of the plan discussion
+3. **Mock up the "after"** — describe or sketch the proposed UI change so the user can approve before implementation
+4. **After implementing**: Re-record screenshots and show "before vs after" side by side
+5. Use existing screenshot tests in `app/src/test/java/com/gitfast/app/screenshots/screens/`
+
+This applies to all UI work: new screens, layout changes, adding/removing/moving elements, theming changes, etc.
+
 ## Conventions
 
 - JUnit 4 for all tests (not JUnit 5)
