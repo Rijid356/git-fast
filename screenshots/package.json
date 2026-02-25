@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "setup": "npx playwright install chromium",
+    "capture": "node capture.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

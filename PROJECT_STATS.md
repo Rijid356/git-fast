@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-02-28
+- **Last Active:** 2026-03-01
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 
@@ -61,10 +61,12 @@
 | 2026-02-26 | Roborazzi screenshot testing: 12 golden screenshots across 5 composables, ScreenshotTestBase with GitFastTheme wrapper, 5% cross-platform threshold, CI verify (WARN) + diff artifacts; merged PR #99 | 23 | 4 | +319/-0 |
 | 2026-02-27 | Body Comp sync feedback: SyncResult sealed class, snackbar messages for all sync outcomes, simplified Settings sync, updated tests; PR #101 | 6 | 1 | +68/-31 |
 | 2026-02-28 | Android Lint fixes + CI integration: fix 2 UnrememberedMutableState errors, 6 DefaultLocale warnings, CredentialManagerMisuse, 6 ModifierParameter reorders; lint config in build.gradle.kts, CI lint step, quality-gates.json | 13 | 1 | +63/-22 |
+| 2026-02-28 | Wire VIT stat to Health Connect data: inject BodyCompRepository + HealthConnectManager into CharacterSheetViewModel, load real weigh-in count and body fat trend in init; merged PR #103 | 2 | 1 | +55/-9 |
+| 2026-02-28 | Full-screen screenshot composites: 15 Roborazzi test files generating 21 Pixel 9 screenshots, Canvas-based Google Maps mocks, HTML phone frame journeys with CSS Pixel 9 bezels, Playwright composite capture, Gradle integration | 57 | 1 | +2817/-0 |
 
 ## Totals
-- **Total Sessions:** 50
-- **Total Commits:** 85
-- **Total Files Changed:** 619
-- **Total Lines Added:** 32668
-- **Total Lines Removed:** 2088
+- **Total Sessions:** 52
+- **Total Commits:** 87
+- **Total Files Changed:** 678
+- **Total Lines Added:** 35540
+- **Total Lines Removed:** 2097

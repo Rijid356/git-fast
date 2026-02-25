@@ -209,3 +209,11 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+
+tasks.register<Exec>("generateScreenshotComposites") {
+    description = "Record full-screen screenshots and capture HTML composites as PNGs"
+    group = "verification"
+    dependsOn("recordRoborazziDebug")
+    workingDir = file("${rootProject.projectDir}/screenshots")
+    commandLine("node", "capture.mjs")
+}
