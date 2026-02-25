@@ -5,7 +5,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.gitfast.app.auth.GoogleAuthManager
 import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.local.SettingsStore
-import com.gitfast.app.data.model.DistanceUnit
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.data.sync.SyncStatusStore
@@ -14,7 +13,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -44,7 +42,6 @@ class SettingsViewModelTest {
         healthConnectManager = mockk(relaxed = true)
         bodyCompRepository = mockk(relaxed = true)
         every { settingsStore.autoPauseEnabled } returns true
-        every { settingsStore.distanceUnit } returns DistanceUnit.MILES
         every { settingsStore.keepScreenOn } returns true
         every { googleAuthManager.currentUser } returns MutableStateFlow(null)
         every { syncStatusStore.lastSyncedAt } returns 0L
@@ -56,7 +53,6 @@ class SettingsViewModelTest {
     fun `init loads current settings from store`() {
         val state = viewModel.uiState.value
         assertTrue(state.autoPauseEnabled)
-        assertEquals(DistanceUnit.MILES, state.distanceUnit)
         assertTrue(state.keepScreenOn)
     }
 
@@ -66,14 +62,6 @@ class SettingsViewModelTest {
 
         verify { settingsStore.autoPauseEnabled = false }
         assertFalse(viewModel.uiState.value.autoPauseEnabled)
-    }
-
-    @Test
-    fun `setDistanceUnit updates store and ui state`() {
-        viewModel.setDistanceUnit(DistanceUnit.KILOMETERS)
-
-        verify { settingsStore.distanceUnit = DistanceUnit.KILOMETERS }
-        assertEquals(DistanceUnit.KILOMETERS, viewModel.uiState.value.distanceUnit)
     }
 
     @Test
@@ -96,14 +84,12 @@ class SettingsViewModelTest {
     fun `init with non-default settings`() {
         val customStore = mockk<SettingsStore>(relaxed = true)
         every { customStore.autoPauseEnabled } returns false
-        every { customStore.distanceUnit } returns DistanceUnit.KILOMETERS
         every { customStore.keepScreenOn } returns false
 
         val vm = SettingsViewModel(app, customStore, googleAuthManager, firestoreSync, syncStatusStore, healthConnectManager, bodyCompRepository)
         val state = vm.uiState.value
 
         assertFalse(state.autoPauseEnabled)
-        assertEquals(DistanceUnit.KILOMETERS, state.distanceUnit)
         assertFalse(state.keepScreenOn)
     }
 }

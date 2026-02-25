@@ -4,7 +4,6 @@ import android.app.Application
 import com.gitfast.app.auth.GoogleAuthManager
 import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.local.SettingsStore
-import com.gitfast.app.data.model.DistanceUnit
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.data.sync.SyncStatus
@@ -59,10 +58,8 @@ class SettingsViewModelTest {
         mockBodyCompRepository = mockk(relaxed = true)
 
         every { mockSettingsStore.autoPauseEnabled } returns true
-        every { mockSettingsStore.distanceUnit } returns DistanceUnit.MILES
         every { mockSettingsStore.keepScreenOn } returns true
         every { mockSettingsStore.autoLapEnabled } returns false
-        every { mockSettingsStore.autoLapAnchorRadiusMeters } returns 15
         every { mockSettingsStore.homeArrivalEnabled } returns false
         every { mockSettingsStore.hasHomeLocation } returns false
         every { mockGoogleAuthManager.currentUser } returns currentUserFlow
@@ -95,10 +92,8 @@ class SettingsViewModelTest {
         val state = vm.uiState.value
 
         assertTrue(state.autoPauseEnabled)
-        assertEquals(DistanceUnit.MILES, state.distanceUnit)
         assertTrue(state.keepScreenOn)
         assertFalse(state.autoLapEnabled)
-        assertEquals(15, state.autoLapAnchorRadiusMeters)
         assertFalse(state.homeArrivalEnabled)
         assertFalse(state.hasHomeLocation)
     }
@@ -106,10 +101,8 @@ class SettingsViewModelTest {
     @Test
     fun `initial state reflects non-default settings`() {
         every { mockSettingsStore.autoPauseEnabled } returns false
-        every { mockSettingsStore.distanceUnit } returns DistanceUnit.KILOMETERS
         every { mockSettingsStore.keepScreenOn } returns false
         every { mockSettingsStore.autoLapEnabled } returns true
-        every { mockSettingsStore.autoLapAnchorRadiusMeters } returns 25
         every { mockSettingsStore.homeArrivalEnabled } returns true
         every { mockSettingsStore.hasHomeLocation } returns true
 
@@ -117,10 +110,8 @@ class SettingsViewModelTest {
         val state = vm.uiState.value
 
         assertFalse(state.autoPauseEnabled)
-        assertEquals(DistanceUnit.KILOMETERS, state.distanceUnit)
         assertFalse(state.keepScreenOn)
         assertTrue(state.autoLapEnabled)
-        assertEquals(25, state.autoLapAnchorRadiusMeters)
         assertTrue(state.homeArrivalEnabled)
         assertTrue(state.hasHomeLocation)
     }
@@ -227,16 +218,6 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `setDistanceUnit persists and updates state`() {
-        val vm = createViewModel()
-
-        vm.setDistanceUnit(DistanceUnit.KILOMETERS)
-
-        verify { mockSettingsStore.distanceUnit = DistanceUnit.KILOMETERS }
-        assertEquals(DistanceUnit.KILOMETERS, vm.uiState.value.distanceUnit)
-    }
-
-    @Test
     fun `setKeepScreenOn persists and updates state`() {
         val vm = createViewModel()
 
@@ -254,16 +235,6 @@ class SettingsViewModelTest {
 
         verify { mockSettingsStore.autoLapEnabled = true }
         assertTrue(vm.uiState.value.autoLapEnabled)
-    }
-
-    @Test
-    fun `setAutoLapAnchorRadius persists and updates state`() {
-        val vm = createViewModel()
-
-        vm.setAutoLapAnchorRadius(25)
-
-        verify { mockSettingsStore.autoLapAnchorRadiusMeters = 25 }
-        assertEquals(25, vm.uiState.value.autoLapAnchorRadiusMeters)
     }
 
     @Test
@@ -356,5 +327,37 @@ class SettingsViewModelTest {
         vm.signIn(mockContext)
 
         coVerify(exactly = 0) { mockFirestoreSync.initialMigration() }
+    }
+
+    @Test
+    fun `signIn sets signInError on failure`() = runTest {
+        val mockContext = mockk<android.content.Context>(relaxed = true)
+        coEvery { mockGoogleAuthManager.signIn(any()) } returns Result.failure(Exception("Network error"))
+
+        val vm = createViewModel()
+        assertNull(vm.uiState.value.signInError)
+
+        vm.signIn(mockContext)
+
+        assertEquals("Network error", vm.uiState.value.signInError)
+    }
+
+    @Test
+    fun `signIn clears signInError on success`() = runTest {
+        val mockUser = mockk<FirebaseUser>()
+        val mockContext = mockk<android.content.Context>(relaxed = true)
+
+        // First, trigger an error
+        coEvery { mockGoogleAuthManager.signIn(any()) } returns Result.failure(Exception("fail"))
+        val vm = createViewModel()
+        vm.signIn(mockContext)
+        assertEquals("fail", vm.uiState.value.signInError)
+
+        // Now succeed
+        coEvery { mockGoogleAuthManager.signIn(any()) } returns Result.success(mockUser)
+        every { mockSyncStatusStore.hasCompletedInitialSync } returns true
+        vm.signIn(mockContext)
+
+        assertNull(vm.uiState.value.signInError)
     }
 }

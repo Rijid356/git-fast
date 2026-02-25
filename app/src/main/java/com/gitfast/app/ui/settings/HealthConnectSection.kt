@@ -3,7 +3,9 @@ package com.gitfast.app.ui.settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -41,6 +43,7 @@ fun HealthConnectSection(
                 text = "Status",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = when {
                     !isAvailable -> "Health Connect is not installed"
@@ -83,6 +86,7 @@ fun HealthConnectSection(
                     text = "Connect",
                     style = MaterialTheme.typography.bodyLarge,
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Grant permission to read health data",
                     style = MaterialTheme.typography.bodySmall,
@@ -116,6 +120,7 @@ fun HealthConnectSection(
                 text = "Sync Now",
                 style = MaterialTheme.typography.bodyLarge,
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formatHcSyncTime(lastSyncedAt),
                 style = MaterialTheme.typography.bodySmall,
@@ -152,6 +157,7 @@ fun HealthConnectSection(
                     text = "Latest Reading",
                     style = MaterialTheme.typography.bodyLarge,
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = latestWeightDate ?: "",
                     style = MaterialTheme.typography.bodySmall,
