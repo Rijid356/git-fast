@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val MS_TO_MPH = 2.23694f
+
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val workoutRepository: WorkoutRepository,
@@ -53,6 +55,22 @@ class DetailViewModel @Inject constructor(
                 // Fetch XP earned for this workout
                 val xpTransaction = characterRepository.getXpTransactionForWorkout(workoutId)
 
+                // Build speed chart data from GPS points
+                val workoutStartMs = workout.startTime.toEpochMilli()
+                val speedPoints = workout.gpsPoints
+                    .filter { it.speed != null }
+                    .map { point ->
+                        val elapsedMinutes = (point.timestamp.toEpochMilli() - workoutStartMs) / 60_000f
+                        val speedMph = point.speed!! * MS_TO_MPH
+                        SpeedChartPoint(elapsedMinutes, speedMph)
+                    }
+                val avgSpeed = if (speedPoints.isNotEmpty()) {
+                    speedPoints.map { it.speedMph }.average().toFloat()
+                } else 0f
+                val maxSpeed = if (speedPoints.isNotEmpty()) {
+                    speedPoints.maxOf { it.speedMph }
+                } else 0f
+
                 _uiState.value = DetailUiState.Loaded(
                     detail = workout.toDetailItem().copy(
                         xpEarned = xpTransaction?.xpAmount ?: 0,
@@ -60,7 +78,10 @@ class DetailViewModel @Inject constructor(
                     ),
                     phases = PhaseAnalyzer.analyzePhases(workout.phases),
                     lapAnalysis = lapAnalysis,
-                    routeComparison = routeComparison
+                    routeComparison = routeComparison,
+                    speedChartPoints = speedPoints,
+                    averageSpeedMph = avgSpeed,
+                    maxSpeedMph = maxSpeed,
                 )
             }
         }
@@ -89,6 +110,9 @@ sealed class DetailUiState {
         val detail: WorkoutDetailItem,
         val phases: List<PhaseAnalyzer.PhaseDisplayItem>,
         val lapAnalysis: LapAnalysis?,
-        val routeComparison: List<RouteComparisonAnalyzer.RouteComparisonItem> = emptyList()
+        val routeComparison: List<RouteComparisonAnalyzer.RouteComparisonItem> = emptyList(),
+        val speedChartPoints: List<SpeedChartPoint> = emptyList(),
+        val averageSpeedMph: Float = 0f,
+        val maxSpeedMph: Float = 0f,
     ) : DetailUiState()
 }

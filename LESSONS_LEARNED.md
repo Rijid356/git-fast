@@ -16,6 +16,10 @@ The T-Watch S3 got bricked because firmware accidentally set PAD_HOLD on GPIO0 (
 
 Unlike software where you can always revert, hardware errors can be irreversible. The bricked watch may require burning a permanent eFuse (DIS_DOWNLOAD_MODE) to recover — a one-way operation that permanently disables USB download mode. The battery has to fully drain over weeks just to clear an RTC register. Lesson: treat hardware firmware with extreme caution, especially anything involving power management, deep sleep, or pin hold states.
 
+## 2026-02-25: Git Worktrees Need Gitignored Files Copied Manually
+
+When using `git worktree add` for isolated feature branches, gitignored files like `google-services.json` and `local.properties` don't exist in the new worktree. The build fails immediately because Firebase and Maps API keys are missing. Fix: after creating a worktree, copy these files from the main checkout before building. This is easy to forget and happens every time — consider automating it in the `/implement` skill or adding a post-worktree setup script.
+
 ## 2026-02-23: Android Compose Previews Don't Match Real Device Output
 
 The default Compose preview in Android Studio shows a basic wireframe-style rendering that looks very different from what actually appears on a real phone once the app is installed. This makes it hard to design and iterate on UI confidently. Need to look into better tooling or frameworks for previewing real UI changes — things like interactive Compose previews, device mirroring, or live preview tools that more accurately reflect the final on-device appearance.

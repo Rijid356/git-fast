@@ -131,6 +131,9 @@ fun DetailScreen(
                     phases = state.phases,
                     lapAnalysis = state.lapAnalysis,
                     routeComparison = state.routeComparison,
+                    speedChartPoints = state.speedChartPoints,
+                    averageSpeedMph = state.averageSpeedMph,
+                    maxSpeedMph = state.maxSpeedMph,
                     onDeleteLap = viewModel::deleteLap,
                     modifier = Modifier.padding(innerPadding),
                 )
@@ -155,6 +158,9 @@ private fun DetailContent(
     phases: List<com.gitfast.app.util.PhaseAnalyzer.PhaseDisplayItem>,
     lapAnalysis: LapAnalysis?,
     routeComparison: List<RouteComparisonAnalyzer.RouteComparisonItem>,
+    speedChartPoints: List<SpeedChartPoint> = emptyList(),
+    averageSpeedMph: Float = 0f,
+    maxSpeedMph: Float = 0f,
     modifier: Modifier = Modifier,
     onDeleteLap: (String) -> Unit = {},
 ) {
@@ -205,6 +211,16 @@ private fun DetailContent(
                 LapAnalysisSection(analysis = it, onDeleteLap = onDeleteLap)
                 Spacer(modifier = Modifier.height(24.dp))
             }
+        }
+
+        // Speed over time chart (for any workout with speed data)
+        if (speedChartPoints.size >= 2) {
+            SpeedOverTimeSection(
+                points = speedChartPoints,
+                averageSpeedMph = averageSpeedMph,
+                maxSpeedMph = maxSpeedMph,
+            )
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         // Route map or no-route placeholder
@@ -454,6 +470,48 @@ private fun MetadataRow(icon: String, text: String) {
         Text(text = icon, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
+private fun SpeedOverTimeSection(
+    points: List<SpeedChartPoint>,
+    averageSpeedMph: Float,
+    maxSpeedMph: Float,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RectangleShape,
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "SPEED OVER TIME",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            SpeedChart(
+                points = points,
+                averageSpeedMph = averageSpeedMph,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                StatCell(
+                    label = "AVG SPEED",
+                    value = "%.1f MPH".format(averageSpeedMph),
+                    modifier = Modifier.weight(1f),
+                )
+                StatCell(
+                    label = "MAX SPEED",
+                    value = "%.1f MPH".format(maxSpeedMph),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
     }
 }
 

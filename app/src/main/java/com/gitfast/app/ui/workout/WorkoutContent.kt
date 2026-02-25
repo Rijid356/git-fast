@@ -106,7 +106,8 @@ fun WorkoutContent(
                     )
                 }
                 else -> {
-                    PaceDisplay(
+                    SpeedDisplay(
+                        currentSpeedFormatted = uiState.currentSpeedFormatted,
                         currentPaceFormatted = uiState.currentPaceFormatted,
                     )
                 }

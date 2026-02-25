@@ -497,6 +497,26 @@ class WorkoutStateManager @Inject constructor() {
         }
     }
 
+    companion object {
+        private const val AUTO_LAP_COOLDOWN_MS = 30_000L
+        private const val SPEED_SMOOTHING_WINDOW = 5
+        private const val MS_TO_MPH = 2.23694f
+    }
+
+    /**
+     * Calculate smoothed speed in MPH from the last N GPS points with non-null speed.
+     * Uses a rolling average to reduce GPS jitter.
+     */
+    private fun calculateSmoothedSpeed(points: List<GpsPoint>): Float? {
+        val recentSpeeds = points.takeLast(SPEED_SMOOTHING_WINDOW)
+            .mapNotNull { it.speed }
+        if (recentSpeeds.isEmpty()) return null
+        val avgMetersPerSecond = recentSpeeds.average().toFloat()
+        val mph = avgMetersPerSecond * MS_TO_MPH
+        // Filter out unreasonably high speeds (> 30 MPH for running)
+        return if (mph > 30f) null else mph
+    }
+
     // Auto-lap GPS anchor settings (injected from SettingsStore via WorkoutService)
     private var autoLapEnabled: Boolean = false
     private var autoLapAnchorRadiusMeters: Int = 5
@@ -504,10 +524,6 @@ class WorkoutStateManager @Inject constructor() {
     private var anchorLongitude: Double? = null
     private var hasLeftAnchorRadius: Boolean = false
     private var lastAutoLapTime: Instant? = null
-
-    companion object {
-        private const val AUTO_LAP_COOLDOWN_MS = 30_000L
-    }
 
     fun setAutoLapConfig(enabled: Boolean, anchorRadiusMeters: Int) {
         autoLapEnabled = enabled
@@ -536,12 +552,23 @@ class WorkoutStateManager @Inject constructor() {
 
         val elapsedSeconds = _workoutState.value.elapsedSeconds
 
+        // Calculate smoothed speed from last 5 GPS points with non-null speed
+        val smoothedSpeedMph = calculateSmoothedSpeed(updatedPoints)
+        val currentMax = _workoutState.value.maxSpeedMph
+        val newMax = if (smoothedSpeedMph != null && smoothedSpeedMph > currentMax) {
+            smoothedSpeedMph
+        } else {
+            currentMax
+        }
+
         _workoutState.value = _workoutState.value.copy(
             distanceMeters = distanceMeters,
             currentPaceSecondsPerMile = PaceCalculator.currentPace(updatedPoints),
             averagePaceSecondsPerMile = PaceCalculator.averagePace(
                 elapsedSeconds, distanceMeters
-            )
+            ),
+            currentSpeedMph = smoothedSpeedMph,
+            maxSpeedMph = newMax,
         )
 
         // Auto-lap: trigger markLap() when returning to GPS anchor during LAPS phase
@@ -614,6 +641,8 @@ data class WorkoutTrackingState(
     val ghostDeltaSeconds: Int? = null,
     val autoLapAnchorSet: Boolean = false,
     val stepCount: Int = 0,
+    val currentSpeedMph: Float? = null,
+    val maxSpeedMph: Float = 0f,
 )
 
 data class WorkoutSnapshot(
