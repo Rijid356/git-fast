@@ -1,6 +1,7 @@
 package com.gitfast.app.util
 
 import com.gitfast.app.data.model.DistanceUnit
+import java.util.Locale
 
 fun formatElapsedTime(totalSeconds: Int): String {
     val hours = totalSeconds / 3600
@@ -8,16 +9,16 @@ fun formatElapsedTime(totalSeconds: Int): String {
     val seconds = totalSeconds % 60
 
     return if (hours > 0) {
-        String.format("%d:%02d:%02d", hours, minutes, seconds)
+        String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds)
     } else {
-        String.format("%02d:%02d", minutes, seconds)
+        String.format(Locale.US, "%02d:%02d", minutes, seconds)
     }
 }
 
 fun formatPace(secondsPerMile: Int): String {
     val minutes = secondsPerMile / 60
     val seconds = secondsPerMile % 60
-    return String.format("%d:%02d /mi", minutes, seconds)
+    return String.format(Locale.US, "%d:%02d /mi", minutes, seconds)
 }
 
 /**
@@ -35,5 +36,5 @@ fun formatPace(secondsPerMile: Int, unit: DistanceUnit): String {
         DistanceUnit.MILES -> "/mi"
         DistanceUnit.KILOMETERS -> "/km"
     }
-    return String.format("%d:%02d %s", minutes, seconds, label)
+    return String.format(Locale.US, "%d:%02d %s", minutes, seconds, label)
 }

@@ -73,6 +73,9 @@ class GoogleAuthManager @Inject constructor(
 
             Log.d(TAG, "Signed in as ${user.email}")
             Result.success(user)
+        } catch (e: androidx.credentials.exceptions.NoCredentialException) {
+            Log.d(TAG, "No credentials available", e)
+            Result.failure(e)
         } catch (e: Exception) {
             Log.e(TAG, "Sign-in failed", e)
             Result.failure(e)

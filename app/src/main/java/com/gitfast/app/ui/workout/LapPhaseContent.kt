@@ -19,11 +19,11 @@ import com.gitfast.app.ui.theme.NeonGreen
 @Composable
 fun LapPhaseContent(
     currentLapTimeFormatted: String,
+    modifier: Modifier = Modifier,
     ghostLapTimeFormatted: String? = null,
     ghostDeltaSeconds: Int? = null,
     ghostDeltaFormatted: String? = null,
     autoLapAnchorSet: Boolean = false,
-    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
