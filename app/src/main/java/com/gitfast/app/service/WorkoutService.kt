@@ -77,7 +77,6 @@ class WorkoutService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        isRunning = true
         createNotificationChannel()
     }
 
@@ -104,6 +103,7 @@ class WorkoutService : LifecycleService() {
     }
 
     private fun startWorkout(intent: Intent? = null) {
+        isRunning = true
         val activityTypeName = intent?.getStringExtra(EXTRA_ACTIVITY_TYPE)
         val activityType = activityTypeName?.let {
             try { ActivityType.valueOf(it) } catch (e: Exception) { ActivityType.RUN }

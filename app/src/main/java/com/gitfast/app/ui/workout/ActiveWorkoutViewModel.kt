@@ -21,6 +21,7 @@ import com.gitfast.app.util.XpCalculator
 import com.gitfast.app.util.formatDistance
 import com.gitfast.app.util.formatElapsedTime
 import com.gitfast.app.util.formatPace
+import com.gitfast.app.util.formatSpeed
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,6 +63,8 @@ data class WorkoutUiState(
     val ghostDeltaFormatted: String? = null,
     // Auto-lap anchor
     val autoLapAnchorSet: Boolean = false,
+    // Speed
+    val currentSpeedFormatted: String? = null,
 )
 
 data class WorkoutSummaryStats(
@@ -336,6 +339,7 @@ class ActiveWorkoutViewModel @Inject constructor(
                     distanceFormatted = formatDistance(state.distanceMeters, unit),
                     currentPaceFormatted = state.currentPaceSecondsPerMile?.let { formatPace(it, unit) },
                     averagePaceFormatted = state.averagePaceSecondsPerMile?.let { formatPace(it, unit) },
+                    currentSpeedFormatted = state.currentSpeedMph?.let { formatSpeed(it) },
                     stepCount = state.stepCount,
                     isWorkoutComplete = completed && !_didDiscard,
                     isDiscarded = completed && _didDiscard,
