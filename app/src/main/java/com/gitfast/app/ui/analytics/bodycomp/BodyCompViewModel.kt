@@ -25,6 +25,7 @@ enum class BodyCompPeriod(val days: Long, val label: String) {
 data class BodyCompUiState(
     val isLoading: Boolean = true,
     val isEmpty: Boolean = false,
+    val isSyncing: Boolean = false,
     val period: BodyCompPeriod = BodyCompPeriod.DAYS_30,
     val latestReading: BodyCompReading? = null,
     val latestDateFormatted: String? = null,
@@ -63,6 +64,18 @@ class BodyCompViewModel @Inject constructor(
 
     init {
         loadData()
+    }
+
+    fun sync() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSyncing = true) }
+            try {
+                bodyCompRepository.syncFromHealthConnect()
+            } catch (_: Exception) {
+                // Sync failure is non-fatal
+            }
+            _uiState.update { it.copy(isSyncing = false) }
+        }
     }
 
     fun setPeriod(period: BodyCompPeriod) {

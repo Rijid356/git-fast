@@ -169,7 +169,6 @@ class FirestoreSyncTest {
         every { settingsStore.distanceUnit } returns DistanceUnit.MILES
         every { settingsStore.keepScreenOn } returns true
         every { settingsStore.autoLapEnabled } returns false
-        every { settingsStore.autoLapAnchorRadiusMeters } returns 15
         every { settingsStore.homeArrivalEnabled } returns false
         every { settingsStore.homeLatitude } returns null
         every { settingsStore.homeLongitude } returns null
@@ -319,7 +318,6 @@ class FirestoreSyncTest {
         every { settingsStore.distanceUnit } returns DistanceUnit.MILES
         every { settingsStore.keepScreenOn } returns false
         every { settingsStore.autoLapEnabled } returns true
-        every { settingsStore.autoLapAnchorRadiusMeters } returns 20
         every { settingsStore.homeArrivalEnabled } returns true
         every { settingsStore.homeLatitude } returns 40.7128
         every { settingsStore.homeLongitude } returns -74.006
@@ -337,7 +335,7 @@ class FirestoreSyncTest {
                     s["distanceUnit"] == "MILES" &&
                     s["keepScreenOn"] == false &&
                     s["autoLapEnabled"] == true &&
-                    s["autoLapAnchorRadiusMeters"] == 20 &&
+                    s["autoLapAnchorRadiusMeters"] == 5 &&
                     s["homeArrivalEnabled"] == true &&
                     s["homeLatitude"] == 40.7128 &&
                     s["homeLongitude"] == -74.006 &&
@@ -582,7 +580,6 @@ class FirestoreSyncTest {
         verify { settingsStore.distanceUnit = DistanceUnit.KILOMETERS }
         verify { settingsStore.keepScreenOn = true }
         verify { settingsStore.autoLapEnabled = true }
-        verify { settingsStore.autoLapAnchorRadiusMeters = 25 }
         verify { settingsStore.homeArrivalEnabled = true }
         verify { settingsStore.homeLatitude = 40.7128 }
         verify { settingsStore.homeLongitude = -74.006 }

@@ -106,7 +106,7 @@ class FirestoreSync @Inject constructor(
                 distanceUnit = settingsStore.distanceUnit.name,
                 keepScreenOn = settingsStore.keepScreenOn,
                 autoLapEnabled = settingsStore.autoLapEnabled,
-                autoLapAnchorRadiusMeters = settingsStore.autoLapAnchorRadiusMeters,
+                autoLapAnchorRadiusMeters = SettingsStore.AUTO_LAP_ANCHOR_RADIUS_METERS,
                 homeArrivalEnabled = settingsStore.homeArrivalEnabled,
                 homeLatitude = settingsStore.homeLatitude,
                 homeLongitude = settingsStore.homeLongitude,
@@ -241,7 +241,7 @@ class FirestoreSync @Inject constructor(
             }
             (settings["keepScreenOn"] as? Boolean)?.let { settingsStore.keepScreenOn = it }
             (settings["autoLapEnabled"] as? Boolean)?.let { settingsStore.autoLapEnabled = it }
-            (settings["autoLapAnchorRadiusMeters"] as? Number)?.let { settingsStore.autoLapAnchorRadiusMeters = it.toInt() }
+            // autoLapAnchorRadiusMeters is now hardcoded — ignore synced value
             (settings["homeArrivalEnabled"] as? Boolean)?.let { settingsStore.homeArrivalEnabled = it }
             (settings["homeLatitude"] as? Number)?.let { settingsStore.homeLatitude = it.toDouble() }
             (settings["homeLongitude"] as? Number)?.let { settingsStore.homeLongitude = it.toDouble() }

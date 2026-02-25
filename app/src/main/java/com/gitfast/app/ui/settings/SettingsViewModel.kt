@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.gitfast.app.auth.GoogleAuthManager
 import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.local.SettingsStore
-import com.gitfast.app.data.model.DistanceUnit
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.data.sync.SyncStatus
@@ -27,10 +26,8 @@ import javax.inject.Inject
 
 data class SettingsUiState(
     val autoPauseEnabled: Boolean = true,
-    val distanceUnit: DistanceUnit = DistanceUnit.MILES,
     val keepScreenOn: Boolean = true,
     val autoLapEnabled: Boolean = false,
-    val autoLapAnchorRadiusMeters: Int = 15,
     val homeArrivalEnabled: Boolean = false,
     val hasHomeLocation: Boolean = false,
     val isCapturingLocation: Boolean = false,
@@ -39,6 +36,7 @@ data class SettingsUiState(
     val syncStatus: SyncStatus = SyncStatus.Idle,
     val lastSyncedAt: Long = 0L,
     val isSyncing: Boolean = false,
+    val signInError: String? = null,
     // Health Connect
     val healthConnectAvailable: Boolean = false,
     val healthConnectConnected: Boolean = false,
@@ -62,10 +60,8 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         SettingsUiState(
             autoPauseEnabled = settingsStore.autoPauseEnabled,
-            distanceUnit = settingsStore.distanceUnit,
             keepScreenOn = settingsStore.keepScreenOn,
             autoLapEnabled = settingsStore.autoLapEnabled,
-            autoLapAnchorRadiusMeters = settingsStore.autoLapAnchorRadiusMeters,
             homeArrivalEnabled = settingsStore.homeArrivalEnabled,
             hasHomeLocation = settingsStore.hasHomeLocation,
             isSignedIn = googleAuthManager.currentUser.value != null,
@@ -169,10 +165,16 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun signIn(activityContext: Context) {
+        _uiState.value = _uiState.value.copy(signInError = null)
         viewModelScope.launch {
             val result = googleAuthManager.signIn(activityContext)
-            if (result.isSuccess && !syncStatusStore.hasCompletedInitialSync) {
-                firestoreSync.initialMigration()
+            if (result.isSuccess) {
+                if (!syncStatusStore.hasCompletedInitialSync) {
+                    firestoreSync.initialMigration()
+                }
+            } else {
+                val message = result.exceptionOrNull()?.message ?: "Sign in failed"
+                _uiState.value = _uiState.value.copy(signInError = message)
             }
         }
     }
@@ -194,11 +196,6 @@ class SettingsViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(autoPauseEnabled = enabled)
     }
 
-    fun setDistanceUnit(unit: DistanceUnit) {
-        settingsStore.distanceUnit = unit
-        _uiState.value = _uiState.value.copy(distanceUnit = unit)
-    }
-
     fun setKeepScreenOn(enabled: Boolean) {
         settingsStore.keepScreenOn = enabled
         _uiState.value = _uiState.value.copy(keepScreenOn = enabled)
@@ -207,11 +204,6 @@ class SettingsViewModel @Inject constructor(
     fun setAutoLapEnabled(enabled: Boolean) {
         settingsStore.autoLapEnabled = enabled
         _uiState.value = _uiState.value.copy(autoLapEnabled = enabled)
-    }
-
-    fun setAutoLapAnchorRadius(radius: Int) {
-        settingsStore.autoLapAnchorRadiusMeters = radius
-        _uiState.value = _uiState.value.copy(autoLapAnchorRadiusMeters = radius)
     }
 
     fun setHomeArrivalEnabled(enabled: Boolean) {

@@ -41,12 +41,6 @@ class SettingsStore @Inject constructor(
             prefs.edit().putBoolean(KEY_AUTO_LAP_ENABLED, value).apply()
         }
 
-    var autoLapAnchorRadiusMeters: Int
-        get() = prefs.getInt(KEY_AUTO_LAP_ANCHOR_RADIUS, 15)
-        set(value) {
-            prefs.edit().putInt(KEY_AUTO_LAP_ANCHOR_RADIUS, value).apply()
-        }
-
     var homeArrivalEnabled: Boolean
         get() = prefs.getBoolean(KEY_HOME_ARRIVAL_ENABLED, false)
         set(value) {
@@ -123,12 +117,13 @@ class SettingsStore @Inject constructor(
     }
 
     companion object {
+        const val AUTO_LAP_ANCHOR_RADIUS_METERS = 5
+
         private const val PREFS_NAME = "gitfast_settings"
         private const val KEY_AUTO_PAUSE_ENABLED = "auto_pause_enabled"
         private const val KEY_DISTANCE_UNIT = "distance_unit"
         private const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
         private const val KEY_AUTO_LAP_ENABLED = "auto_lap_enabled"
-        private const val KEY_AUTO_LAP_ANCHOR_RADIUS = "auto_lap_anchor_radius"
         private const val KEY_HOME_ARRIVAL_ENABLED = "home_arrival_enabled"
         private const val KEY_HOME_LATITUDE = "home_latitude"
         private const val KEY_HOME_LONGITUDE = "home_longitude"
