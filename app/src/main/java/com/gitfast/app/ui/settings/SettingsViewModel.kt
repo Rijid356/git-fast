@@ -150,17 +150,13 @@ class SettingsViewModel @Inject constructor(
     fun syncHealthConnect() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(healthConnectSyncing = true)
-            try {
-                bodyCompRepository.syncFromHealthConnect()
-                val now = System.currentTimeMillis()
-                settingsStore.healthConnectLastSync = now
-                _uiState.value = _uiState.value.copy(
-                    healthConnectSyncing = false,
-                    healthConnectLastSync = now,
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(healthConnectSyncing = false)
-            }
+            bodyCompRepository.syncFromHealthConnect()
+            val now = System.currentTimeMillis()
+            settingsStore.healthConnectLastSync = now
+            _uiState.value = _uiState.value.copy(
+                healthConnectSyncing = false,
+                healthConnectLastSync = now,
+            )
         }
     }
 
