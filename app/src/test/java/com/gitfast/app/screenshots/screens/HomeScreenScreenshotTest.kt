@@ -115,6 +115,7 @@ class HomeScreenScreenshotTest : FullScreenScreenshotTestBase() {
                 ),
             )
             every { recentDogRuns } returns MutableStateFlow(emptyList())
+            every { todaySoreness } returns MutableStateFlow(null)
             every { weeklyMetrics } returns MutableStateFlow(
                 WeeklyMetrics(
                     activeMinutes = 94,

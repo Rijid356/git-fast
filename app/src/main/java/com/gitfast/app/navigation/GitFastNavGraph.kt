@@ -21,6 +21,7 @@ import com.gitfast.app.ui.dogwalk.DogWalkSummaryScreen
 import com.gitfast.app.ui.history.HistoryScreen
 import com.gitfast.app.ui.home.HomeScreen
 import com.gitfast.app.ui.settings.SettingsScreen
+import com.gitfast.app.ui.soreness.SorenessLogScreen
 import com.gitfast.app.ui.workout.ActiveWorkoutScreen
 import com.gitfast.app.ui.workout.WorkoutSummaryScreen
 import com.gitfast.app.ui.workout.WorkoutSummaryStats
@@ -44,6 +45,7 @@ sealed class Screen(val route: String) {
     data object Trends : Screen("trends")
     data object BodyComp : Screen("body_comp")
     data object Goals : Screen("goals")
+    data object SorenessLog : Screen("soreness_log")
     data object CharacterSheet : Screen("character_sheet")
     data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
         fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
@@ -114,6 +116,16 @@ fun GitFastNavGraph(navController: NavHostController, modifier: Modifier = Modif
                 },
                 onBodyCompClick = {
                     navController.navigate(Screen.BodyComp.route)
+                },
+                onSorenessClick = {
+                    navController.navigate(Screen.SorenessLog.route)
+                },
+            )
+        }
+        composable(Screen.SorenessLog.route) {
+            SorenessLogScreen(
+                onBackClick = {
+                    navController.popBackStack()
                 },
             )
         }

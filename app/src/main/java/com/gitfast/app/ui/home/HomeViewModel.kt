@@ -11,6 +11,8 @@ import com.gitfast.app.data.model.WeeklyMetrics
 import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
+import com.gitfast.app.data.model.SorenessLog
+import com.gitfast.app.data.repository.SorenessRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.service.WorkoutService
 import com.gitfast.app.ui.history.WorkoutHistoryItem
@@ -32,6 +34,7 @@ class HomeViewModel @Inject constructor(
     workoutRepository: WorkoutRepository,
     characterRepository: CharacterRepository,
     bodyCompRepository: BodyCompRepository,
+    sorenessRepository: SorenessRepository,
     settingsStore: SettingsStore,
 ) : ViewModel() {
 
@@ -98,6 +101,10 @@ class HomeViewModel @Inject constructor(
 
     val latestWeight: StateFlow<BodyCompReading?> =
         bodyCompRepository.getLatestReading()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val todaySoreness: StateFlow<SorenessLog?> =
+        sorenessRepository.observeTodayLog()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val xpByWorkout = characterRepository.getXpByWorkout()
