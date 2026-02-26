@@ -230,13 +230,31 @@ class FirestoreMappersTest {
             createdAt = 1000L,
             speedStat = 50,
             enduranceStat = 60,
-            consistencyStat = 40
+            consistencyStat = 40,
+            vitalityStat = 25
         )
 
         val map = entity.toFirestoreMap()
         val restored = map.toCharacterProfileEntity()
 
         assertEquals(entity, restored)
+    }
+
+    @Test
+    fun `CharacterProfileEntity pull defaults vitalityStat when missing`() {
+        val map = mapOf<String, Any?>(
+            "id" to 1,
+            "totalXp" to 5000,
+            "level" to 10,
+            "createdAt" to 1000L,
+            "speedStat" to 50,
+            "enduranceStat" to 60,
+            "consistencyStat" to 40,
+        )
+
+        val restored = map.toCharacterProfileEntity()
+
+        assertEquals(1, restored.vitalityStat)
     }
 
     // --- XpTransactionEntity roundtrip ---
