@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Package: `com.gitfast.app` | Min SDK 26 | Target/Compile SDK 35 | JVM 17
 
-Toolchain: AGP 8.13.2 | Kotlin 2.1.0 | KSP 2.1.0-1.0.29 | Hilt 2.53.1 | Compose BOM 2024.12.01
+Toolchain versions are in `app/build.gradle.kts` (AGP, Kotlin, KSP, Hilt, Compose BOM, etc.).
 
 ## Build & Test Commands
 
@@ -27,13 +27,13 @@ Toolchain: AGP 8.13.2 | Kotlin 2.1.0 | KSP 2.1.0-1.0.29 | Hilt 2.53.1 | Compose 
 ./gradlew generateScreenshotComposites                   # Record + capture HTML composites as PNGs (depends on recordRoborazziDebug)
 ```
 
-Testing stack: JUnit 4.13.2, MockK 1.13.13, Robolectric 4.14.1, coroutines-test 1.7.3. `unitTests.isReturnDefaultValues = true` and `isIncludeAndroidResources = true` are set in build config. Instrumented tests use Espresso 3.6.1, Compose UI testing, and Room testing 2.6.1.
+Testing stack: JUnit 4, MockK, Robolectric, coroutines-test. `unitTests.isReturnDefaultValues = true` and `isIncludeAndroidResources = true` are set in build config. Instrumented tests use Espresso, Compose UI testing, and Room testing.
 
-Screenshot testing via Roborazzi 1.59.0 — base class `FullScreenScreenshotTestBase` with 5% cross-platform font tolerance. Golden snapshots organized by category: full-screen in `app/src/test/snapshots/screens/<category>/` (home, workout, summary, detail, history, analytics, character, settings), components in `app/src/test/snapshots/components/<category>/` (workout, stats, pace, laps). Tests in `app/src/test/java/com/gitfast/app/screenshots/screens/`.
+Screenshot testing via Roborazzi — base class `FullScreenScreenshotTestBase` with 5% cross-platform font tolerance. Golden snapshots organized by category: full-screen in `app/src/test/snapshots/screens/<category>/`, components in `app/src/test/snapshots/components/<category>/`. Tests in `app/src/test/java/com/gitfast/app/screenshots/screens/`.
 
-Code coverage via Kover 0.9.7 — excludes Hilt/Room/Compose generated code, DI modules, entity/model data classes, migrations, Firebase/auth wrappers. Verification thresholds: 35% line coverage, 33% branch coverage (enforced by `koverVerifyDebug`).
+Code coverage via Kover — excludes Hilt/Room/Compose generated code, DI modules, entity/model data classes, migrations, Firebase/auth wrappers. Verification thresholds: 35% line coverage, 33% branch coverage (enforced by `koverVerifyDebug`).
 
-Android Lint is configured with `abortOnError = true`, `warningsAsErrors = false`. Suppressed checks: GradleDependency, NewerVersionAvailable, AndroidGradlePluginVersion, OldTargetApi, LockedOrientationActivity, ObsoleteSdkInt, UseKtx, InlinedApi, DiscouragedApi, TestManifestGradleConfiguration.
+Android Lint: `abortOnError = true`, `warningsAsErrors = false`. See `app/build.gradle.kts` for suppressed checks.
 
 ## CI
 
@@ -62,7 +62,7 @@ See `FILE_MANIFEST.md` for a one-liner-per-file reference of every source file i
 ```
 GpsTracker (FusedLocation) → WorkoutStateManager (in-memory StateFlow) → WorkoutService (foreground LifecycleService)
                                                                               ↓
-                                                                        WorkoutSaveManager → WorkoutDao → Room DB (v8)
+                                                                        WorkoutSaveManager → WorkoutDao → Room DB
 ```
 
 - `WorkoutService` is intent-controlled: `ACTION_START`, `ACTION_PAUSE`, `ACTION_RESUME`, `ACTION_STOP`, `ACTION_DISCARD`, `ACTION_START_LAPS`, `ACTION_MARK_LAP`, `ACTION_END_LAPS`
@@ -92,27 +92,25 @@ Enums (`WorkoutStatus`, `PhaseType`, `ActivityType`, etc.) are shared by both la
 
 ### DI Structure (Hilt)
 
-- `DatabaseModule` — Room database, WorkoutDao, WorkoutRepository, WorkoutSaveManager, WorkoutStateStore, CharacterDao, CharacterRepository (all `@Singleton`)
+- `DatabaseModule` — Room database, DAOs, repositories, WorkoutSaveManager, WorkoutStateStore (all `@Singleton`)
 - `ServiceModule` — GpsTracker, WorkoutStateManager, PermissionManager, AutoPauseDetector, SettingsStore (all `@Singleton`)
-- `AppModule` — placeholder for future app-wide bindings
+- `AppModule` — currently empty
 
-### Database Schema (Room v8)
+### Database Schema
 
-Tables: `workouts` → `workout_phases` → `laps`, `workouts` → `gps_points`, `route_tags`, `character_profiles`, `xp_transactions`, `unlocked_achievements`, `body_comp_entries`. Cascade deletes on workout relationships. `exportSchema = true` (schemas in `app/schemas/`).
+Current version and entities are in `GitFastDatabase.kt`. Tables: `workouts` → `workout_phases` → `laps`, `workouts` → `gps_points`, `route_tags`, `character_profiles`, `xp_transactions`, `unlocked_achievements`, `body_comp_entries`, `dog_walk_events`. Cascade deletes on workout relationships. `exportSchema = true` (schemas in `app/schemas/`).
 
-Migration history (`data/local/migrations/`): v1→v2 dog walk fields, v2→v3 route tags, v3→v4 character/XP tables, v4→v5 achievements table, v5→v6 profileId on XP/achievements + Juniper profile seed, v6→v7 splitLatitude/splitLongitude on laps, v7→v8 `body_comp_entries` table + `vitalityStat` column on `character_profiles`.
-
-`WorkoutDao.saveWorkoutTransaction()` is a `@Transaction` DAO method with upsert semantics (update if exists, insert if not).
+Migrations live in `data/local/migrations/`. `WorkoutDao.saveWorkoutTransaction()` is a `@Transaction` DAO method with upsert semantics (update if exists, insert if not).
 
 ### Health Connect Integration
 
-`HealthConnectManager` (`data/healthconnect/`) is a `@Singleton` that reads from Android Health Connect: WeightRecord, BodyFatRecord, LeanBodyMassRecord, BoneMassRecord, BasalMetabolicRateRecord, HeightRecord. Uses `androidx.health.connect:connect-client:1.1.0-alpha11`.
+`HealthConnectManager` (`data/healthconnect/`) is a `@Singleton` that reads from Android Health Connect: WeightRecord, BodyFatRecord, LeanBodyMassRecord, BoneMassRecord, BasalMetabolicRateRecord, HeightRecord.
 
 `BodyCompRepository` (`data/sync/`) syncs Health Connect data to the local `body_comp_entries` table. `CharacterSheetViewModel` wires the VIT stat to body composition data. Settings screen includes `HealthConnectSection` for permission management.
 
 ### Navigation
 
-Compose Navigation with sealed `Screen` class in `navigation/GitFastNavGraph.kt`. Routes: Home, Workout (activityType param), WorkoutSummary, DogWalkSummary, History, Detail/{workoutId}, Settings, Goals, Analytics, RouteOverlay, RoutePerformance, PersonalRecords, Trends, BodyComp, CharacterSheet.
+Compose Navigation with sealed `Screen` class in `navigation/GitFastNavGraph.kt`. See that file for the full list of routes.
 
 **Gotcha**: `WorkoutSummary` passes data as URL-encoded query params (not Parcelables). Achievements are pipe-delimited (`|`) in the URL. Always use `URLEncoder`/`URLDecoder` when building/parsing these routes.
 
@@ -147,7 +145,7 @@ Google Maps with dark style JSON (`res/raw/map_style_dark.json`). `MAPS_API_KEY`
 
 ### Firebase & Auth
 
-Firebase BOM 34.9.0 with firebase-auth and firebase-firestore. Google Sign-In via Credential Manager (`credentials:1.5.0-beta01`) and `googleid:1.1.1`. Auth wrappers in `com.gitfast.app.auth` package. CI requires `GOOGLE_SERVICES_JSON` secret (base64-encoded `google-services.json`).
+Firebase with firebase-auth and firebase-firestore. Google Sign-In via Credential Manager and `googleid`. Auth wrappers in `com.gitfast.app.auth` package. CI requires `GOOGLE_SERVICES_JSON` secret (base64-encoded `google-services.json`).
 
 ### Permissions & Services
 
@@ -159,11 +157,11 @@ Manifest declares: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_BAC
 
 ## watch/ — T-Watch S3 Firmware
 
-PlatformIO project (`watch/platformio.ini`): ESP32-S3 with `espressif32@6.10.0`, `esp32-s3-devkitc-1` board, Arduino framework. Dependencies: XPowersLib (AXP2101 PMU), LovyanGFX (ST7789 display). Currently a working splash-screen stub. See root-level memory notes for flash pipeline details.
+PlatformIO project (`watch/platformio.ini`): ESP32-S3, Arduino framework. Dependencies: XPowersLib (AXP2101 PMU), LovyanGFX (ST7789 display). Currently a working splash-screen stub. See root-level memory notes for flash pipeline details.
 
 ## Checkpoint Specs
 
-Detailed specs for each development phase live in `.claude/specs/` (00-14 plus architecture docs). Always read the relevant spec before implementing a checkpoint — they contain exact code, file paths, and test requirements.
+Detailed specs for each development phase live in `.claude/specs/`. Always read the relevant spec before implementing a checkpoint — they contain exact code, file paths, and test requirements.
 
 ## UI Change Workflow
 
@@ -184,5 +182,4 @@ This applies to all UI work: new screens, layout changes, adding/removing/moving
 - Unit tests: `app/src/test/`; Instrumented tests: `app/src/androidTest/`
 - Commit messages: `Checkpoint N: description`
 - Branches: `checkpoint-N-kebab-case-description`
-- Coroutines test: `kotlinx-coroutines-test:1.7.3`
 - Single-module Gradle project (`:app` only)
