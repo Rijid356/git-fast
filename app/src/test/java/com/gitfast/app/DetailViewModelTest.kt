@@ -112,6 +112,7 @@ class DetailViewModelTest {
         coEvery { workoutRepository.getWorkoutWithDetails("dw1") } returns workout
         coEvery { characterRepository.getXpTransactionForWorkout("dw1") } returns null
         coEvery { workoutRepository.getDogWalksByRouteOnce("Park Loop") } returns listOf(workout)
+        coEvery { workoutRepository.getDogWalkEventsForWorkout("dw1") } returns emptyList()
 
         val viewModel = createViewModel("dw1")
 
@@ -154,6 +155,7 @@ class DetailViewModelTest {
         val workout = createTestWorkout("dw1", activityType = ActivityType.DOG_WALK, routeTag = null)
         coEvery { workoutRepository.getWorkoutWithDetails("dw1") } returns workout
         coEvery { characterRepository.getXpTransactionForWorkout("dw1") } returns null
+        coEvery { workoutRepository.getDogWalkEventsForWorkout("dw1") } returns emptyList()
 
         val viewModel = createViewModel("dw1")
 

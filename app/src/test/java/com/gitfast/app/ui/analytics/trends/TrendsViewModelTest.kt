@@ -1,6 +1,7 @@
 package com.gitfast.app.ui.analytics.trends
 
 import com.gitfast.app.data.local.WorkoutDao
+import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
@@ -202,5 +203,11 @@ class TrendsViewModelTest {
         override fun getDistanceMetersBetween(startMillis: Long, endMillis: Long): Flow<Double> = flowOf(0.0)
         override fun getActiveDayCountBetween(startMillis: Long, endMillis: Long): Flow<Int> = flowOf(0)
         override fun getCompletedWorkoutCountBetween(startMillis: Long, endMillis: Long): Flow<Int> = flowOf(0)
+        override suspend fun insertDogWalkEvent(event: DogWalkEventEntity) {}
+        override suspend fun insertDogWalkEvents(events: List<DogWalkEventEntity>) {}
+        override suspend fun getDogWalkEventsForWorkout(workoutId: String): List<DogWalkEventEntity> = emptyList()
+        override suspend fun getTotalEventCountByType(eventType: String): Int = 0
+        override suspend fun getTotalDogWalkEventCount(): Int = 0
+        override suspend fun getDistinctEventTypeCountForWorkout(workoutId: String): Int = 0
     }
 }

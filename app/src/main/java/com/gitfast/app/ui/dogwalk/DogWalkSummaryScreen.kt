@@ -150,6 +150,57 @@ fun DogWalkSummaryScreen(
                 }
             }
 
+            // Event section (narrative + map + timeline)
+            if (uiState.events.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Narrative card
+                uiState.narrative?.let { narrative ->
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RectangleShape,
+                        color = MaterialTheme.colorScheme.surface,
+                    ) {
+                        Text(
+                            text = narrative,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
+                }
+
+                // Event route map
+                if (uiState.gpsPoints.size >= 2) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    EventRouteMap(
+                        gpsPoints = uiState.gpsPoints,
+                        events = uiState.events,
+                    )
+                }
+
+                // Event timeline
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
+                    color = MaterialTheme.colorScheme.surface,
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "EVENT LOG",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                        )
+                        EventTimeline(
+                            events = uiState.events,
+                            walkStartTimeMillis = uiState.walkStartTimeMillis,
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             // Route tag

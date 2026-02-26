@@ -31,11 +31,32 @@ object StatsCalculator {
         )
     }
 
-    fun calculateDogStats(dogWalks: List<Workout>): CharacterStats {
+    fun calculateDogStats(dogWalks: List<Workout>, totalEventCount: Int = 0): CharacterStats {
         return CharacterStats(
             speed = calculateWalkSpeed(dogWalks),
             endurance = calculateEndurance(dogWalks),
             consistency = calculateConsistency(dogWalks),
+            foraging = calculateForaging(totalEventCount),
+        )
+    }
+
+    /**
+     * Calculate Foraging stat based on total dog walk events logged.
+     * Uses bracket interpolation: more events = higher stat.
+     */
+    fun calculateForaging(totalEventCount: Int): Int {
+        if (totalEventCount <= 0) return MIN_STAT
+        // 5 events→10 | 20→25 | 50→50 | 100→75 | 200+→99
+        return interpolateBrackets(
+            value = totalEventCount.toDouble(),
+            brackets = listOf(
+                5.0 to 10,
+                20.0 to 25,
+                50.0 to 50,
+                100.0 to 75,
+                200.0 to 99,
+            ),
+            inverted = false,
         )
     }
 

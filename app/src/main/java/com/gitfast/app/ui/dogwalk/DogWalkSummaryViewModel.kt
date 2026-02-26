@@ -6,11 +6,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEvent
 import com.gitfast.app.data.model.EnergyLevel
+import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
+import com.gitfast.app.util.DogWalkNarrativeGenerator
 import com.gitfast.app.util.formatDistance
 import com.gitfast.app.util.formatElapsedTime
 import com.gitfast.app.util.formatPace
@@ -41,6 +44,11 @@ data class DogWalkSummaryUiState(
     val totalSprintTimeFormatted: String? = null,
     val longestSprintTimeFormatted: String? = null,
     val avgSprintTimeFormatted: String? = null,
+    // Dog walk events
+    val events: List<DogWalkEvent> = emptyList(),
+    val narrative: String? = null,
+    val walkStartTimeMillis: Long = 0L,
+    val gpsPoints: List<GpsPoint> = emptyList(),
 )
 
 @HiltViewModel
@@ -73,11 +81,16 @@ class DogWalkSummaryViewModel @Inject constructor(
             val workout = workoutRepository.getWorkoutWithDetails(workoutId)
             workout?.let {
                 val durationSeconds = it.durationMillis?.let { d -> (d / 1000).toInt() }
+                val durationMinutes = durationSeconds?.let { s -> s / 60 } ?: 0
 
                 // Compute sprint stats from WARMUP phase laps (sprint intervals)
                 val warmupPhase = it.phases.find { p -> p.type == com.gitfast.app.data.model.PhaseType.WARMUP }
                 val sprintLaps = warmupPhase?.laps ?: emptyList()
                 val sprintDurations = sprintLaps.mapNotNull { lap -> lap.durationMillis?.let { d -> (d / 1000).toInt() } }
+
+                // Load dog walk events
+                val events = workoutRepository.getDogWalkEventsForWorkout(workoutId)
+                val narrative = DogWalkNarrativeGenerator.generateNarrative(events, durationMinutes)
 
                 _uiState.value = _uiState.value.copy(
                     timeFormatted = durationSeconds?.let { s -> formatElapsedTime(s) } ?: "--:--",
@@ -88,6 +101,10 @@ class DogWalkSummaryViewModel @Inject constructor(
                     totalSprintTimeFormatted = if (sprintDurations.isNotEmpty()) formatElapsedTime(sprintDurations.sum()) else null,
                     longestSprintTimeFormatted = sprintDurations.maxOrNull()?.let { s -> formatElapsedTime(s) },
                     avgSprintTimeFormatted = if (sprintDurations.isNotEmpty()) formatElapsedTime(sprintDurations.average().toInt()) else null,
+                    events = events,
+                    narrative = narrative,
+                    walkStartTimeMillis = it.startTime.toEpochMilli(),
+                    gpsPoints = it.gpsPoints,
                 )
             }
         }

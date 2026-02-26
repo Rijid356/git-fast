@@ -2,6 +2,7 @@ package com.gitfast.app.data.local
 
 import androidx.room.TypeConverter
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WeatherCondition
@@ -44,4 +45,10 @@ class Converters {
 
     @TypeConverter
     fun toEnergyLevel(value: String?): EnergyLevel? = value?.let { EnergyLevel.valueOf(it) }
+
+    @TypeConverter
+    fun fromDogWalkEventType(type: DogWalkEventType): String = type.name
+
+    @TypeConverter
+    fun toDogWalkEventType(value: String): DogWalkEventType = DogWalkEventType.valueOf(value)
 }
