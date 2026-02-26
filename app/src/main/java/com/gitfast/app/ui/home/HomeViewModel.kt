@@ -7,6 +7,7 @@ import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.DailyActivityMetrics
+import com.gitfast.app.data.model.WeeklyMetrics
 import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
@@ -66,6 +67,34 @@ class HomeViewModel @Inject constructor(
                 activeDaysGoal = settingsStore.weeklyActiveDaysGoal,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DailyActivityMetrics())
+
+    val weeklyMetrics: StateFlow<WeeklyMetrics> =
+        combine(
+            workoutRepository.getWeeklyActiveMillis(),
+            workoutRepository.getWeeklyDistanceMeters(),
+            workoutRepository.getWeeklyWorkoutCount(),
+            workoutRepository.getWeeklyActiveDayCount(),
+            workoutRepository.getPreviousWeekActiveMillis(),
+        ) { activeMillis, distMeters, count, activeDays, prevMillis ->
+            WeeklyMetrics(
+                activeMinutes = (activeMillis / 60_000).toInt(),
+                distanceMiles = distMeters * 0.000621371,
+                activeDays = activeDays,
+                activeDaysGoal = settingsStore.weeklyActiveDaysGoal,
+                workoutCount = count,
+                prevWeekActiveMinutes = (prevMillis / 60_000).toInt(),
+            )
+        }.combine(
+            combine(
+                workoutRepository.getPreviousWeekDistanceMeters(),
+                workoutRepository.getPreviousWeekWorkoutCount(),
+            ) { prevDist, prevCount -> prevDist to prevCount }
+        ) { partial, (prevDist, prevCount) ->
+            partial.copy(
+                prevWeekDistanceMiles = prevDist * 0.000621371,
+                prevWeekWorkoutCount = prevCount,
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WeeklyMetrics())
 
     val latestWeight: StateFlow<BodyCompReading?> =
         bodyCompRepository.getLatestReading()

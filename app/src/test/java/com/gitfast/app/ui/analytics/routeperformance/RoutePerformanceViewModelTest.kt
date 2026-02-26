@@ -333,5 +333,6 @@ class RoutePerformanceViewModelTest {
         override fun getActiveMillisBetween(startMillis: Long, endMillis: Long): Flow<Long> = flowOf(0L)
         override fun getDistanceMetersBetween(startMillis: Long, endMillis: Long): Flow<Double> = flowOf(0.0)
         override fun getActiveDayCountBetween(startMillis: Long, endMillis: Long): Flow<Int> = flowOf(0)
+        override fun getCompletedWorkoutCountBetween(startMillis: Long, endMillis: Long): Flow<Int> = flowOf(0)
     }
 }

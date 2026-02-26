@@ -126,6 +126,9 @@ interface WorkoutDao {
     @Query("SELECT COUNT(DISTINCT date(startTime / 1000, 'unixepoch', 'localtime')) FROM workouts WHERE status = 'COMPLETED' AND startTime >= :startMillis AND startTime < :endMillis")
     fun getActiveDayCountBetween(startMillis: Long, endMillis: Long): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM workouts WHERE status = 'COMPLETED' AND startTime >= :startMillis AND startTime < :endMillis")
+    fun getCompletedWorkoutCountBetween(startMillis: Long, endMillis: Long): Flow<Int>
+
     // --- Queries: Active workout recovery ---
 
     @Query("SELECT * FROM workouts WHERE status IN ('ACTIVE', 'PAUSED') LIMIT 1")

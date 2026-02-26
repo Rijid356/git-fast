@@ -4,6 +4,7 @@ import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.DailyActivityMetrics
+import com.gitfast.app.data.model.WeeklyMetrics
 import com.gitfast.app.screenshots.FullScreenScreenshotTestBase
 import com.gitfast.app.ui.history.WorkoutHistoryItem
 import com.gitfast.app.ui.home.HomeScreen
@@ -114,6 +115,18 @@ class HomeScreenScreenshotTest : FullScreenScreenshotTestBase() {
                 ),
             )
             every { recentDogRuns } returns MutableStateFlow(emptyList())
+            every { weeklyMetrics } returns MutableStateFlow(
+                WeeklyMetrics(
+                    activeMinutes = 94,
+                    distanceMiles = 7.82,
+                    activeDays = 3,
+                    activeDaysGoal = 5,
+                    workoutCount = 4,
+                    prevWeekActiveMinutes = 68,
+                    prevWeekDistanceMiles = 5.45,
+                    prevWeekWorkoutCount = 3,
+                ),
+            )
         }
 
         captureScreenshot("Screen_Home", category = "home") {
