@@ -82,6 +82,44 @@ class SettingsStore @Inject constructor(
     val hasHomeLocation: Boolean
         get() = homeLatitude != null && homeLongitude != null
 
+    var lapStartLatitude: Double?
+        get() {
+            val raw = prefs.getString(KEY_LAP_START_LATITUDE, null)
+                ?: return DEFAULT_LAP_START_LATITUDE
+            return raw.toDoubleOrNull()
+        }
+        set(value) {
+            if (value != null) {
+                prefs.edit().putString(KEY_LAP_START_LATITUDE, value.toString()).apply()
+            } else {
+                prefs.edit().remove(KEY_LAP_START_LATITUDE).apply()
+            }
+        }
+
+    var lapStartLongitude: Double?
+        get() {
+            val raw = prefs.getString(KEY_LAP_START_LONGITUDE, null)
+                ?: return DEFAULT_LAP_START_LONGITUDE
+            return raw.toDoubleOrNull()
+        }
+        set(value) {
+            if (value != null) {
+                prefs.edit().putString(KEY_LAP_START_LONGITUDE, value.toString()).apply()
+            } else {
+                prefs.edit().remove(KEY_LAP_START_LONGITUDE).apply()
+            }
+        }
+
+    val hasLapStartPoint: Boolean
+        get() = lapStartLatitude != null && lapStartLongitude != null
+
+    fun clearLapStartPoint() {
+        prefs.edit()
+            .remove(KEY_LAP_START_LATITUDE)
+            .remove(KEY_LAP_START_LONGITUDE)
+            .apply()
+    }
+
     var dailyActiveMinutesGoal: Int
         get() = prefs.getInt(KEY_DAILY_ACTIVE_MINUTES_GOAL, 22)
         set(value) {
@@ -118,6 +156,8 @@ class SettingsStore @Inject constructor(
 
     companion object {
         const val AUTO_LAP_ANCHOR_RADIUS_METERS = 5
+        private const val DEFAULT_LAP_START_LATITUDE = 38.929031
+        private const val DEFAULT_LAP_START_LONGITUDE = -94.418978
 
         private const val PREFS_NAME = "gitfast_settings"
         private const val KEY_AUTO_PAUSE_ENABLED = "auto_pause_enabled"
@@ -132,5 +172,7 @@ class SettingsStore @Inject constructor(
         private const val KEY_DAILY_DISTANCE_GOAL_MILES = "daily_distance_goal_miles"
         private const val KEY_WEEKLY_ACTIVE_DAYS_GOAL = "weekly_active_days_goal"
         private const val KEY_HC_LAST_SYNC = "health_connect_last_sync"
+        private const val KEY_LAP_START_LATITUDE = "lap_start_latitude"
+        private const val KEY_LAP_START_LONGITUDE = "lap_start_longitude"
     }
 }

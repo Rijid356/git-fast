@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-03-01
+- **Last Active:** 2026-03-03
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 
@@ -63,10 +63,13 @@
 | 2026-02-28 | Android Lint fixes + CI integration: fix 2 UnrememberedMutableState errors, 6 DefaultLocale warnings, CredentialManagerMisuse, 6 ModifierParameter reorders; lint config in build.gradle.kts, CI lint step, quality-gates.json | 13 | 1 | +63/-22 |
 | 2026-02-28 | Wire VIT stat to Health Connect data: inject BodyCompRepository + HealthConnectManager into CharacterSheetViewModel, load real weigh-in count and body fat trend in init; merged PR #103 | 2 | 1 | +55/-9 |
 | 2026-02-28 | Full-screen screenshot composites: 15 Roborazzi test files generating 21 Pixel 9 screenshots, Canvas-based Google Maps mocks, HTML phone frame journeys with CSS Pixel 9 bezels, Playwright composite capture, Gradle integration | 57 | 1 | +2817/-0 |
+| 2026-03-02 | Checkpoint 15: Weekly summary card on home screen — "THIS WEEK" card with active min/distance/workouts deltas vs last week, active days progress bar, WeeklyMetrics model, 6 weekly repo methods, nested combine in ViewModel; merged PR #122 | 16 | 1 | +318/-0 |
+| 2026-03-02 | Fix Firestore sync: add totalDistanceMeters/activeDurationMs/averagePaceMs aggregate fields to workout push, fix missing vitalityStat in CharacterProfile mapper; merged PR #123 | 4 | 1 | +37/-2 |
+| 2026-03-03 | Fix Dog Run button color consistency (amber on workout screen to match home), add lap start point GPS auto-start feature, 4 new DOG_RUN screenshot tests, micro-lap threshold 5s→30s; merged PR #124 | 18 | 1 | +356/-20 |
 
 ## Totals
-- **Total Sessions:** 52
-- **Total Commits:** 87
-- **Total Files Changed:** 678
-- **Total Lines Added:** 35540
-- **Total Lines Removed:** 2097
+- **Total Sessions:** 55
+- **Total Commits:** 90
+- **Total Files Changed:** 716
+- **Total Lines Added:** 36251
+- **Total Lines Removed:** 2119

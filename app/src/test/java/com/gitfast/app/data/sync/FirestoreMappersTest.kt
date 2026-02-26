@@ -339,6 +339,8 @@ class FirestoreMappersTest {
             homeLatitude = 40.7128,
             homeLongitude = -74.0060,
             homeArrivalRadiusMeters = 50,
+            lapStartLatitude = 38.929031,
+            lapStartLongitude = -94.418978,
         )
 
         assertEquals(true, map["autoPauseEnabled"])
@@ -350,6 +352,8 @@ class FirestoreMappersTest {
         assertEquals(40.7128, map["homeLatitude"])
         assertEquals(-74.0060, map["homeLongitude"])
         assertEquals(50, map["homeArrivalRadiusMeters"])
+        assertEquals(38.929031, map["lapStartLatitude"])
+        assertEquals(-94.418978, map["lapStartLongitude"])
     }
 
     @Test
@@ -364,10 +368,14 @@ class FirestoreMappersTest {
             homeLatitude = null,
             homeLongitude = null,
             homeArrivalRadiusMeters = 30,
+            lapStartLatitude = null,
+            lapStartLongitude = null,
         )
 
         assertNull(map["homeLatitude"])
         assertNull(map["homeLongitude"])
+        assertNull(map["lapStartLatitude"])
+        assertNull(map["lapStartLongitude"])
         assertEquals("KILOMETERS", map["distanceUnit"])
     }
 

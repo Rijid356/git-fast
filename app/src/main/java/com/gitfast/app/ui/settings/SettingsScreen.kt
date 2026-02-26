@@ -94,6 +94,17 @@ fun SettingsScreen(
                 onCheckedChange = { viewModel.setAutoLapEnabled(it) },
             )
 
+            if (uiState.autoLapEnabled) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                SetLapStartPointItem(
+                    hasLapStartPoint = uiState.hasLapStartPoint,
+                    isCapturing = uiState.isCapturingLapStartPoint,
+                    onCapture = { viewModel.captureLapStartPoint() },
+                    onClear = { viewModel.clearLapStartPoint() },
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- Location section ---
@@ -266,6 +277,51 @@ private fun SetHomeLocationItem(
                 text = if (hasHomeLocation) "Set" else "Not set",
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (hasHomeLocation) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SetLapStartPointItem(
+    hasLapStartPoint: Boolean,
+    isCapturing: Boolean,
+    onCapture: () -> Unit,
+    onClear: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !isCapturing) {
+                if (hasLapStartPoint) onClear() else onCapture()
+            }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (hasLapStartPoint) "Lap Start Point" else "Set Lap Start Point",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = if (hasLapStartPoint) "Tap to clear"
+                else "Tap to capture GPS start/finish line",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            )
+        }
+        if (isCapturing) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+            )
+        } else {
+            Text(
+                text = if (hasLapStartPoint) "Set" else "Not set",
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (hasLapStartPoint) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
             )
         }
