@@ -87,6 +87,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `UnlockedAchievement.kt` | Domain model for achievement with unlock timestamp and XP awarded |
 | `BodyCompReading.kt` | Domain model for Health Connect body composition reading |
 | `DailyActivityMetrics.kt` | Daily totals with goals and computed progress percentages |
+| `WeeklyMetrics.kt` | Weekly summary totals with previous-week comparison data |
 | `ActivityType.kt` | Enum: RUN, DOG_WALK |
 | `PhaseType.kt` | Enum: WARMUP, LAPS, COOLDOWN |
 | `WorkoutStatus.kt` | Enum: ACTIVE, PAUSED, COMPLETED |
@@ -187,6 +188,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 |------|---------|
 | `HomeScreen.kt` | Main hub: character header, activity rings, quick-start buttons, recent workouts |
 | `HomeViewModel.kt` | Loads profile, streak, daily metrics, recent workouts; crash recovery check |
+| `WeeklySummaryCard.kt` | "THIS WEEK" card with stats, deltas vs last week, active days bar |
 | `RecentWorkoutsSection.kt` | Compact cards showing last 3 workouts with distance, duration, pace, XP |
 
 ## ui/workout/

@@ -45,6 +45,7 @@ import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.DailyActivityMetrics
+import com.gitfast.app.data.model.WeeklyMetrics
 import com.gitfast.app.ui.components.ActivityRings
 import com.gitfast.app.ui.theme.AmberAccent
 import java.time.ZoneId
@@ -68,6 +69,7 @@ fun HomeScreen(
     val recentDogRuns by viewModel.recentDogRuns.collectAsStateWithLifecycle()
     val characterProfile by viewModel.characterProfile.collectAsStateWithLifecycle()
     val dailyMetrics by viewModel.dailyMetrics.collectAsStateWithLifecycle()
+    val weeklyMetrics by viewModel.weeklyMetrics.collectAsStateWithLifecycle()
     val latestWeight by viewModel.latestWeight.collectAsStateWithLifecycle()
 
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
@@ -127,6 +129,10 @@ fun HomeScreen(
             latestWeight?.let { reading ->
                 WeightQuickStat(reading = reading, onClick = onBodyCompClick)
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            WeeklySummaryCard(metrics = weeklyMetrics)
 
             Spacer(modifier = Modifier.height(24.dp))
 
