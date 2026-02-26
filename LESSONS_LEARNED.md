@@ -20,6 +20,10 @@ Unlike software where you can always revert, hardware errors can be irreversible
 
 When using `git worktree add` for isolated feature branches, gitignored files like `google-services.json` and `local.properties` don't exist in the new worktree. The build fails immediately because Firebase and Maps API keys are missing. Fix: after creating a worktree, copy these files from the main checkout before building. This is easy to forget and happens every time — consider automating it in the `/implement` skill or adding a post-worktree setup script.
 
+## 2026-02-25: /implement Must Always Be Invoked — The Rule Exists for a Reason
+
+Two Claude Code sessions implemented the same plan on `main` simultaneously because neither invoked `/implement` first. One committed, the other's work was wasted. The CLAUDE.md rule is clear: "Every plan acceptance MUST invoke `/implement` — no exceptions." The `/implement` skill creates worktrees and branches, which is exactly what prevents this collision. The rule was skipped because the plan was pasted directly — but the rule applies regardless of how the plan arrives. **Always invoke `/implement` before writing any implementation code.**
+
 ## 2026-02-23: Android Compose Previews Don't Match Real Device Output
 
 The default Compose preview in Android Studio shows a basic wireframe-style rendering that looks very different from what actually appears on a real phone once the app is installed. This makes it hard to design and iterate on UI confidently. Need to look into better tooling or frameworks for previewing real UI changes — things like interactive Compose previews, device mirroring, or live preview tools that more accurately reflect the final on-device appearance.
