@@ -206,6 +206,8 @@ fun settingsToFirestoreMap(
     homeLatitude: Double?,
     homeLongitude: Double?,
     homeArrivalRadiusMeters: Int,
+    lapStartLatitude: Double?,
+    lapStartLongitude: Double?,
 ): Map<String, Any?> = mapOf(
     "autoPauseEnabled" to autoPauseEnabled,
     "distanceUnit" to distanceUnit,
@@ -216,4 +218,6 @@ fun settingsToFirestoreMap(
     "homeLatitude" to homeLatitude,
     "homeLongitude" to homeLongitude,
     "homeArrivalRadiusMeters" to homeArrivalRadiusMeters,
+    "lapStartLatitude" to lapStartLatitude,
+    "lapStartLongitude" to lapStartLongitude,
 )
