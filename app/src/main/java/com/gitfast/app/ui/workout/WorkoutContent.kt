@@ -122,6 +122,8 @@ fun WorkoutContent(
                         ghostDeltaSeconds = uiState.ghostDeltaSeconds,
                         ghostDeltaFormatted = uiState.ghostDeltaFormatted,
                         autoLapAnchorSet = uiState.autoLapAnchorSet,
+                        currentSpeedFormatted = uiState.currentSpeedFormatted,
+                        currentPaceFormatted = uiState.currentPaceFormatted,
                     )
                 }
                 else -> {

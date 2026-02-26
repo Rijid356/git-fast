@@ -24,6 +24,8 @@ fun LapPhaseContent(
     ghostDeltaSeconds: Int? = null,
     ghostDeltaFormatted: String? = null,
     autoLapAnchorSet: Boolean = false,
+    currentSpeedFormatted: String? = null,
+    currentPaceFormatted: String? = null,
 ) {
     Column(
         modifier = modifier,
@@ -76,6 +78,26 @@ fun LapPhaseContent(
                         color = deltaColor,
                     )
                 }
+            }
+        }
+
+        if (currentSpeedFormatted != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = currentSpeedFormatted,
+                style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp),
+                color = androidx.compose.ui.graphics.Color.White,
+                textAlign = TextAlign.Center,
+            )
+
+            if (currentPaceFormatted != null) {
+                Text(
+                    text = currentPaceFormatted,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }
