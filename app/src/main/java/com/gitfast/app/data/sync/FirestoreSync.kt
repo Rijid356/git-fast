@@ -42,6 +42,13 @@ class FirestoreSync @Inject constructor(
             workoutMap["gpsPointCount"] = gpsPoints.size
             workoutMap["syncedAt"] = System.currentTimeMillis()
 
+            // Top-level aggregate fields for querying
+            workoutMap["totalDistanceMeters"] = workout.distanceMeters
+            val durationMs = if (workout.endTime != null) workout.endTime - workout.startTime else 0L
+            workoutMap["activeDurationMs"] = durationMs
+            val distanceMiles = workout.distanceMeters / 1609.344
+            workoutMap["averagePaceMs"] = if (distanceMiles > 0) (durationMs / distanceMiles).toLong() else 0L
+
             userDoc.collection("workouts").document(workoutId).set(workoutMap).await()
 
             // GPS points in separate doc to avoid loading on list

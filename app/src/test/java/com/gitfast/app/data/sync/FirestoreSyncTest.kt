@@ -222,7 +222,15 @@ class FirestoreSyncTest {
 
         sync.pushWorkout("w-1")
 
-        verify { workoutDocRef.set(match<Map<String, Any?>> { it["id"] == "w-1" && it["gpsPointCount"] == 1 }) }
+        verify {
+            workoutDocRef.set(match<Map<String, Any?>> {
+                it["id"] == "w-1" &&
+                    it["gpsPointCount"] == 1 &&
+                    it["totalDistanceMeters"] == 1609.34 &&
+                    it["activeDurationMs"] == 4000L &&
+                    it["averagePaceMs"] != null && (it["averagePaceMs"] as Long) > 0
+            })
+        }
         verify { gpsDocRef.set(any()) }
     }
 
