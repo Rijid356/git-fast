@@ -28,6 +28,8 @@ data class SettingsUiState(
     val autoPauseEnabled: Boolean = true,
     val keepScreenOn: Boolean = true,
     val autoLapEnabled: Boolean = false,
+    val hasLapStartPoint: Boolean = false,
+    val isCapturingLapStartPoint: Boolean = false,
     val homeArrivalEnabled: Boolean = false,
     val hasHomeLocation: Boolean = false,
     val isCapturingLocation: Boolean = false,
@@ -62,6 +64,7 @@ class SettingsViewModel @Inject constructor(
             autoPauseEnabled = settingsStore.autoPauseEnabled,
             keepScreenOn = settingsStore.keepScreenOn,
             autoLapEnabled = settingsStore.autoLapEnabled,
+            hasLapStartPoint = settingsStore.hasLapStartPoint,
             homeArrivalEnabled = settingsStore.homeArrivalEnabled,
             hasHomeLocation = settingsStore.hasHomeLocation,
             isSignedIn = googleAuthManager.currentUser.value != null,
@@ -236,5 +239,32 @@ class SettingsViewModel @Inject constructor(
             hasHomeLocation = false,
             homeArrivalEnabled = false
         )
+    }
+
+    @SuppressLint("MissingPermission")
+    fun captureLapStartPoint() {
+        _uiState.value = _uiState.value.copy(isCapturingLapStartPoint = true)
+        val fusedClient = LocationServices.getFusedLocationProviderClient(getApplication<Application>())
+        fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    settingsStore.lapStartLatitude = location.latitude
+                    settingsStore.lapStartLongitude = location.longitude
+                    _uiState.value = _uiState.value.copy(
+                        hasLapStartPoint = true,
+                        isCapturingLapStartPoint = false
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(isCapturingLapStartPoint = false)
+                }
+            }
+            .addOnFailureListener {
+                _uiState.value = _uiState.value.copy(isCapturingLapStartPoint = false)
+            }
+    }
+
+    fun clearLapStartPoint() {
+        settingsStore.clearLapStartPoint()
+        _uiState.value = _uiState.value.copy(hasLapStartPoint = false)
     }
 }

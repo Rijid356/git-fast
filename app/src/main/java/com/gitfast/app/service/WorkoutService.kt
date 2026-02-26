@@ -133,6 +133,12 @@ class WorkoutService : LifecycleService() {
             anchorRadiusMeters = SettingsStore.AUTO_LAP_ANCHOR_RADIUS_METERS
         )
 
+        // Configure auto-start laps from saved GPS start point
+        workoutStateManager.setAutoStartLapsConfig(
+            lapStartLat = settingsStore.lapStartLatitude,
+            lapStartLng = settingsStore.lapStartLongitude,
+        )
+
         workoutStateStore.setActiveWorkout(workoutId, Instant.now().toEpochMilli())
 
         startForeground(NOTIFICATION_ID, buildNotification(workoutStateManager.workoutState.value))

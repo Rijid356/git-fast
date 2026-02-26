@@ -99,6 +99,71 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
     }
 
     @Test
+    fun `Screen Workout DogRun`() {
+        captureScreenshot("Screen_Workout_DogRun", category = "workout") {
+            WorkoutContent(
+                uiState = WorkoutUiState(
+                    isActive = true,
+                    isPaused = false,
+                    activityType = ActivityType.DOG_RUN,
+                    phase = PhaseType.WARMUP,
+                    phaseLabel = "RUNNING",
+                    elapsedTimeFormatted = "08:15",
+                    distanceFormatted = "0.62 mi",
+                    currentPaceFormatted = "13:18 /mi",
+                    averagePaceFormatted = "13:18 /mi",
+                    currentSpeedFormatted = "4.5 MPH",
+                    stepCount = 1240,
+                    sprintCount = 2,
+                    totalSprintTimeFormatted = "01:35",
+                ),
+                onStart = {},
+                onPause = {},
+                onResume = {},
+                onStop = {},
+                onDiscard = {},
+                onStartLaps = {},
+                onMarkLap = {},
+                onEndLaps = {},
+            )
+        }
+    }
+
+    @Test
+    fun `Screen Workout DogRun Sprinting`() {
+        captureScreenshot("Screen_Workout_DogRun_Sprinting", category = "workout") {
+            WorkoutContent(
+                uiState = WorkoutUiState(
+                    isActive = true,
+                    isPaused = false,
+                    activityType = ActivityType.DOG_RUN,
+                    phase = PhaseType.WARMUP,
+                    phaseLabel = "RUNNING",
+                    elapsedTimeFormatted = "10:42",
+                    distanceFormatted = "0.85 mi",
+                    currentPaceFormatted = "9:45 /mi",
+                    averagePaceFormatted = "12:36 /mi",
+                    currentSpeedFormatted = "6.2 MPH",
+                    stepCount = 1620,
+                    isSprintActive = true,
+                    sprintCount = 3,
+                    currentSprintTimeFormatted = "00:18",
+                    totalSprintTimeFormatted = "02:10",
+                    longestSprintTimeFormatted = "00:52",
+                ),
+                onStart = {},
+                onPause = {},
+                onResume = {},
+                onStop = {},
+                onDiscard = {},
+                onStartLaps = {},
+                onMarkLap = {},
+                onEndLaps = {},
+            )
+        }
+    }
+
+    @Test
     fun `Screen Workout Laps`() {
         captureScreenshot("Screen_Workout_Laps", category = "workout") {
             WorkoutContent(
