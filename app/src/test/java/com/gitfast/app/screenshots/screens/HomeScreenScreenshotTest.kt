@@ -116,7 +116,7 @@ class HomeScreenScreenshotTest : FullScreenScreenshotTestBase() {
             every { recentDogRuns } returns MutableStateFlow(emptyList())
         }
 
-        captureScreenshot("Screen_Home") {
+        captureScreenshot("Screen_Home", category = "home") {
             HomeScreen(
                 onStartWorkout = {},
                 onViewHistory = {},

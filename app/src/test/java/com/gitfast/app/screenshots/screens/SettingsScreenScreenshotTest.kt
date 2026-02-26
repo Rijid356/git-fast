@@ -38,7 +38,7 @@ class SettingsScreenScreenshotTest : FullScreenScreenshotTestBase() {
             every { healthConnectManager } returns mockHealthConnectManager
         }
 
-        captureScreenshot("Screen_Settings") {
+        captureScreenshot("Screen_Settings", category = "settings") {
             SettingsScreen(
                 onBackClick = {},
                 onGoalsClick = {},

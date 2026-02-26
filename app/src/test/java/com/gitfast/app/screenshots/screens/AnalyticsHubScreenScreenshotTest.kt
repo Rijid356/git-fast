@@ -26,7 +26,7 @@ class AnalyticsHubScreenScreenshotTest : FullScreenScreenshotTestBase() {
             )
         }
 
-        captureScreenshot("Screen_AnalyticsHub") {
+        captureScreenshot("Screen_AnalyticsHub", category = "analytics") {
             AnalyticsHubScreen(
                 onBackClick = {},
                 onRouteMapClick = {},

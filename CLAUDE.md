@@ -29,7 +29,7 @@ Toolchain: AGP 8.13.2 | Kotlin 2.1.0 | KSP 2.1.0-1.0.29 | Hilt 2.53.1 | Compose 
 
 Testing stack: JUnit 4.13.2, MockK 1.13.13, Robolectric 4.14.1, coroutines-test 1.7.3. `unitTests.isReturnDefaultValues = true` and `isIncludeAndroidResources = true` are set in build config. Instrumented tests use Espresso 3.6.1, Compose UI testing, and Room testing 2.6.1.
 
-Screenshot testing via Roborazzi 1.59.0 — base class `FullScreenScreenshotTestBase` with 5% cross-platform font tolerance. Golden snapshots in `app/src/test/snapshots/screens/`. Tests in `app/src/test/java/com/gitfast/app/screenshots/screens/`.
+Screenshot testing via Roborazzi 1.59.0 — base class `FullScreenScreenshotTestBase` with 5% cross-platform font tolerance. Golden snapshots organized by category: full-screen in `app/src/test/snapshots/screens/<category>/` (home, workout, summary, detail, history, analytics, character, settings), components in `app/src/test/snapshots/components/<category>/` (workout, stats, pace, laps). Tests in `app/src/test/java/com/gitfast/app/screenshots/screens/`.
 
 Code coverage via Kover 0.9.7 — excludes Hilt/Room/Compose generated code, DI modules, entity/model data classes, migrations, Firebase/auth wrappers. Verification thresholds: 35% line coverage, 33% branch coverage (enforced by `koverVerifyDebug`).
 
