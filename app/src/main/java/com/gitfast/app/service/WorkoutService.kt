@@ -51,7 +51,7 @@ class WorkoutService : LifecycleService() {
 
     companion object {
         const val NOTIFICATION_ID = 1
-        const val CHANNEL_ID = "workout_tracking"
+        const val CHANNEL_ID = "workout_tracking_v2"
         const val CHANNEL_NAME = "Workout Tracking"
 
         const val ACTION_START = "com.gitfast.app.ACTION_START"
@@ -317,14 +317,19 @@ class WorkoutService : LifecycleService() {
     }
 
     private fun createNotificationChannel() {
+        val manager = getSystemService(NotificationManager::class.java)
+        // Delete old low-importance channel (can't change importance after creation)
+        manager.deleteNotificationChannel("workout_tracking")
+
         val channel = NotificationChannel(
             CHANNEL_ID,
             CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_LOW
+            NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
             description = "Shows while git-fast is tracking a workout"
+            setSound(null, null)
+            enableVibration(false)
         }
-        val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(channel)
     }
 
@@ -361,6 +366,8 @@ class WorkoutService : LifecycleService() {
             .setOngoing(true)
             .setSilent(true)
             .setOnlyAlertOnce(true)
+            .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
 
         // Show a real-time chronometer in the notification and status bar
         builder.setShowWhen(true)
