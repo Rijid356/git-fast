@@ -149,6 +149,52 @@ class DogWalkNarrativeGeneratorTest {
     }
 
     @Test
+    fun `single WATER_BREAK generates hydration narrative`() {
+        val events = listOf(event(DogWalkEventType.WATER_BREAK))
+        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 20)
+        assertTrue(
+            "Should mention water break, got: $narrative",
+            narrative.lowercase().contains("water break")
+        )
+    }
+
+    @Test
+    fun `single BARK_REACT generates bark narrative`() {
+        val events = listOf(event(DogWalkEventType.BARK_REACT))
+        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 20)
+        assertTrue(
+            "Should mention barked, got: $narrative",
+            narrative.lowercase().contains("bark")
+        )
+    }
+
+    @Test
+    fun `mixed events with WATER_BREAK includes water break`() {
+        val events = listOf(
+            event(DogWalkEventType.SNACK_FOUND, 0),
+            event(DogWalkEventType.WATER_BREAK, 5000),
+        )
+        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 30)
+        assertTrue(
+            "Should mention water break, got: $narrative",
+            narrative.lowercase().contains("water break")
+        )
+    }
+
+    @Test
+    fun `mixed events with BARK_REACT includes barked`() {
+        val events = listOf(
+            event(DogWalkEventType.FRIENDLY_DOG, 0),
+            event(DogWalkEventType.BARK_REACT, 5000),
+        )
+        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 30)
+        assertTrue(
+            "Should mention barked, got: $narrative",
+            narrative.lowercase().contains("barked")
+        )
+    }
+
+    @Test
     fun `many events from all categories produces valid narrative`() {
         val events = listOf(
             event(DogWalkEventType.SNACK_FOUND, 0),
