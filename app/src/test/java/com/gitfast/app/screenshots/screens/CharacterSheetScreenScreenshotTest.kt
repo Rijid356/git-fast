@@ -5,6 +5,7 @@ import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.screenshots.FullScreenScreenshotTestBase
 import com.gitfast.app.ui.character.CharacterSheetScreen
 import com.gitfast.app.ui.character.CharacterSheetViewModel
+import com.gitfast.app.ui.character.ToughnessUiState
 import com.gitfast.app.ui.character.VitalityUiState
 import com.gitfast.app.util.StatBreakdown
 import io.mockk.every
@@ -143,6 +144,17 @@ class CharacterSheetScreenScreenshotTest : FullScreenScreenshotTestBase() {
                         details = listOf("Current streak" to "3 days"),
                         brackets = "3-7 day streak = 20-50",
                         decayNote = "Resets when streak breaks",
+                    ),
+                ),
+            )
+            every { toughnessState } returns MutableStateFlow(
+                ToughnessUiState(
+                    toughnessStat = 15,
+                    breakdown = StatBreakdown(
+                        description = "Based on 30-day soreness logs",
+                        details = listOf("Logs (30d)" to "4", "Mild / Mod / Sev" to "2 / 1 / 1"),
+                        brackets = "0→1 | 3→25 | 7→50 | 14→75 | 25→99",
+                        decayNote = "Actively decays — 30-day window",
                     ),
                 ),
             )

@@ -6,4 +6,5 @@ data class CharacterStats(
     val consistency: Int = 1,
     val vitality: Int = 1,
     val foraging: Int = 1,
+    val toughness: Int = 1,
 )

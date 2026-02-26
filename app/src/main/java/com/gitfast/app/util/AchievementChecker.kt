@@ -14,6 +14,8 @@ data class AchievementSnapshot(
     val totalDogWalkDistanceMiles: Double = 0.0,
     val totalDogWalkEventCount: Int = 0,
     val eventCountByType: Map<String, Int> = emptyMap(),
+    val totalSorenessLogCount: Int = 0,
+    val toughnessStat: Int = 1,
 )
 
 object AchievementChecker {
@@ -105,6 +107,12 @@ object AchievementChecker {
             AchievementDef.JUNIPER_ADVENTURE_LOG_50 -> snapshot.totalDogWalkEventCount >= 50
             AchievementDef.JUNIPER_HYDRATION_HERO -> (snapshot.eventCountByType["WATER_BREAK"] ?: 0) >= 10
             AchievementDef.JUNIPER_VOCAL_PUP -> (snapshot.eventCountByType["BARK_REACT"] ?: 0) >= 10
+
+            // Recovery (Soreness Check-In)
+            AchievementDef.FIRST_ACHE -> snapshot.totalSorenessLogCount >= 1
+            AchievementDef.IRON_BODY -> snapshot.totalSorenessLogCount >= 7
+            AchievementDef.RECOVERY_WARRIOR -> snapshot.totalSorenessLogCount >= 30
+            AchievementDef.BUILT_DIFFERENT -> snapshot.toughnessStat >= 50
 
             // Body Composition (checked externally via BodyCompRepository, not workout-based)
             AchievementDef.FIRST_WEIGH_IN -> false

@@ -8,6 +8,7 @@ import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
+import com.gitfast.app.data.repository.SorenessRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.service.WorkoutService
 import com.gitfast.app.ui.home.HomeViewModel
@@ -37,6 +38,7 @@ class HomeViewModelTest {
     private lateinit var workoutRepository: WorkoutRepository
     private lateinit var characterRepository: CharacterRepository
     private lateinit var bodyCompRepository: BodyCompRepository
+    private lateinit var sorenessRepository: SorenessRepository
     private lateinit var settingsStore: SettingsStore
 
     @Before
@@ -46,9 +48,11 @@ class HomeViewModelTest {
         workoutRepository = mockk()
         characterRepository = mockk()
         bodyCompRepository = mockk()
+        sorenessRepository = mockk()
         settingsStore = mockk()
 
         every { bodyCompRepository.getLatestReading() } returns flowOf(null)
+        every { sorenessRepository.observeTodayLog() } returns flowOf(null)
 
         every { workoutStateStore.hasActiveWorkout() } returns false
         every { workoutRepository.getCompletedWorkoutsByType(any()) } returns flowOf(emptyList())
@@ -78,7 +82,7 @@ class HomeViewModelTest {
 
     @Test
     fun `no recovery dialog when no active workout`() {
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
         assertFalse(viewModel.showRecoveryDialog.value)
     }
 
@@ -87,7 +91,7 @@ class HomeViewModelTest {
         every { workoutStateStore.hasActiveWorkout() } returns true
         WorkoutService.isRunning = false
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
         assertTrue(viewModel.showRecoveryDialog.value)
     }
 
@@ -96,7 +100,7 @@ class HomeViewModelTest {
         every { workoutStateStore.hasActiveWorkout() } returns true
         WorkoutService.isRunning = true
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
         assertFalse(viewModel.showRecoveryDialog.value)
     }
 
@@ -105,7 +109,7 @@ class HomeViewModelTest {
         every { workoutStateStore.hasActiveWorkout() } returns true
         WorkoutService.isRunning = false
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
         assertTrue(viewModel.showRecoveryDialog.value)
 
         viewModel.dismissRecoveryDialog()
@@ -116,7 +120,7 @@ class HomeViewModelTest {
 
     @Test
     fun `recentRuns emits empty list when no workouts`() = runTest {
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentRuns.collect {}
@@ -130,7 +134,7 @@ class HomeViewModelTest {
         val workouts = (1..5).map { createTestWorkout("w$it", ActivityType.RUN) }
         every { workoutRepository.getCompletedWorkoutsByType(ActivityType.RUN) } returns flowOf(workouts)
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentRuns.collect {}
@@ -145,7 +149,7 @@ class HomeViewModelTest {
         every { workoutRepository.getCompletedWorkoutsByType(ActivityType.RUN) } returns flowOf(workouts)
         every { characterRepository.getXpByWorkout() } returns flowOf(mapOf("w1" to 75))
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentRuns.collect {}
@@ -159,7 +163,7 @@ class HomeViewModelTest {
         val walks = listOf(createTestWorkout("dw1", ActivityType.DOG_WALK))
         every { workoutRepository.getCompletedWorkoutsByType(ActivityType.DOG_WALK) } returns flowOf(walks)
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentDogWalks.collect {}
@@ -174,7 +178,7 @@ class HomeViewModelTest {
         val profile = CharacterProfile(level = 3, totalXp = 250)
         every { characterRepository.getProfile() } returns flowOf(profile)
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.characterProfile.collect {}
@@ -195,7 +199,7 @@ class HomeViewModelTest {
         }
         every { workoutRepository.getCompletedWorkouts() } returns flowOf(workouts)
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.characterProfile.collect {}
@@ -212,7 +216,7 @@ class HomeViewModelTest {
         every { workoutRepository.getCompletedWorkoutsByType(ActivityType.RUN) } returns flowOf(workouts)
         every { characterRepository.getXpByWorkout() } returns flowOf(emptyMap())
 
-        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, settingsStore)
+        val viewModel = HomeViewModel(workoutStateStore, workoutRepository, characterRepository, bodyCompRepository, sorenessRepository, settingsStore)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentRuns.collect {}
