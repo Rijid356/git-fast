@@ -24,14 +24,20 @@ abstract class ScreenshotTestBase {
         ),
     )
 
-    protected fun captureScreenshot(name: String, composable: @Composable () -> Unit) {
+    protected fun captureScreenshot(
+        name: String,
+        category: String = "",
+        composable: @Composable () -> Unit,
+    ) {
         composeTestRule.setContent {
             GitFastTheme {
                 composable()
             }
         }
+        val path = if (category.isNotEmpty()) "src/test/snapshots/components/$category/$name.png"
+        else "src/test/snapshots/$name.png"
         composeTestRule.onRoot().captureRoboImage(
-            "src/test/snapshots/$name.png",
+            path,
             roborazziOptions = roborazziOptions,
         )
     }

@@ -67,7 +67,7 @@ class TrendsScreenScreenshotTest : FullScreenScreenshotTestBase() {
             )
         }
 
-        captureScreenshot("Screen_Trends") {
+        captureScreenshot("Screen_Trends", category = "analytics") {
             TrendsScreen(
                 onBackClick = {},
                 viewModel = viewModel,

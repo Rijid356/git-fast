@@ -26,7 +26,7 @@ class GoalsScreenScreenshotTest : FullScreenScreenshotTestBase() {
             )
         }
 
-        captureScreenshot("Screen_Goals") {
+        captureScreenshot("Screen_Goals", category = "settings") {
             GoalsSettingsScreen(
                 onBackClick = {},
                 viewModel = viewModel,

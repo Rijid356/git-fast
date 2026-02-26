@@ -165,7 +165,7 @@ class CharacterSheetScreenScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen CharacterSheet User`() {
-        captureScreenshot("Screen_CharacterSheet_User") {
+        captureScreenshot("Screen_CharacterSheet_User", category = "character") {
             CharacterSheetScreen(
                 onBackClick = {},
                 viewModel = createViewModel(selectedTab = 0),
@@ -175,7 +175,7 @@ class CharacterSheetScreenScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen CharacterSheet Juniper`() {
-        captureScreenshot("Screen_CharacterSheet_Juniper") {
+        captureScreenshot("Screen_CharacterSheet_Juniper", category = "character") {
             CharacterSheetScreen(
                 onBackClick = {},
                 viewModel = createViewModel(selectedTab = 1),

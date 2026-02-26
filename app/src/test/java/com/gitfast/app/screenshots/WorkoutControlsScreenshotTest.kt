@@ -14,7 +14,7 @@ class WorkoutControlsScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `WorkoutControls start run`() {
-        captureScreenshot("WorkoutControls_start_run") {
+        captureScreenshot("WorkoutControls_start_run", category = "workout") {
             WorkoutControls(
                 isActive = false,
                 isPaused = false,
@@ -34,7 +34,7 @@ class WorkoutControlsScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `WorkoutControls warmup active`() {
-        captureScreenshot("WorkoutControls_warmup_active") {
+        captureScreenshot("WorkoutControls_warmup_active", category = "workout") {
             WorkoutControls(
                 isActive = true,
                 isPaused = false,
@@ -54,7 +54,7 @@ class WorkoutControlsScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `WorkoutControls dog walk`() {
-        captureScreenshot("WorkoutControls_dog_walk") {
+        captureScreenshot("WorkoutControls_dog_walk", category = "workout") {
             WorkoutControls(
                 isActive = true,
                 isPaused = false,

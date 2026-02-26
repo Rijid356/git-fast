@@ -33,7 +33,7 @@ class DogWalkSummaryScreenScreenshotTest : FullScreenScreenshotTestBase() {
             every { workoutId } returns "walk-001"
         }
 
-        captureScreenshot("Screen_DogWalkSummary") {
+        captureScreenshot("Screen_DogWalkSummary", category = "summary") {
             DogWalkSummaryScreen(
                 onSaved = {},
                 onDiscarded = {},
