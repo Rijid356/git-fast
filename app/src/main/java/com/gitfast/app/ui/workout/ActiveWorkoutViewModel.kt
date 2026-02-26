@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.service.WorkoutService
@@ -71,6 +72,9 @@ data class WorkoutUiState(
     val currentSprintTimeFormatted: String = "00:00",
     val totalSprintTimeFormatted: String = "00:00",
     val longestSprintTimeFormatted: String = "00:00",
+    // Dog walk events
+    val dogWalkEventCount: Int = 0,
+    val dogWalkEventCounts: Map<DogWalkEventType, Int> = emptyMap(),
 )
 
 data class WorkoutSummaryStats(
@@ -262,6 +266,24 @@ class ActiveWorkoutViewModel @Inject constructor(
         context.startService(intent)
     }
 
+    fun logEvent(eventType: DogWalkEventType) {
+        val context = getApplication<Application>()
+        val intent = Intent(context, WorkoutService::class.java).apply {
+            action = WorkoutService.ACTION_LOG_EVENT
+            putExtra(WorkoutService.EXTRA_EVENT_TYPE, eventType.name)
+        }
+        context.startService(intent)
+    }
+
+    fun undoEvent(eventType: DogWalkEventType) {
+        val context = getApplication<Application>()
+        val intent = Intent(context, WorkoutService::class.java).apply {
+            action = WorkoutService.ACTION_UNDO_EVENT
+            putExtra(WorkoutService.EXTRA_EVENT_TYPE, eventType.name)
+        }
+        context.startService(intent)
+    }
+
     private fun snapshotSummaryStats() {
         val state = _uiState.value
         _lastWorkoutId = state.workoutId
@@ -382,6 +404,8 @@ class ActiveWorkoutViewModel @Inject constructor(
                     currentSprintTimeFormatted = formatElapsedTime(state.currentSprintElapsedSeconds),
                     totalSprintTimeFormatted = formatElapsedTime(state.totalSprintSeconds),
                     longestSprintTimeFormatted = formatElapsedTime(state.longestSprintSeconds),
+                    dogWalkEventCount = state.dogWalkEventCount,
+                    dogWalkEventCounts = state.dogWalkEventCounts,
                 )
             }
         }

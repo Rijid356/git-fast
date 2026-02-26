@@ -643,9 +643,9 @@ private fun categoryLabel(category: AchievementCategory): String {
         AchievementCategory.STREAK -> "STREAKS"
         AchievementCategory.LAPS -> "LAPS"
         AchievementCategory.DOG_WALK -> "DOG WALKS"
+        AchievementCategory.DOG_WALK_EVENT -> "DOG WALK EVENTS"
         AchievementCategory.BODY_COMP -> "BODY COMP"
         AchievementCategory.LEVELING -> "LEVELING"
-        AchievementCategory.BODY_COMP -> "BODY COMP"
     }
 }
 

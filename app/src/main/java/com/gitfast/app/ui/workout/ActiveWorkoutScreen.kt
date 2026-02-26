@@ -98,6 +98,9 @@ fun ActiveWorkoutScreen(
                 onMarkLap = { viewModel.markLap() },
                 onEndLaps = { viewModel.endLaps() },
                 onSelectGhost = { viewModel.selectGhost(it) },
+                dogWalkEventCounts = uiState.dogWalkEventCounts,
+                onLogEvent = { viewModel.logEvent(it) },
+                onUndoEvent = { viewModel.undoEvent(it) },
             )
         }
     }

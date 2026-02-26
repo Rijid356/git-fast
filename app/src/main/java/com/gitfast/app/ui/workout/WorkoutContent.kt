@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.util.formatElapsedTime
 import java.time.ZoneId
@@ -42,6 +43,9 @@ fun WorkoutContent(
     modifier: Modifier = Modifier,
     ghostSources: List<GhostSource> = emptyList(),
     onSelectGhost: (String?) -> Unit = {},
+    dogWalkEventCounts: Map<DogWalkEventType, Int> = emptyMap(),
+    onLogEvent: (DogWalkEventType) -> Unit = {},
+    onUndoEvent: (DogWalkEventType) -> Unit = {},
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         if (uiState.isActive) {
@@ -190,6 +194,16 @@ fun WorkoutContent(
                         bestLapTimeFormatted = uiState.bestLapTimeFormatted,
                     )
                 }
+            }
+
+            // Dog walk event strip
+            if (uiState.isActive && uiState.activityType.isDogActivity && !uiState.isPaused) {
+                Spacer(modifier = Modifier.height(12.dp))
+                DogWalkEventStrip(
+                    eventCounts = dogWalkEventCounts,
+                    onLogEvent = onLogEvent,
+                    onUndoEvent = onUndoEvent,
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -139,6 +139,7 @@ fun DetailScreen(
                     averageSpeedMph = state.averageSpeedMph,
                     maxSpeedMph = state.maxSpeedMph,
                     sprintLaps = state.sprintLaps,
+                    dogWalkEvents = state.dogWalkEvents,
                     onDeleteLap = viewModel::deleteLap,
                     modifier = Modifier.padding(innerPadding),
                 )
@@ -167,6 +168,7 @@ private fun DetailContent(
     averageSpeedMph: Float = 0f,
     maxSpeedMph: Float = 0f,
     sprintLaps: List<com.gitfast.app.data.model.Lap> = emptyList(),
+    dogWalkEvents: List<com.gitfast.app.data.model.DogWalkEvent> = emptyList(),
     modifier: Modifier = Modifier,
     onDeleteLap: (String) -> Unit = {},
 ) {
@@ -209,6 +211,12 @@ private fun DetailContent(
         // Sprint analysis (for dog activities with sprints)
         if (detail.activityType.isDogActivity && sprintLaps.isNotEmpty()) {
             SprintAnalysisSection(sprintLaps = sprintLaps)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Dog walk event log
+        if (detail.activityType.isDogActivity && dogWalkEvents.isNotEmpty()) {
+            DogWalkEventSection(events = dogWalkEvents, walkStartTimeMillis = detail.startTimeMillis)
             Spacer(modifier = Modifier.height(24.dp))
         }
 
@@ -630,6 +638,64 @@ private fun SprintAnalysisSection(
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DogWalkEventSection(
+    events: List<com.gitfast.app.data.model.DogWalkEvent>,
+    walkStartTimeMillis: Long,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RectangleShape,
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "EVENT LOG (${events.size})",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+
+            events.forEach { event ->
+                val offsetMillis = event.timestamp.toEpochMilli() - walkStartTimeMillis
+                val offsetSeconds = (offsetMillis / 1000).toInt().coerceAtLeast(0)
+                val minutes = offsetSeconds / 60
+                val seconds = offsetSeconds % 60
+                val timeLabel = "at %d:%02d".format(minutes, seconds)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = event.eventType.icon,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                        Text(
+                            text = event.eventType.displayName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                    Text(
+                        text = timeLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
