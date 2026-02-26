@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """
-Screenshot comparison tool with Pixel 9 phone frames.
+Screenshot comparison tool with device frames (phone, browser, or none).
 
 Usage:
-    # Stitch two screenshots into a side-by-side comparison with phone frames
+    # Stitch with phone frame (default for Android projects)
     python docs/screenshots/stitch.py stitch <before> <after> <output>
 
-    # Archive only the changed golden screenshots (detects via git diff)
-    python docs/screenshots/stitch.py archive --tag "2026-03-03_pr126-dog-walk-events"
+    # Stitch with browser frame (for web projects)
+    python docs/screenshots/stitch.py stitch <before> <after> <output> --frame browser
 
-    # Compare two archives (stitches all matching screenshots)
+    # Stitch with no frame
+    python docs/screenshots/stitch.py stitch <before> <after> <output> --frame none
+
+    # Archive / compare (unchanged)
+    python docs/screenshots/stitch.py archive --tag "2026-03-03_pr126-dog-walk-events"
     python docs/screenshots/stitch.py compare 2026-03-01_initial 2026-03-03_events
 """
 
@@ -46,6 +50,15 @@ BASE_INSET = 8
 BASE_SCREEN_RADIUS = 28
 BASE_PUNCH_DIAMETER = 10
 BASE_PUNCH_TOP = 14
+
+# -- Browser frame --
+BROWSER_TITLE_BAR_H = 40
+BROWSER_BORDER_RADIUS = 12
+BROWSER_CHROME_BG = (30, 33, 40)   # dark chrome
+BROWSER_URL_BG = (22, 25, 31)      # url bar background
+TRAFFIC_RED = (255, 95, 87)
+TRAFFIC_YELLOW = (255, 189, 46)
+TRAFFIC_GREEN = (39, 201, 63)
 
 
 def get_font(size: int):
@@ -191,16 +204,110 @@ def render_phone_frame(screenshot: Image.Image, frame_width: int = 420) -> Image
     return result
 
 
+def render_browser_frame(screenshot: Image.Image, target_width: int = 500) -> Image.Image:
+    """Render a screenshot inside a browser window frame."""
+    shadow_pad = 20
+    title_h = BROWSER_TITLE_BAR_H
+    border = 2
+    radius = BROWSER_BORDER_RADIUS
+
+    # Scale screenshot to target width
+    ratio = target_width / screenshot.width
+    new_w = target_width
+    new_h = int(screenshot.height * ratio)
+
+    scaled = screenshot.resize((new_w, new_h), Image.LANCZOS)
+
+    frame_w = new_w + 2 * border
+    frame_h = title_h + new_h + 2 * border
+    total_w = frame_w + 2 * shadow_pad
+    total_h = frame_h + 2 * shadow_pad
+
+    # Shadow
+    shadow = Image.new("RGBA", (total_w, total_h), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
+    draw_rounded_rect(sd,
+                      [shadow_pad, shadow_pad + 4,
+                       shadow_pad + frame_w, shadow_pad + frame_h + 4],
+                      radius, fill=(0, 0, 0, 100))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=10))
+
+    # Frame
+    frame = Image.new("RGBA", (total_w, total_h), (0, 0, 0, 0))
+    fd = ImageDraw.Draw(frame)
+
+    # Outline
+    draw_rounded_rect(fd,
+                      [shadow_pad - 1, shadow_pad - 1,
+                       shadow_pad + frame_w + 1, shadow_pad + frame_h + 1],
+                      radius + 1, fill=FRAME_OUTLINE)
+
+    # Chrome body
+    draw_rounded_rect(fd,
+                      [shadow_pad, shadow_pad,
+                       shadow_pad + frame_w, shadow_pad + frame_h],
+                      radius, fill=BROWSER_CHROME_BG)
+
+    # Title bar traffic lights
+    dot_y = shadow_pad + title_h // 2
+    dot_x_start = shadow_pad + 16
+    for i, color in enumerate([TRAFFIC_RED, TRAFFIC_YELLOW, TRAFFIC_GREEN]):
+        cx = dot_x_start + i * 20
+        fd.ellipse([cx - 5, dot_y - 5, cx + 5, dot_y + 5], fill=color)
+
+    # URL bar
+    url_x = dot_x_start + 70
+    url_y = shadow_pad + 10
+    url_w = frame_w - url_x + shadow_pad - 16
+    draw_rounded_rect(fd,
+                      [url_x, url_y, url_x + url_w, url_y + title_h - 20],
+                      8, fill=BROWSER_URL_BG)
+
+    # Content area (dark bg)
+    content_x = shadow_pad + border
+    content_y = shadow_pad + title_h
+    fd.rectangle([content_x, content_y,
+                  content_x + new_w, content_y + new_h],
+                 fill=BG_COLOR)
+
+    # Composite
+    result = Image.new("RGBA", (total_w, total_h), (0, 0, 0, 0))
+    result = Image.alpha_composite(result, shadow)
+    result = Image.alpha_composite(result, frame)
+
+    # Paste screenshot
+    result.paste(scaled, (content_x, content_y))
+
+    return result
+
+
+def render_no_frame(screenshot: Image.Image) -> Image.Image:
+    """Return screenshot as-is with a small padding."""
+    pad = 10
+    result = Image.new("RGBA",
+                       (screenshot.width + 2 * pad, screenshot.height + 2 * pad),
+                       BG_COLOR + (255,))
+    result.paste(screenshot, (pad, pad))
+    return result
+
+
 def stitch(before_path: str, after_path: str, output_path: str,
            label_before: str = "BEFORE", label_after: str = "AFTER",
-           frame_width: int = 420) -> str:
-    """Stitch two screenshots in Pixel 9 phone frames side-by-side."""
+           frame: str = "phone", frame_width: int = 420) -> str:
+    """Stitch two screenshots side-by-side with the specified frame style."""
     before = Image.open(before_path)
     after = Image.open(after_path)
 
-    # Render each in a phone frame
-    before_framed = render_phone_frame(before, frame_width)
-    after_framed = render_phone_frame(after, frame_width)
+    # Render each with the chosen frame
+    if frame == "phone":
+        before_framed = render_phone_frame(before, frame_width)
+        after_framed = render_phone_frame(after, frame_width)
+    elif frame == "browser":
+        before_framed = render_browser_frame(before, frame_width)
+        after_framed = render_browser_frame(after, frame_width)
+    else:  # "none"
+        before_framed = render_no_frame(before)
+        after_framed = render_no_frame(after)
 
     # Layout: label above each phone, gap between
     label_font = get_font(42)
@@ -343,12 +450,14 @@ def main():
     sub = parser.add_subparsers(dest="command")
 
     # Stitch two images
-    single = sub.add_parser("stitch", help="Stitch two images in phone frames")
+    single = sub.add_parser("stitch", help="Stitch two images with device frames")
     single.add_argument("before", help="Path to before image")
     single.add_argument("after", help="Path to after image")
     single.add_argument("output", help="Output path")
     single.add_argument("--label-before", default="BEFORE")
     single.add_argument("--label-after", default="AFTER")
+    single.add_argument("--frame", choices=["phone", "browser", "none"],
+                        default="phone", help="Frame style (default: phone)")
 
     # Archive screenshots
     arch = sub.add_parser("archive", help="Archive golden screenshots")
@@ -366,7 +475,7 @@ def main():
 
     if args.command == "stitch":
         out = stitch(args.before, args.after, args.output,
-                     args.label_before, args.label_after)
+                     args.label_before, args.label_after, frame=args.frame)
         print(f"Saved: {out}")
 
     elif args.command == "archive":
