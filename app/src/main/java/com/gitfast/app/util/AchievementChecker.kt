@@ -103,6 +103,8 @@ object AchievementChecker {
             AchievementDef.JUNIPER_SOCIAL_BUTTERFLY -> (snapshot.eventCountByType["FRIENDLY_DOG"] ?: 0) >= 10
             AchievementDef.JUNIPER_ZOOMIE_CHAMPION -> (snapshot.eventCountByType["ZOOMIES"] ?: 0) >= 10
             AchievementDef.JUNIPER_ADVENTURE_LOG_50 -> snapshot.totalDogWalkEventCount >= 50
+            AchievementDef.JUNIPER_HYDRATION_HERO -> (snapshot.eventCountByType["WATER_BREAK"] ?: 0) >= 10
+            AchievementDef.JUNIPER_VOCAL_PUP -> (snapshot.eventCountByType["BARK_REACT"] ?: 0) >= 10
 
             // Body Composition (checked externally via BodyCompRepository, not workout-based)
             AchievementDef.FIRST_WEIGH_IN -> false
