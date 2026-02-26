@@ -326,7 +326,7 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | `data/sync/` | 3 | FirestoreMappers, FirestoreSync, SyncStatusStore |
 | `screenshots/` | 7 | Component screenshots (StatGrid, PaceDisplay, LapTable, etc.) + base classes |
 | `screenshots/screens/` | 15 | Full-screen Roborazzi golden tests for every major screen |
-| `service/` | 4 | AutoPauseDetector, home arrival, WorkoutStateManager edge cases |
+| `service/` | 5 | AutoPauseDetector, home arrival, WorkoutStateManager edge cases, auto-start laps |
 | `ui/analytics/` | 5 | BodyComp, Records, RouteOverlay, RoutePerformance, Trends ViewModels |
 | `ui/home/` | 1 | HomeViewModel goals integration |
 | `ui/settings/` | 1 | SettingsViewModel |
