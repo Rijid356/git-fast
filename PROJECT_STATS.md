@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-03-05
+- **Last Active:** 2026-03-06
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 
@@ -69,10 +69,14 @@
 | 2026-03-03 | Auto-start laps test suite: 12 tests for GPS-based warmup→laps transition, endLaps lapCount fix, lessons learned entry; merged PR #125 | 4 | 1 | +244/-6 |
 | 2026-03-03 | Dog Walk Event Logger (Issue #95): DogWalkEventType enum, DogWalkEventStrip UI, WorkoutStateManager event tracking, DogWalkNarrativeGenerator, EventTimeline/EventRouteMap detail views, Forage stat, 7 Juniper achievements, Room v8→v9 migration, Firestore sync, settings auto-start laps, 63 new tests, updated screenshots; merged PR #126 | 64 | 5 | +2314/-32 |
 | 2026-03-04 | Clean up CLAUDE.md: remove 10+ hardcoded library versions, replace growing lists with file pointers, fix stale DB version/migration/routes/specs references; clean up project settings.local.json (105→48 entries); merged PR #127 | 1 | 1 | +16/-19 |
+| 2026-03-05 | Show workout chronometer in status bar; merged PR #128 | — | 1 | — |
+| 2026-03-05 | Archive 18 historical screenshots (Feb 17-20) with annotated README, dog walk event improvements, new achievements and narrative tests; merged PR #129 | 28 | 1 | +205/-21 |
+| 2026-03-06 | Polish stop/back-handler workout dialogs: custom pixel-art styled modals with big color-coded buttons, square corners, centered overlay; 2 new screenshot tests with before/after comparisons; global UI-change hook; merged PR #131 | 7 | 1 | +449/-60 |
+| 2026-03-06 | Checkpoint 22: Soreness check-in + TGH stat — daily soreness logging (11 muscle groups, 3 intensities), Toughness RPG stat with 30-day bracket interpolation, 4 RECOVERY achievements, soreness XP, home "Feeling sore?" card, Room v9→v10 migration, 38 new tests; merged PR #132 | 42 | 4 | +1584/-19 |
 
 ## Totals
-- **Total Sessions:** 58
-- **Total Commits:** 97
-- **Total Files Changed:** 785
-- **Total Lines Added:** 38825
-- **Total Lines Removed:** 2176
+- **Total Sessions:** 62
+- **Total Commits:** 104
+- **Total Files Changed:** 863
+- **Total Lines Added:** 41063
+- **Total Lines Removed:** 2276
