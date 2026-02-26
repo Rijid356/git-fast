@@ -16,6 +16,7 @@ import com.gitfast.app.R
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
@@ -62,6 +63,9 @@ class WorkoutService : LifecycleService() {
         const val ACTION_START_LAPS = "com.gitfast.app.ACTION_START_LAPS"
         const val ACTION_MARK_LAP = "com.gitfast.app.ACTION_MARK_LAP"
         const val ACTION_END_LAPS = "com.gitfast.app.ACTION_END_LAPS"
+        const val ACTION_LOG_EVENT = "com.gitfast.app.ACTION_LOG_EVENT"
+        const val ACTION_UNDO_EVENT = "com.gitfast.app.ACTION_UNDO_EVENT"
+        const val EXTRA_EVENT_TYPE = "extra_event_type"
 
         private const val RC_OPEN_APP = 0
         private const val RC_PAUSE = 1
@@ -98,6 +102,17 @@ class WorkoutService : LifecycleService() {
             ACTION_START_LAPS -> workoutStateManager.startLaps()
             ACTION_MARK_LAP -> workoutStateManager.markLap()
             ACTION_END_LAPS -> workoutStateManager.endLaps()
+            ACTION_LOG_EVENT -> {
+                val eventTypeName = intent?.getStringExtra(EXTRA_EVENT_TYPE) ?: return START_REDELIVER_INTENT
+                val eventType = try { DogWalkEventType.valueOf(eventTypeName) } catch (_: Exception) { return START_REDELIVER_INTENT }
+                val lastPoint = workoutStateManager.gpsPoints.value.lastOrNull()
+                workoutStateManager.logDogWalkEvent(eventType, lastPoint?.latitude, lastPoint?.longitude)
+            }
+            ACTION_UNDO_EVENT -> {
+                val eventTypeName = intent?.getStringExtra(EXTRA_EVENT_TYPE) ?: return START_REDELIVER_INTENT
+                val eventType = try { DogWalkEventType.valueOf(eventTypeName) } catch (_: Exception) { return START_REDELIVER_INTENT }
+                workoutStateManager.undoLastEvent(eventType)
+            }
         }
 
         return START_REDELIVER_INTENT

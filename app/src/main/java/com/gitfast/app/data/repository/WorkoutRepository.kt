@@ -8,6 +8,7 @@ import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.local.mappers.toDomain
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEvent
 import com.gitfast.app.data.model.Workout
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -280,5 +281,19 @@ class WorkoutRepository @Inject constructor(
             }
             entity.toDomain(phases, emptyList())
         }
+    }
+
+    // --- Dog Walk Events ---
+
+    suspend fun getDogWalkEventsForWorkout(workoutId: String): List<DogWalkEvent> {
+        return workoutDao.getDogWalkEventsForWorkout(workoutId).map { it.toDomain() }
+    }
+
+    suspend fun getTotalDogWalkEventCount(): Int {
+        return workoutDao.getTotalDogWalkEventCount()
+    }
+
+    suspend fun getTotalEventCountByType(eventType: String): Int {
+        return workoutDao.getTotalEventCountByType(eventType)
     }
 }

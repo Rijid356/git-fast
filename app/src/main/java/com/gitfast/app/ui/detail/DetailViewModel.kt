@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.analysis.RouteComparisonAnalyzer
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEvent
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.WorkoutRepository
@@ -79,6 +80,13 @@ class DetailViewModel @Inject constructor(
                     speedPoints.maxOf { it.speedMph }
                 } else 0f
 
+                // Load dog walk events
+                val dogWalkEvents = if (workout.activityType.isDogActivity) {
+                    workoutRepository.getDogWalkEventsForWorkout(workoutId)
+                } else {
+                    emptyList()
+                }
+
                 _uiState.value = DetailUiState.Loaded(
                     detail = workout.toDetailItem().copy(
                         xpEarned = xpTransaction?.xpAmount ?: 0,
@@ -91,6 +99,7 @@ class DetailViewModel @Inject constructor(
                     averageSpeedMph = avgSpeed,
                     maxSpeedMph = maxSpeed,
                     sprintLaps = sprintLaps,
+                    dogWalkEvents = dogWalkEvents,
                 )
             }
         }
@@ -124,5 +133,6 @@ sealed class DetailUiState {
         val averageSpeedMph: Float = 0f,
         val maxSpeedMph: Float = 0f,
         val sprintLaps: List<Lap> = emptyList(),
+        val dogWalkEvents: List<DogWalkEvent> = emptyList(),
     ) : DetailUiState()
 }

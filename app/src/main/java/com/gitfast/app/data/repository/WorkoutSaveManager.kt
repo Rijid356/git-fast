@@ -2,6 +2,7 @@ package com.gitfast.app.data.repository
 
 import android.util.Log
 import com.gitfast.app.data.local.WorkoutDao
+import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
@@ -80,6 +81,21 @@ class WorkoutSaveManager @Inject constructor(
                 laps = lapEntities,
                 gpsPoints = buildGpsPointEntities(snapshot)
             )
+
+            // Save dog walk events
+            if (snapshot.dogWalkEvents.isNotEmpty()) {
+                val eventEntities = snapshot.dogWalkEvents.map { event ->
+                    DogWalkEventEntity(
+                        id = UUID.randomUUID().toString(),
+                        workoutId = snapshot.workoutId,
+                        eventType = event.type,
+                        timestamp = event.timestamp.toEpochMilli(),
+                        latitude = event.latitude,
+                        longitude = event.longitude,
+                    )
+                }
+                workoutDao.insertDogWalkEvents(eventEntities)
+            }
 
             // Calculate current streak (includes the just-saved workout)
             val allWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
@@ -199,6 +215,12 @@ class WorkoutSaveManager @Inject constructor(
             val juniperLevel = characterRepository.getProfileLevel(profileId = 2)
             val dogWalkCount = workoutRepository.getCompletedDogWalkCount()
             val totalDogDistMeters = workoutRepository.getTotalDogWalkDistanceMeters()
+            val totalEventCount = workoutRepository.getTotalDogWalkEventCount()
+
+            // Build per-type event counts
+            val eventCountByType = com.gitfast.app.data.model.DogWalkEventType.entries.associate { type ->
+                type.name to workoutRepository.getTotalEventCountByType(type.name)
+            }
 
             val snapshot = AchievementSnapshot(
                 allWorkouts = allWorkouts,
@@ -207,6 +229,8 @@ class WorkoutSaveManager @Inject constructor(
                 characterLevel = juniperLevel,
                 unlockedIds = unlockedIds,
                 totalDogWalkDistanceMiles = DistanceCalculator.metersToMiles(totalDogDistMeters),
+                totalDogWalkEventCount = totalEventCount,
+                eventCountByType = eventCountByType,
             )
 
             val newAchievements = AchievementChecker.checkJuniperAchievements(snapshot)
@@ -234,7 +258,8 @@ class WorkoutSaveManager @Inject constructor(
     private suspend fun recalculateJuniperStats() {
         try {
             val dogWalks = workoutRepository.getCompletedDogWalks()
-            val stats = StatsCalculator.calculateDogStats(dogWalks)
+            val totalEventCount = workoutRepository.getTotalDogWalkEventCount()
+            val stats = StatsCalculator.calculateDogStats(dogWalks, totalEventCount)
             characterRepository.updateStats(profileId = 2, stats = stats)
         } catch (e: Exception) {
             Log.e("WorkoutSaveManager", "Failed to recalculate Juniper stats", e)

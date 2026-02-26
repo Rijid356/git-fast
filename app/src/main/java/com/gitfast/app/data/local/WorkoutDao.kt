@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
@@ -169,6 +170,26 @@ interface WorkoutDao {
             insertGpsPoints(gpsPoints)
         }
     }
+
+    // --- Dog Walk Events ---
+
+    @Insert
+    suspend fun insertDogWalkEvent(event: DogWalkEventEntity)
+
+    @Insert
+    suspend fun insertDogWalkEvents(events: List<DogWalkEventEntity>)
+
+    @Query("SELECT * FROM dog_walk_events WHERE workoutId = :workoutId ORDER BY timestamp ASC")
+    suspend fun getDogWalkEventsForWorkout(workoutId: String): List<DogWalkEventEntity>
+
+    @Query("SELECT COUNT(*) FROM dog_walk_events WHERE eventType = :eventType")
+    suspend fun getTotalEventCountByType(eventType: String): Int
+
+    @Query("SELECT COUNT(*) FROM dog_walk_events")
+    suspend fun getTotalDogWalkEventCount(): Int
+
+    @Query("SELECT COUNT(DISTINCT eventType) FROM dog_walk_events WHERE workoutId = :workoutId")
+    suspend fun getDistinctEventTypeCountForWorkout(workoutId: String): Int
 
     // --- Deletes ---
 

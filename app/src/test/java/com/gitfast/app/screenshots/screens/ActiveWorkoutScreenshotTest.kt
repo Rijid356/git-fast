@@ -1,6 +1,7 @@
 package com.gitfast.app.screenshots.screens
 
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.screenshots.FullScreenScreenshotTestBase
 import com.gitfast.app.ui.workout.WorkoutContent
@@ -94,6 +95,14 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                 onStartLaps = {},
                 onMarkLap = {},
                 onEndLaps = {},
+                dogWalkEventCounts = mapOf(
+                    DogWalkEventType.DEEP_SNIFF to 3,
+                    DogWalkEventType.PEE to 2,
+                    DogWalkEventType.POOP to 1,
+                    DogWalkEventType.SNACK_FOUND to 1,
+                ),
+                onLogEvent = {},
+                onUndoEvent = {},
             )
         }
     }
@@ -125,6 +134,12 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                 onStartLaps = {},
                 onMarkLap = {},
                 onEndLaps = {},
+                dogWalkEventCounts = mapOf(
+                    DogWalkEventType.SQUIRREL_CHASE to 1,
+                    DogWalkEventType.ZOOMIES to 2,
+                ),
+                onLogEvent = {},
+                onUndoEvent = {},
             )
         }
     }
@@ -159,6 +174,13 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                 onStartLaps = {},
                 onMarkLap = {},
                 onEndLaps = {},
+                dogWalkEventCounts = mapOf(
+                    DogWalkEventType.SQUIRREL_CHASE to 2,
+                    DogWalkEventType.ZOOMIES to 3,
+                    DogWalkEventType.SNACK_FOUND to 1,
+                ),
+                onLogEvent = {},
+                onUndoEvent = {},
             )
         }
     }
