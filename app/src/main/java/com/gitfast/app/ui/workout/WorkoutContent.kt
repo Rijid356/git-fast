@@ -199,7 +199,7 @@ fun WorkoutContent(
             // Dog walk event strip
             if (uiState.isActive && uiState.activityType.isDogActivity && !uiState.isPaused) {
                 Spacer(modifier = Modifier.height(12.dp))
-                DogWalkEventStrip(
+                DogWalkEventWheel(
                     eventCounts = dogWalkEventCounts,
                     onLogEvent = onLogEvent,
                     onUndoEvent = onUndoEvent,
