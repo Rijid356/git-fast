@@ -30,5 +30,8 @@ val OutlineGray = Color(0xFF30363D)
 // Vitality – Magenta/Purple (body comp / Health Connect accent)
 val MagentaAccent = Color(0xFFBB86FC)
 
+// Toughness – Warm Red/Crimson (recovery / soreness accent)
+val CrimsonAccent = Color(0xFFFF6B6B)
+
 // High-contrast text for outdoor/sunlight readability
 val HighContrastText = Color.White

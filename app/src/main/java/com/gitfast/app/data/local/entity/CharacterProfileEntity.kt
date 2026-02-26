@@ -14,4 +14,5 @@ data class CharacterProfileEntity(
     val consistencyStat: Int = 1,
     val vitalityStat: Int = 1,
     val foragingStat: Int = 1,
+    val toughnessStat: Int = 1,
 )

@@ -88,7 +88,18 @@ class CharacterRepository @Inject constructor(
                 consistencyStat = stats.consistency,
                 vitalityStat = stats.vitality,
                 foragingStat = stats.foraging,
+                toughnessStat = stats.toughness,
             )
+        )
+    }
+
+    suspend fun updateToughness(profileId: Int = 1, toughness: Int) {
+        val profile = characterDao.getProfileOnce(profileId)
+            ?: CharacterProfileEntity(id = profileId).also {
+                characterDao.insertProfile(it)
+            }
+        characterDao.updateProfile(
+            profile.copy(toughnessStat = toughness)
         )
     }
 
@@ -119,6 +130,7 @@ class CharacterRepository @Inject constructor(
             consistencyStat = consistencyStat,
             vitalityStat = vitalityStat,
             foragingStat = foragingStat,
+            toughnessStat = toughnessStat,
         )
     }
 

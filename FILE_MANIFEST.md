@@ -99,12 +99,16 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `DogWalkEventType.kt` | Enum: 7 event types (SNACK_FOUND, POOP, PEE, etc.) with displayName, icon, category |
 | `DogWalkEvent.kt` | Domain model: dog walk event with type, timestamp, GPS coordinates |
 | `EventCategory.kt` | Enum: FORAGING, BATHROOM, ENERGY, SOCIAL (categories for event types) |
+| `MuscleGroup.kt` | Enum: 11 muscle groups (CHEST through CALVES) with displayName |
+| `SorenessIntensity.kt` | Enum: MILD, MODERATE, SEVERE with XP bonus values |
+| `SorenessLog.kt` | Domain model: daily soreness log with muscle groups, intensity, notes |
 
 ## data/local/
 
 | File | Purpose |
 |------|---------|
-| `GitFastDatabase.kt` | Room database v8: 9 entity tables, DAOs, migration chain, schema export |
+| `GitFastDatabase.kt` | Room database v10: 10 entity tables, DAOs, migration chain, schema export |
+| `SorenessDao.kt` | DAO for soreness logs: insert, update, observe by date, count queries |
 | `WorkoutDao.kt` | DAO for workouts, phases, laps, GPS points, route tags; `@Transaction` upsert |
 | `CharacterDao.kt` | DAO for character profiles, XP transactions, unlocked achievements |
 | `BodyCompDao.kt` | DAO for body composition entries (weight, fat%, BMR, height) |
@@ -126,6 +130,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `UnlockedAchievementEntity.kt` | Room entity: achievement unlock with composite key (achievementId, profileId) |
 | `BodyCompEntry.kt` | Room entity: Health Connect body comp reading (weight, fat, BMR, height) |
 | `DogWalkEventEntity.kt` | Room entity: dog walk event with FK to workout, GPS, cascade delete |
+| `SorenessLogEntity.kt` | Room entity: soreness log with comma-separated muscle groups, intensity, date index |
 
 ## data/local/mappers/
 
@@ -134,6 +139,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `WorkoutMappers.kt` | Entity↔domain conversion for Workout, WorkoutPhase, Lap, GpsPoint |
 | `BodyCompMappers.kt` | Entity↔domain conversion for BodyCompEntry with kg↔lbs and BMI calc |
 | `DogWalkEventMappers.kt` | Entity↔domain conversion for DogWalkEvent with Instant↔Long |
+| `SorenessMappers.kt` | Entity↔domain conversion for SorenessLog with date↔millis mapping |
 
 ## data/local/migrations/
 
@@ -147,6 +153,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `Migration_6_7.kt` | v6→v7: Add splitLatitude/splitLongitude to laps |
 | `Migration_7_8.kt` | v7→v8: Create body_comp_entries table; add vitalityStat to character_profiles |
 | `Migration_8_9.kt` | v8→v9: Create dog_walk_events table; add foragingStat to character_profiles |
+| `Migration_9_10.kt` | v9→v10: Create soreness_logs table; add toughnessStat to character_profiles |
 
 ## data/repository/
 
@@ -156,6 +163,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `WorkoutSaveManager.kt` | Saves completed workouts; awards XP, checks achievements, updates streaks |
 | `CharacterRepository.kt` | Character profile queries; idempotent `awardXp()` with duplicate check |
 | `BodyCompRepository.kt` | Syncs Health Connect data to local DB; checks body comp achievements |
+| `SorenessRepository.kt` | Soreness CRUD: observe today's log, create/update, 30-day history queries |
 
 ## data/healthconnect/
 
@@ -175,7 +183,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 
 | File | Purpose |
 |------|---------|
-| `Color.kt` | Neon green (#39FF14), cyan (#58A6FF), amber (#F0883E), near-black palette |
+| `Color.kt` | Neon green (#39FF14), cyan (#58A6FF), amber (#F0883E), crimson (#FF6B6B), near-black palette |
 | `Type.kt` | PressStart2P pixel font typography for all Material3 text styles |
 | `Theme.kt` | GitFastTheme: Material3 dark color scheme, rectangle shapes |
 
@@ -256,6 +264,14 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 |------|---------|
 | `CharacterSheetScreen.kt` | Tabbed view: user + Juniper profiles, stats, XP history, achievements |
 | `CharacterSheetViewModel.kt` | Loads character data; calculates VIT stat from Health Connect body comp |
+
+## ui/soreness/
+
+| File | Purpose |
+|------|---------|
+| `SorenessLogScreen.kt` | Full screen: muscle group chips, intensity chips, notes, save with XP toast |
+| `SorenessLogViewModel.kt` | Handles save with XP calculation, TGH stat update, achievement checking |
+| `MuscleGroupSelector.kt` | Reusable FlowRow + FilterChip composable for multi-select muscle groups |
 
 ## ui/settings/
 
