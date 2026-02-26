@@ -268,6 +268,68 @@ class AchievementCheckerTest {
         assertTrue(result.any { it == AchievementDef.GETTING_STARTED })
     }
 
+    // --- Juniper event achievements ---
+
+    @Test
+    fun `hydration hero unlocked at 10 water breaks`() {
+        val snapshot = AchievementSnapshot(
+            allWorkouts = emptyList(),
+            totalLapCount = 0,
+            dogWalkCount = 1,
+            characterLevel = 1,
+            unlockedIds = emptySet(),
+            totalDogWalkEventCount = 10,
+            eventCountByType = mapOf("WATER_BREAK" to 10),
+        )
+        val result = AchievementChecker.checkJuniperAchievements(snapshot)
+        assertTrue(result.any { it == AchievementDef.JUNIPER_HYDRATION_HERO })
+    }
+
+    @Test
+    fun `hydration hero not unlocked at 9 water breaks`() {
+        val snapshot = AchievementSnapshot(
+            allWorkouts = emptyList(),
+            totalLapCount = 0,
+            dogWalkCount = 1,
+            characterLevel = 1,
+            unlockedIds = emptySet(),
+            totalDogWalkEventCount = 9,
+            eventCountByType = mapOf("WATER_BREAK" to 9),
+        )
+        val result = AchievementChecker.checkJuniperAchievements(snapshot)
+        assertFalse(result.any { it == AchievementDef.JUNIPER_HYDRATION_HERO })
+    }
+
+    @Test
+    fun `vocal pup unlocked at 10 bark react events`() {
+        val snapshot = AchievementSnapshot(
+            allWorkouts = emptyList(),
+            totalLapCount = 0,
+            dogWalkCount = 1,
+            characterLevel = 1,
+            unlockedIds = emptySet(),
+            totalDogWalkEventCount = 10,
+            eventCountByType = mapOf("BARK_REACT" to 10),
+        )
+        val result = AchievementChecker.checkJuniperAchievements(snapshot)
+        assertTrue(result.any { it == AchievementDef.JUNIPER_VOCAL_PUP })
+    }
+
+    @Test
+    fun `vocal pup not unlocked at 9 bark react events`() {
+        val snapshot = AchievementSnapshot(
+            allWorkouts = emptyList(),
+            totalLapCount = 0,
+            dogWalkCount = 1,
+            characterLevel = 1,
+            unlockedIds = emptySet(),
+            totalDogWalkEventCount = 9,
+            eventCountByType = mapOf("BARK_REACT" to 9),
+        )
+        val result = AchievementChecker.checkJuniperAchievements(snapshot)
+        assertFalse(result.any { it == AchievementDef.JUNIPER_VOCAL_PUP })
+    }
+
     // --- Streak calculation ---
 
     @Test
