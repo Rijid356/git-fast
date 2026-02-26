@@ -14,7 +14,7 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen Workout Running`() {
-        captureScreenshot("Screen_Workout_Running") {
+        captureScreenshot("Screen_Workout_Running", category = "workout") {
             WorkoutContent(
                 uiState = WorkoutUiState(
                     isActive = true,
@@ -43,7 +43,7 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen Workout Paused`() {
-        captureScreenshot("Screen_Workout_Paused") {
+        captureScreenshot("Screen_Workout_Paused", category = "workout") {
             WorkoutContent(
                 uiState = WorkoutUiState(
                     isActive = true,
@@ -71,7 +71,7 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen Workout DogWalk`() {
-        captureScreenshot("Screen_Workout_DogWalk") {
+        captureScreenshot("Screen_Workout_DogWalk", category = "workout") {
             WorkoutContent(
                 uiState = WorkoutUiState(
                     isActive = true,
@@ -100,7 +100,7 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen Workout Laps`() {
-        captureScreenshot("Screen_Workout_Laps") {
+        captureScreenshot("Screen_Workout_Laps", category = "workout") {
             WorkoutContent(
                 uiState = WorkoutUiState(
                     isActive = true,

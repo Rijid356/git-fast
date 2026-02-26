@@ -66,7 +66,7 @@ class BodyCompScreenScreenshotTest : FullScreenScreenshotTestBase() {
             )
         }
 
-        captureScreenshot("Screen_BodyComp") {
+        captureScreenshot("Screen_BodyComp", category = "analytics") {
             BodyCompScreen(
                 onBackClick = {},
                 viewModel = viewModel,

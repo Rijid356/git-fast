@@ -10,7 +10,7 @@ class StatGridScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `StatGrid with active data`() {
-        captureScreenshot("StatGrid_active") {
+        captureScreenshot("StatGrid_active", category = "stats") {
             StatGrid(
                 elapsedTimeFormatted = "12:34",
                 distanceFormatted = "1.52 mi",
@@ -22,7 +22,7 @@ class StatGridScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `StatGrid empty state`() {
-        captureScreenshot("StatGrid_empty") {
+        captureScreenshot("StatGrid_empty", category = "stats") {
             StatGrid(
                 elapsedTimeFormatted = "00:00",
                 distanceFormatted = "0.00 mi",

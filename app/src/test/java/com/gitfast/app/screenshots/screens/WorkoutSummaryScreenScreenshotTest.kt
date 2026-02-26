@@ -11,7 +11,7 @@ class WorkoutSummaryScreenScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen WorkoutSummary`() {
-        captureScreenshot("Screen_WorkoutSummary") {
+        captureScreenshot("Screen_WorkoutSummary", category = "summary") {
             WorkoutSummaryScreen(
                 time = "25:30",
                 distance = "3.12 mi",

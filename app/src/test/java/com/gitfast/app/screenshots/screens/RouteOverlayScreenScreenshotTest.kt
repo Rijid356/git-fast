@@ -50,7 +50,7 @@ class RouteOverlayScreenScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen RouteOverlay`() {
-        captureScreenshot("Screen_RouteOverlay") {
+        captureScreenshot("Screen_RouteOverlay", category = "analytics") {
             RouteOverlayMock()
         }
     }

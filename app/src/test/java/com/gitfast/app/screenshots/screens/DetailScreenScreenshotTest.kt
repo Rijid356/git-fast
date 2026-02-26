@@ -48,7 +48,7 @@ class DetailScreenScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen Detail Run`() {
-        captureScreenshot("Screen_Detail_Run") {
+        captureScreenshot("Screen_Detail_Run", category = "detail") {
             DetailScreenMock(
                 title = "Run Details",
                 detail = sampleRunDetail,
@@ -60,7 +60,7 @@ class DetailScreenScreenshotTest : FullScreenScreenshotTestBase() {
 
     @Test
     fun `Screen Detail DogWalk`() {
-        captureScreenshot("Screen_Detail_DogWalk") {
+        captureScreenshot("Screen_Detail_DogWalk", category = "detail") {
             DetailScreenMock(
                 title = "Dog Walk",
                 detail = sampleDogWalkDetail,

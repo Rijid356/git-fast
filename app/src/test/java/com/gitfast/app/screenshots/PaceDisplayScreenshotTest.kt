@@ -10,14 +10,14 @@ class PaceDisplayScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `PaceDisplay with pace`() {
-        captureScreenshot("PaceDisplay_with_pace") {
+        captureScreenshot("PaceDisplay_with_pace", category = "pace") {
             PaceDisplay(currentPaceFormatted = "7:45 /mi")
         }
     }
 
     @Test
     fun `PaceDisplay no pace`() {
-        captureScreenshot("PaceDisplay_no_pace") {
+        captureScreenshot("PaceDisplay_no_pace", category = "pace") {
             PaceDisplay(currentPaceFormatted = null)
         }
     }

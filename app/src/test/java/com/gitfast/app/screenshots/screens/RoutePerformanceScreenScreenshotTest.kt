@@ -76,7 +76,7 @@ class RoutePerformanceScreenScreenshotTest : FullScreenScreenshotTestBase() {
             )
         }
 
-        captureScreenshot("Screen_RoutePerformance") {
+        captureScreenshot("Screen_RoutePerformance", category = "analytics") {
             RoutePerformanceScreen(
                 onBackClick = {},
                 onWorkoutClick = {},

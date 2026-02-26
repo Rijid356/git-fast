@@ -74,7 +74,7 @@ class PersonalRecordsScreenScreenshotTest : FullScreenScreenshotTestBase() {
             )
         }
 
-        captureScreenshot("Screen_PersonalRecords") {
+        captureScreenshot("Screen_PersonalRecords", category = "analytics") {
             PersonalRecordsScreen(
                 onBackClick = {},
                 onWorkoutClick = {},

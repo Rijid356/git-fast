@@ -10,7 +10,7 @@ class WorkoutSummaryScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `WorkoutSummary full stats`() {
-        captureScreenshot("WorkoutSummary_full") {
+        captureScreenshot("WorkoutSummary_full", category = "workout") {
             WorkoutSummaryScreen(
                 time = "25:30",
                 distance = "3.12 mi",
@@ -31,7 +31,7 @@ class WorkoutSummaryScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `WorkoutSummary minimal`() {
-        captureScreenshot("WorkoutSummary_minimal") {
+        captureScreenshot("WorkoutSummary_minimal", category = "workout") {
             WorkoutSummaryScreen(
                 time = "5:00",
                 distance = "0.45 mi",

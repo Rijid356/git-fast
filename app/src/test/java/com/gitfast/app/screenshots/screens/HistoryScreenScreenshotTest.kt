@@ -112,7 +112,7 @@ class HistoryScreenScreenshotTest : FullScreenScreenshotTestBase() {
             every { filter } returns MutableStateFlow(ActivityFilter.ALL)
         }
 
-        captureScreenshot("Screen_History") {
+        captureScreenshot("Screen_History", category = "history") {
             HistoryScreen(
                 onWorkoutClick = {},
                 onBackClick = {},
