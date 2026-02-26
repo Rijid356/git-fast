@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.PhaseType
+import com.gitfast.app.ui.theme.AmberAccent
 
 @Composable
 fun WorkoutControls(
@@ -49,14 +50,16 @@ fun WorkoutControls(
                 onClick = onStart,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (activityType.isDogActivity)
-                        MaterialTheme.colorScheme.secondary
-                    else
-                        MaterialTheme.colorScheme.primary,
-                    contentColor = if (activityType.isDogActivity)
-                        MaterialTheme.colorScheme.onSecondary
-                    else
-                        MaterialTheme.colorScheme.onPrimary,
+                    containerColor = when (activityType) {
+                        ActivityType.DOG_RUN -> AmberAccent
+                        ActivityType.DOG_WALK -> MaterialTheme.colorScheme.secondary
+                        else -> MaterialTheme.colorScheme.primary
+                    },
+                    contentColor = when (activityType) {
+                        ActivityType.DOG_RUN -> MaterialTheme.colorScheme.onTertiary
+                        ActivityType.DOG_WALK -> MaterialTheme.colorScheme.onSecondary
+                        else -> MaterialTheme.colorScheme.onPrimary
+                    },
                 ),
             ) {
                 Text(

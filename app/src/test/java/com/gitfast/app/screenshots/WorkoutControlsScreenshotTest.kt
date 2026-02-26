@@ -53,6 +53,46 @@ class WorkoutControlsScreenshotTest : ScreenshotTestBase() {
     }
 
     @Test
+    fun `WorkoutControls dog run start`() {
+        captureScreenshot("WorkoutControls_dog_run_start", category = "workout") {
+            WorkoutControls(
+                isActive = false,
+                isPaused = false,
+                phase = PhaseType.WARMUP,
+                activityType = ActivityType.DOG_RUN,
+                onStart = noOp,
+                onPause = noOp,
+                onResume = noOp,
+                onStop = noOp,
+                onDiscard = noOp,
+                onStartLaps = noOp,
+                onMarkLap = noOp,
+                onEndLaps = noOp,
+            )
+        }
+    }
+
+    @Test
+    fun `WorkoutControls dog run active`() {
+        captureScreenshot("WorkoutControls_dog_run_active", category = "workout") {
+            WorkoutControls(
+                isActive = true,
+                isPaused = false,
+                phase = PhaseType.WARMUP,
+                activityType = ActivityType.DOG_RUN,
+                onStart = noOp,
+                onPause = noOp,
+                onResume = noOp,
+                onStop = noOp,
+                onDiscard = noOp,
+                onStartLaps = noOp,
+                onMarkLap = noOp,
+                onEndLaps = noOp,
+            )
+        }
+    }
+
+    @Test
     fun `WorkoutControls dog walk`() {
         captureScreenshot("WorkoutControls_dog_walk", category = "workout") {
             WorkoutControls(
