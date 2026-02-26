@@ -35,8 +35,8 @@ class DogWalkEventTypeTest {
     }
 
     @Test
-    fun `there are exactly 9 event types`() {
-        assertTrue(DogWalkEventType.entries.size == 9)
+    fun `there are exactly 10 event types`() {
+        assertTrue(DogWalkEventType.entries.size == 10)
     }
 
     @Test
@@ -73,10 +73,11 @@ class DogWalkEventTypeTest {
     }
 
     @Test
-    fun `ENERGY category has SQUIRREL_CHASE and ZOOMIES`() {
+    fun `ENERGY category has SQUIRREL_CHASE, ZOOMIES, and LEASH_PULL`() {
         val energy = DogWalkEventType.entries.filter { it.category == EventCategory.ENERGY }
         assertTrue(energy.contains(DogWalkEventType.SQUIRREL_CHASE))
         assertTrue(energy.contains(DogWalkEventType.ZOOMIES))
+        assertTrue(energy.contains(DogWalkEventType.LEASH_PULL))
     }
 
     @Test
