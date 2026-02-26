@@ -66,10 +66,12 @@
 | 2026-03-02 | Checkpoint 15: Weekly summary card on home screen — "THIS WEEK" card with active min/distance/workouts deltas vs last week, active days progress bar, WeeklyMetrics model, 6 weekly repo methods, nested combine in ViewModel; merged PR #122 | 16 | 1 | +318/-0 |
 | 2026-03-02 | Fix Firestore sync: add totalDistanceMeters/activeDurationMs/averagePaceMs aggregate fields to workout push, fix missing vitalityStat in CharacterProfile mapper; merged PR #123 | 4 | 1 | +37/-2 |
 | 2026-03-03 | Fix Dog Run button color consistency (amber on workout screen to match home), add lap start point GPS auto-start feature, 4 new DOG_RUN screenshot tests, micro-lap threshold 5s→30s; merged PR #124 | 18 | 1 | +356/-20 |
+| 2026-03-03 | Auto-start laps test suite: 12 tests for GPS-based warmup→laps transition, endLaps lapCount fix, lessons learned entry; merged PR #125 | 4 | 1 | +244/-6 |
+| 2026-03-03 | Dog Walk Event Logger (Issue #95): DogWalkEventType enum, DogWalkEventStrip UI, WorkoutStateManager event tracking, DogWalkNarrativeGenerator, EventTimeline/EventRouteMap detail views, Forage stat, 7 Juniper achievements, Room v8→v9 migration, Firestore sync, settings auto-start laps, 63 new tests, updated screenshots; merged PR #126 | 64 | 5 | +2314/-32 |
 
 ## Totals
-- **Total Sessions:** 55
-- **Total Commits:** 90
-- **Total Files Changed:** 716
-- **Total Lines Added:** 36251
-- **Total Lines Removed:** 2119
+- **Total Sessions:** 57
+- **Total Commits:** 96
+- **Total Files Changed:** 784
+- **Total Lines Added:** 38809
+- **Total Lines Removed:** 2157
