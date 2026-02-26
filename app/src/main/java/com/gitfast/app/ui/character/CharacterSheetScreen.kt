@@ -55,6 +55,7 @@ import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.ui.theme.AmberAccent
 import com.gitfast.app.ui.theme.CyanAccent
+import com.gitfast.app.ui.theme.CrimsonAccent
 import com.gitfast.app.ui.theme.MagentaAccent
 import com.gitfast.app.ui.theme.NeonGreen
 import com.gitfast.app.util.StatBreakdown
@@ -88,6 +89,9 @@ fun CharacterSheetScreen(
     // Stat breakdowns
     val userBreakdowns by viewModel.statBreakdowns.collectAsStateWithLifecycle()
     val juniperBreakdowns by viewModel.juniperStatBreakdowns.collectAsStateWithLifecycle()
+
+    // TGH stat (user only)
+    val toughnessState by viewModel.toughnessState.collectAsStateWithLifecycle()
 
     // VIT stat (user only)
     val vitalityState by viewModel.vitalityState.collectAsStateWithLifecycle()
@@ -174,6 +178,7 @@ fun CharacterSheetScreen(
                 StatsSection(
                     profile = activeProfile,
                     breakdowns = activeBreakdowns,
+                    toughnessState = if (selectedTab == 0) toughnessState else null,
                     vitalityState = if (selectedTab == 0) vitalityState else null,
                 )
             }
@@ -298,6 +303,7 @@ private fun XpProgressSection(profile: CharacterProfile) {
 private fun StatsSection(
     profile: CharacterProfile,
     breakdowns: Map<String, StatBreakdown>,
+    toughnessState: ToughnessUiState?,
     vitalityState: VitalityUiState?,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -313,6 +319,17 @@ private fun StatsSection(
         StatBar(label = "END", value = profile.enduranceStat, color = AmberAccent, breakdown = breakdowns["END"])
         Spacer(modifier = Modifier.height(8.dp))
         StatBar(label = "CON", value = profile.consistencyStat, color = NeonGreen, breakdown = breakdowns["CON"])
+
+        // TGH stat — only shown on ME tab
+        if (toughnessState != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            StatBar(
+                label = "TGH",
+                value = toughnessState.toughnessStat,
+                color = CrimsonAccent,
+                breakdown = toughnessState.breakdown,
+            )
+        }
 
         // VIT stat — only shown on ME tab (vitalityState is null for Juniper)
         if (vitalityState != null) {
@@ -645,6 +662,7 @@ private fun categoryLabel(category: AchievementCategory): String {
         AchievementCategory.DOG_WALK -> "DOG WALKS"
         AchievementCategory.DOG_WALK_EVENT -> "DOG WALK EVENTS"
         AchievementCategory.BODY_COMP -> "BODY COMP"
+        AchievementCategory.RECOVERY -> "RECOVERY"
         AchievementCategory.LEVELING -> "LEVELING"
     }
 }

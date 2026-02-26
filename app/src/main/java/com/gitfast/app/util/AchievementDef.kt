@@ -8,6 +8,7 @@ enum class AchievementCategory {
     DOG_WALK,
     DOG_WALK_EVENT,
     BODY_COMP,
+    RECOVERY,
     LEVELING,
 }
 
@@ -363,6 +364,40 @@ enum class AchievementDef(
         xpReward = 150,
         icon = "[B100]",
         category = AchievementCategory.BODY_COMP,
+    ),
+
+    // Recovery (Soreness Check-In)
+    FIRST_ACHE(
+        id = "recovery_first_ache",
+        title = "First Ache",
+        description = "Log your first soreness entry",
+        xpReward = 25,
+        icon = "[!]",
+        category = AchievementCategory.RECOVERY,
+    ),
+    IRON_BODY(
+        id = "recovery_iron_body",
+        title = "Iron Body",
+        description = "Log 7 soreness entries",
+        xpReward = 50,
+        icon = "[Fe]",
+        category = AchievementCategory.RECOVERY,
+    ),
+    RECOVERY_WARRIOR(
+        id = "recovery_warrior",
+        title = "Recovery Warrior",
+        description = "Log 30 soreness entries",
+        xpReward = 100,
+        icon = "[RW]",
+        category = AchievementCategory.RECOVERY,
+    ),
+    BUILT_DIFFERENT(
+        id = "recovery_built_different",
+        title = "Built Different",
+        description = "Reach TGH stat 50 or higher",
+        xpReward = 75,
+        icon = "[BD]",
+        category = AchievementCategory.RECOVERY,
     ),
 
     // Leveling

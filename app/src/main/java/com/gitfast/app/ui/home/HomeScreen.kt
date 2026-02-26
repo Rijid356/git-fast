@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.model.CharacterProfile
+import com.gitfast.app.data.model.SorenessLog
 import com.gitfast.app.data.model.DailyActivityMetrics
 import com.gitfast.app.data.model.WeeklyMetrics
 import com.gitfast.app.ui.components.ActivityRings
@@ -61,6 +62,7 @@ fun HomeScreen(
     onAnalyticsClick: () -> Unit,
     onGoalsClick: () -> Unit,
     onBodyCompClick: () -> Unit = {},
+    onSorenessClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val showRecoveryDialog by viewModel.showRecoveryDialog.collectAsStateWithLifecycle()
@@ -71,6 +73,7 @@ fun HomeScreen(
     val dailyMetrics by viewModel.dailyMetrics.collectAsStateWithLifecycle()
     val weeklyMetrics by viewModel.weeklyMetrics.collectAsStateWithLifecycle()
     val latestWeight by viewModel.latestWeight.collectAsStateWithLifecycle()
+    val todaySoreness by viewModel.todaySoreness.collectAsStateWithLifecycle()
 
     val infiniteTransition = rememberInfiniteTransition(label = "cursor")
     val cursorAlpha by infiniteTransition.animateFloat(
@@ -129,6 +132,10 @@ fun HomeScreen(
             latestWeight?.let { reading ->
                 WeightQuickStat(reading = reading, onClick = onBodyCompClick)
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            SorenessCard(todayLog = todaySoreness, onClick = onSorenessClick)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -301,6 +308,61 @@ private fun WeightQuickStat(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.clickable(onClick = onClick),
     )
+}
+
+@Composable
+private fun SorenessCard(
+    todayLog: SorenessLog?,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                shape = RectangleShape,
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        if (todayLog != null) {
+            Column {
+                Text(
+                    text = "Soreness logged",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${todayLog.intensity.displayName} - ${todayLog.muscleGroups.joinToString { it.displayName }}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+        } else {
+            Column {
+                Text(
+                    text = "Feeling sore?",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AmberAccent,
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Log your soreness for XP",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Text(
+            text = ">",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Composable

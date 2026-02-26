@@ -1,6 +1,7 @@
 package com.gitfast.app.util
 
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.SorenessIntensity
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
@@ -149,6 +150,40 @@ object XpCalculator {
             multiplier = maxOf(multiplier, 1.1)
         }
         return multiplier
+    }
+
+    private const val XP_PER_SORENESS_LOG = 5
+
+    /**
+     * Calculate XP earned from a daily soreness check-in.
+     * Base: +5 XP + intensity bonus (MILD:0, MODERATE:3, SEVERE:5).
+     * Streak multiplier applied same as workouts.
+     */
+    fun calculateSorenessXp(intensity: SorenessIntensity, streakDays: Int = 0): XpResult {
+        val breakdown = mutableListOf<String>()
+        var rawXp = XP_PER_SORENESS_LOG
+        breakdown.add("+$XP_PER_SORENESS_LOG XP: soreness check-in")
+
+        if (intensity.xpBonus > 0) {
+            breakdown.add("+${intensity.xpBonus} XP: ${intensity.displayName.lowercase()} intensity bonus")
+            rawXp += intensity.xpBonus
+        }
+
+        val streakMultiplier = StreakCalculator.getMultiplier(streakDays)
+        if (streakMultiplier > 1.0) {
+            val bonusXp = ((rawXp * streakMultiplier) - rawXp).toInt()
+            if (bonusXp > 0) {
+                breakdown.add("+$bonusXp XP: $streakDays-day streak (${StreakCalculator.getMultiplierLabel(streakDays)})")
+            }
+            rawXp = (rawXp * streakMultiplier).toInt()
+        }
+
+        return XpResult(
+            totalXp = max(rawXp, MINIMUM_XP),
+            breakdown = breakdown,
+            streakDays = streakDays,
+            streakMultiplier = streakMultiplier,
+        )
     }
 
     private const val XP_PER_WEIGH_IN = 5

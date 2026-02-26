@@ -6,6 +6,7 @@ import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
+import com.gitfast.app.data.repository.SorenessRepository
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.repository.WorkoutRepository
@@ -30,6 +31,11 @@ import javax.inject.Inject
  * Data class for VIT stat UI state.
  * Encapsulates Health Connect connection status and vitality data.
  */
+data class ToughnessUiState(
+    val toughnessStat: Int = 1,
+    val breakdown: StatBreakdown? = null,
+)
+
 data class VitalityUiState(
     val healthConnectConnected: Boolean = false,
     val weighInCount30d: Int = 0,
@@ -43,6 +49,7 @@ class CharacterSheetViewModel @Inject constructor(
     private val characterRepository: CharacterRepository,
     workoutRepository: WorkoutRepository,
     private val bodyCompRepository: BodyCompRepository,
+    private val sorenessRepository: SorenessRepository,
     private val healthConnectManager: HealthConnectManager,
 ) : ViewModel() {
 
@@ -112,12 +119,28 @@ class CharacterSheetViewModel @Inject constructor(
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
+    // TGH stat state — only for user profile (ME tab)
+    private val _toughnessState = MutableStateFlow(ToughnessUiState())
+    val toughnessState: StateFlow<ToughnessUiState> = _toughnessState.asStateFlow()
+
     // VIT stat state — only for user profile (ME tab)
     private val _vitalityState = MutableStateFlow(VitalityUiState())
     val vitalityState: StateFlow<VitalityUiState> = _vitalityState.asStateFlow()
 
     init {
+        loadToughnessData()
         loadVitalityData()
+    }
+
+    private fun loadToughnessData() {
+        viewModelScope.launch {
+            val recentLogs = sorenessRepository.getLast30DaysLogs()
+            val stat = StatsCalculator.calculateToughness(recentLogs)
+            _toughnessState.value = ToughnessUiState(
+                toughnessStat = stat,
+                breakdown = StatsCalculator.toughnessBreakdown(recentLogs, stat),
+            )
+        }
     }
 
     private fun loadVitalityData() {
