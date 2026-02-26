@@ -144,6 +144,7 @@ fun CharacterProfileEntity.toFirestoreMap(): Map<String, Any?> = mapOf(
     "speedStat" to speedStat,
     "enduranceStat" to enduranceStat,
     "consistencyStat" to consistencyStat,
+    "vitalityStat" to vitalityStat,
 )
 
 fun Map<String, Any?>.toCharacterProfileEntity(): CharacterProfileEntity = CharacterProfileEntity(
@@ -154,6 +155,7 @@ fun Map<String, Any?>.toCharacterProfileEntity(): CharacterProfileEntity = Chara
     speedStat = (this["speedStat"] as Number).toInt(),
     enduranceStat = (this["enduranceStat"] as Number).toInt(),
     consistencyStat = (this["consistencyStat"] as Number).toInt(),
+    vitalityStat = (this["vitalityStat"] as? Number)?.toInt() ?: 1,
 )
 
 // --- XpTransactionEntity ---
