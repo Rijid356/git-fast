@@ -100,6 +100,8 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                     DogWalkEventType.PEE to 2,
                     DogWalkEventType.POOP to 1,
                     DogWalkEventType.SNACK_FOUND to 1,
+                    DogWalkEventType.WATER_BREAK to 1,
+                    DogWalkEventType.BARK_REACT to 2,
                 ),
                 onLogEvent = {},
                 onUndoEvent = {},
@@ -137,6 +139,7 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                 dogWalkEventCounts = mapOf(
                     DogWalkEventType.SQUIRREL_CHASE to 1,
                     DogWalkEventType.ZOOMIES to 2,
+                    DogWalkEventType.BARK_REACT to 1,
                 ),
                 onLogEvent = {},
                 onUndoEvent = {},

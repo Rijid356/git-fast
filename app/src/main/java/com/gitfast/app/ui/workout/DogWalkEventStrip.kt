@@ -7,12 +7,12 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gitfast.app.data.model.DogWalkEventType
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun DogWalkEventStrip(
     eventCounts: Map<DogWalkEventType, Int>,
@@ -37,12 +37,14 @@ fun DogWalkEventStrip(
 ) {
     val view = LocalView.current
 
-    LazyRow(
-        modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 8.dp),
+    FlowRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items(DogWalkEventType.entries) { eventType ->
+        for (eventType in DogWalkEventType.entries) {
             val count = eventCounts[eventType] ?: 0
 
             Box {
@@ -67,8 +69,7 @@ fun DogWalkEventStrip(
                 ) {
                     Text(
                         text = eventType.icon,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 20.sp,
                     )
                     Text(
                         text = eventType.displayName,

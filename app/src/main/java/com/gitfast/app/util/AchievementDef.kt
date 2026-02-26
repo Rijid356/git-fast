@@ -304,6 +304,24 @@ enum class AchievementDef(
         category = AchievementCategory.DOG_WALK_EVENT,
         profileId = 2,
     ),
+    JUNIPER_HYDRATION_HERO(
+        id = "juniper_hydration_hero",
+        title = "Hydration Hero",
+        description = "Logged 10 water breaks",
+        xpReward = 30,
+        icon = "💦",
+        category = AchievementCategory.DOG_WALK_EVENT,
+        profileId = 2,
+    ),
+    JUNIPER_VOCAL_PUP(
+        id = "juniper_vocal_pup",
+        title = "Vocal Pup",
+        description = "Logged 10 bark/react events",
+        xpReward = 30,
+        icon = "🗣️",
+        category = AchievementCategory.DOG_WALK_EVENT,
+        profileId = 2,
+    ),
 
     // Body Composition
     FIRST_WEIGH_IN(
