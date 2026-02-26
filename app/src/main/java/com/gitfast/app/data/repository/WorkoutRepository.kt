@@ -230,6 +230,48 @@ class WorkoutRepository @Inject constructor(
         return start to end
     }
 
+    private fun previousWeekRange(): Pair<Long, Long> {
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val thisMonday = today.with(DayOfWeek.MONDAY)
+        val prevMonday = thisMonday.minusWeeks(1)
+        val start = prevMonday.atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = thisMonday.atStartOfDay(zone).toInstant().toEpochMilli()
+        return start to end
+    }
+
+    // --- Weekly summary ---
+
+    fun getWeeklyActiveMillis(): Flow<Long> {
+        val (start, end) = weekRange()
+        return workoutDao.getActiveMillisBetween(start, end)
+    }
+
+    fun getWeeklyDistanceMeters(): Flow<Double> {
+        val (start, end) = weekRange()
+        return workoutDao.getDistanceMetersBetween(start, end)
+    }
+
+    fun getWeeklyWorkoutCount(): Flow<Int> {
+        val (start, end) = weekRange()
+        return workoutDao.getCompletedWorkoutCountBetween(start, end)
+    }
+
+    fun getPreviousWeekActiveMillis(): Flow<Long> {
+        val (start, end) = previousWeekRange()
+        return workoutDao.getActiveMillisBetween(start, end)
+    }
+
+    fun getPreviousWeekDistanceMeters(): Flow<Double> {
+        val (start, end) = previousWeekRange()
+        return workoutDao.getDistanceMetersBetween(start, end)
+    }
+
+    fun getPreviousWeekWorkoutCount(): Flow<Int> {
+        val (start, end) = previousWeekRange()
+        return workoutDao.getCompletedWorkoutCountBetween(start, end)
+    }
+
     suspend fun getRecentWorkoutsWithLaps(limit: Int): List<Workout> {
         return workoutDao.getRecentWorkoutsWithLaps(limit).map { entity ->
             val phases = workoutDao.getPhasesForWorkout(entity.id).map { phase ->

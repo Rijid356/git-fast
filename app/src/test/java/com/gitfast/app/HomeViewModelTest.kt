@@ -58,6 +58,12 @@ class HomeViewModelTest {
         every { workoutRepository.getWeeklyActiveDayCount() } returns flowOf(0)
         every { characterRepository.getProfile() } returns flowOf(CharacterProfile())
         every { characterRepository.getXpByWorkout() } returns flowOf(emptyMap())
+        every { workoutRepository.getWeeklyActiveMillis() } returns flowOf(0L)
+        every { workoutRepository.getWeeklyDistanceMeters() } returns flowOf(0.0)
+        every { workoutRepository.getWeeklyWorkoutCount() } returns flowOf(0)
+        every { workoutRepository.getPreviousWeekActiveMillis() } returns flowOf(0L)
+        every { workoutRepository.getPreviousWeekDistanceMeters() } returns flowOf(0.0)
+        every { workoutRepository.getPreviousWeekWorkoutCount() } returns flowOf(0)
         every { settingsStore.dailyActiveMinutesGoal } returns 22
         every { settingsStore.dailyDistanceGoalMiles } returns 1.5
         every { settingsStore.weeklyActiveDaysGoal } returns 5
