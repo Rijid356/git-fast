@@ -62,6 +62,7 @@ class SettingsViewModelTest {
         every { mockSettingsStore.autoLapEnabled } returns false
         every { mockSettingsStore.homeArrivalEnabled } returns false
         every { mockSettingsStore.hasHomeLocation } returns false
+        every { mockSettingsStore.hasLapStartPoint } returns false
         every { mockGoogleAuthManager.currentUser } returns currentUserFlow
         every { mockSyncStatusStore.syncStatus } returns syncStatusFlow
         every { mockSyncStatusStore.lastSyncedAt } returns 0L
@@ -340,6 +341,28 @@ class SettingsViewModelTest {
         vm.signIn(mockContext)
 
         assertEquals("Network error", vm.uiState.value.signInError)
+    }
+
+    // =========================================================================
+    // Lap Start Point
+    // =========================================================================
+
+    @Test
+    fun `initial state loads hasLapStartPoint from store`() {
+        every { mockSettingsStore.hasLapStartPoint } returns true
+        val vm = createViewModel()
+        assertTrue(vm.uiState.value.hasLapStartPoint)
+    }
+
+    @Test
+    fun `clearLapStartPoint clears store and updates state`() {
+        every { mockSettingsStore.hasLapStartPoint } returns true
+        val vm = createViewModel()
+
+        vm.clearLapStartPoint()
+
+        verify { mockSettingsStore.clearLapStartPoint() }
+        assertFalse(vm.uiState.value.hasLapStartPoint)
     }
 
     @Test

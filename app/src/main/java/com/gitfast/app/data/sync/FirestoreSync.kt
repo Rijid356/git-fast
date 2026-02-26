@@ -118,6 +118,8 @@ class FirestoreSync @Inject constructor(
                 homeLatitude = settingsStore.homeLatitude,
                 homeLongitude = settingsStore.homeLongitude,
                 homeArrivalRadiusMeters = settingsStore.homeArrivalRadiusMeters,
+                lapStartLatitude = settingsStore.lapStartLatitude,
+                lapStartLongitude = settingsStore.lapStartLongitude,
             )
             userDoc.set(mapOf("settings" to settingsMap)).await()
             Log.d(TAG, "Pushed settings")
@@ -253,6 +255,8 @@ class FirestoreSync @Inject constructor(
             (settings["homeLatitude"] as? Number)?.let { settingsStore.homeLatitude = it.toDouble() }
             (settings["homeLongitude"] as? Number)?.let { settingsStore.homeLongitude = it.toDouble() }
             (settings["homeArrivalRadiusMeters"] as? Number)?.let { settingsStore.homeArrivalRadiusMeters = it.toInt() }
+            (settings["lapStartLatitude"] as? Number)?.let { settingsStore.lapStartLatitude = it.toDouble() }
+            (settings["lapStartLongitude"] as? Number)?.let { settingsStore.lapStartLongitude = it.toDouble() }
 
             Log.d(TAG, "Pulled settings")
         } catch (e: Exception) {

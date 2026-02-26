@@ -170,6 +170,9 @@ class WorkoutStateManager @Inject constructor() {
         sprintLaps.clear()
         sprintNumber = 0
 
+        // Reset auto-start laps
+        autoStartLapsTriggered = false
+
         _workoutState.value = WorkoutTrackingState(
             isActive = true,
             isPaused = false,
@@ -368,7 +371,7 @@ class WorkoutStateManager @Inject constructor() {
             markLap()
         }
 
-        // Discard micro-laps (< 5 seconds) at the end
+        // Discard micro-laps (< 30 seconds) at the end
         discardMicroLap()
 
         val now = Instant.now()
@@ -393,7 +396,8 @@ class WorkoutStateManager @Inject constructor() {
         phaseStartStepCount = currentStepCount
 
         _workoutState.value = _workoutState.value.copy(
-            phase = PhaseType.COOLDOWN
+            phase = PhaseType.COOLDOWN,
+            lapCount = laps.size
         )
     }
 
@@ -565,6 +569,10 @@ class WorkoutStateManager @Inject constructor() {
         anchorLongitude = null
         hasLeftAnchorRadius = false
         lastAutoLapTime = null
+        autoStartLapsEnabled = false
+        lapStartPointLatitude = null
+        lapStartPointLongitude = null
+        autoStartLapsTriggered = false
         sprintActive = false
         sprintStartTime = null
         sprintStartDistance = 0.0
@@ -579,14 +587,16 @@ class WorkoutStateManager @Inject constructor() {
     }
 
     /**
-     * Discard the last lap if it's a micro-lap (< 5 seconds).
+     * Discard the last lap if it's a micro-lap (< 30 seconds).
      * Merges its distance into the previous lap, or keeps it if it's the only lap.
+     * 30s matches the auto-lap cooldown, so any partial lap shorter than the cooldown
+     * period is clearly not a real lap.
      */
     private fun discardMicroLap() {
         if (laps.size < 2) return // Don't discard if it's the only lap
         val lastLap = laps.last()
         val durationMs = lastLap.endTime.toEpochMilli() - lastLap.startTime.toEpochMilli()
-        if (durationMs < 5000) {
+        if (durationMs < 30_000) {
             laps.removeAt(laps.size - 1)
             // Merge distance into previous lap
             val prevLap = laps.last()
@@ -626,9 +636,21 @@ class WorkoutStateManager @Inject constructor() {
     private var hasLeftAnchorRadius: Boolean = false
     private var lastAutoLapTime: Instant? = null
 
+    // Auto-start laps from saved GPS point
+    private var autoStartLapsEnabled: Boolean = false
+    private var lapStartPointLatitude: Double? = null
+    private var lapStartPointLongitude: Double? = null
+    private var autoStartLapsTriggered: Boolean = false
+
     fun setAutoLapConfig(enabled: Boolean, anchorRadiusMeters: Int) {
         autoLapEnabled = enabled
         autoLapAnchorRadiusMeters = anchorRadiusMeters
+    }
+
+    fun setAutoStartLapsConfig(lapStartLat: Double?, lapStartLng: Double?) {
+        lapStartPointLatitude = lapStartLat
+        lapStartPointLongitude = lapStartLng
+        autoStartLapsEnabled = autoLapEnabled && lapStartLat != null && lapStartLng != null
     }
 
     fun addGpsPoint(point: GpsPoint) {
@@ -671,6 +693,27 @@ class WorkoutStateManager @Inject constructor() {
             currentSpeedMph = smoothedSpeedMph,
             maxSpeedMph = newMax,
         )
+
+        // Auto-start laps: trigger startLaps() when near saved start point during WARMUP
+        if (autoStartLapsEnabled && !autoStartLapsTriggered &&
+            currentPhase == PhaseType.WARMUP && activityType == ActivityType.RUN
+        ) {
+            val startLat = lapStartPointLatitude
+            val startLng = lapStartPointLongitude
+            if (startLat != null && startLng != null) {
+                val distToStart = DistanceCalculator.haversineMeters(
+                    point.latitude, point.longitude,
+                    startLat, startLng
+                )
+                if (distToStart <= autoLapAnchorRadiusMeters) {
+                    autoStartLapsTriggered = true
+                    startLaps()
+                    // Override anchor with saved start point coords
+                    anchorLatitude = startLat
+                    anchorLongitude = startLng
+                }
+            }
+        }
 
         // Auto-lap: trigger markLap() when returning to GPS anchor during LAPS phase
         if (autoLapEnabled && currentPhase == PhaseType.LAPS &&

@@ -173,6 +173,8 @@ class FirestoreSyncTest {
         every { settingsStore.homeLatitude } returns null
         every { settingsStore.homeLongitude } returns null
         every { settingsStore.homeArrivalRadiusMeters } returns 15
+        every { settingsStore.lapStartLatitude } returns null
+        every { settingsStore.lapStartLongitude } returns null
     }
 
     // ===== Auth guard =====
@@ -330,6 +332,8 @@ class FirestoreSyncTest {
         every { settingsStore.homeLatitude } returns 40.7128
         every { settingsStore.homeLongitude } returns -74.006
         every { settingsStore.homeArrivalRadiusMeters } returns 50
+        every { settingsStore.lapStartLatitude } returns 38.929031
+        every { settingsStore.lapStartLongitude } returns -94.418978
 
         stubSetAwait(userDoc)
 
@@ -347,7 +351,9 @@ class FirestoreSyncTest {
                     s["homeArrivalEnabled"] == true &&
                     s["homeLatitude"] == 40.7128 &&
                     s["homeLongitude"] == -74.006 &&
-                    s["homeArrivalRadiusMeters"] == 50
+                    s["homeArrivalRadiusMeters"] == 50 &&
+                    s["lapStartLatitude"] == 38.929031 &&
+                    s["lapStartLongitude"] == -94.418978
             })
         }
     }
@@ -578,7 +584,9 @@ class FirestoreSyncTest {
             "homeArrivalEnabled" to true,
             "homeLatitude" to 40.7128,
             "homeLongitude" to -74.006,
-            "homeArrivalRadiusMeters" to 30
+            "homeArrivalRadiusMeters" to 30,
+            "lapStartLatitude" to 38.929031,
+            "lapStartLongitude" to -94.418978
         )
         stubGetAwait(userDoc, mapOf("settings" to settingsMap), "test-uid")
 
@@ -592,6 +600,8 @@ class FirestoreSyncTest {
         verify { settingsStore.homeLatitude = 40.7128 }
         verify { settingsStore.homeLongitude = -74.006 }
         verify { settingsStore.homeArrivalRadiusMeters = 30 }
+        verify { settingsStore.lapStartLatitude = 38.929031 }
+        verify { settingsStore.lapStartLongitude = -94.418978 }
     }
 
     @Test
