@@ -87,6 +87,7 @@ class CharacterRepository @Inject constructor(
                 enduranceStat = stats.endurance,
                 consistencyStat = stats.consistency,
                 vitalityStat = stats.vitality,
+                foragingStat = stats.foraging,
             )
         )
     }
@@ -117,6 +118,7 @@ class CharacterRepository @Inject constructor(
             enduranceStat = enduranceStat,
             consistencyStat = consistencyStat,
             vitalityStat = vitalityStat,
+            foragingStat = foragingStat,
         )
     }
 

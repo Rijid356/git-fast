@@ -66,6 +66,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `AchievementDef.kt` | Enum defining 30+ achievements with XP rewards, icons, categories, profileId |
 | `AchievementChecker.kt` | Evaluates achievement unlock conditions for user and Juniper profiles |
 | `PermissionManager.kt` | Checks location, notification, activity recognition permissions |
+| `DogWalkNarrativeGenerator.kt` | Template-based narrative from dog walk events with special combos |
 
 ## navigation/
 
@@ -95,6 +96,9 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `EnergyLevel.kt` | Enum: LOW, NORMAL, HYPER (dog energy during walk) |
 | `WeatherCondition.kt` | Enum: SUNNY, CLOUDY, RAINY, SNOWY, WINDY |
 | `WeatherTemp.kt` | Enum: HOT, WARM, MILD, COOL, COLD |
+| `DogWalkEventType.kt` | Enum: 7 event types (SNACK_FOUND, POOP, PEE, etc.) with displayName, icon, category |
+| `DogWalkEvent.kt` | Domain model: dog walk event with type, timestamp, GPS coordinates |
+| `EventCategory.kt` | Enum: FORAGING, BATHROOM, ENERGY, SOCIAL (categories for event types) |
 
 ## data/local/
 
@@ -121,6 +125,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `XpTransactionEntity.kt` | Room entity: XP audit log; idempotent key = (workoutId, profileId) |
 | `UnlockedAchievementEntity.kt` | Room entity: achievement unlock with composite key (achievementId, profileId) |
 | `BodyCompEntry.kt` | Room entity: Health Connect body comp reading (weight, fat, BMR, height) |
+| `DogWalkEventEntity.kt` | Room entity: dog walk event with FK to workout, GPS, cascade delete |
 
 ## data/local/mappers/
 
@@ -128,6 +133,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 |------|---------|
 | `WorkoutMappers.kt` | Entity↔domain conversion for Workout, WorkoutPhase, Lap, GpsPoint |
 | `BodyCompMappers.kt` | Entity↔domain conversion for BodyCompEntry with kg↔lbs and BMI calc |
+| `DogWalkEventMappers.kt` | Entity↔domain conversion for DogWalkEvent with Instant↔Long |
 
 ## data/local/migrations/
 
@@ -140,6 +146,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `Migration_5_6.kt` | v5→v6: Add profileId to XP/achievements; seed Juniper profile (id=2) |
 | `Migration_6_7.kt` | v6→v7: Add splitLatitude/splitLongitude to laps |
 | `Migration_7_8.kt` | v7→v8: Create body_comp_entries table; add vitalityStat to character_profiles |
+| `Migration_8_9.kt` | v8→v9: Create dog_walk_events table; add foragingStat to character_profiles |
 
 ## data/repository/
 
@@ -205,6 +212,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `LapPhaseContent.kt` | Lap phase hero: current lap time, ghost comparison, lap list |
 | `RecordingIndicator.kt` | Top-right status: REC pulse, WALKING, or PAUSED |
 | `PermissionRequestContent.kt` | Full-screen permission request with rationale cards |
+| `DogWalkEventStrip.kt` | Horizontally scrollable event buttons with tap to log, long-press undo, badges |
 | `WorkoutSummaryScreen.kt` | Post-workout: XP awarded, streak, achievements, stat summary |
 
 ## ui/dogwalk/
@@ -216,6 +224,8 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `RouteTagSelector.kt` | Chip selector for route tags with inline new-tag creation |
 | `EnergySelector.kt` | Flow row of energy level chips (Low, Normal, Hyper) |
 | `WeatherSelector.kt` | Weather condition + temperature chips with emoji labels |
+| `EventTimeline.kt` | Chronological event list with icons, names, and time offsets |
+| `EventRouteMap.kt` | Google Maps with GPS polyline and colored event markers by category |
 
 ## ui/history/
 
@@ -321,18 +331,18 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | _(root)_ | 36 | ViewModels, domain logic, entity/mapper tests, UI state mapping |
 | `analysis/` | 1 | RouteComparisonAnalyzer logic |
 | `data/healthconnect/` | 1 | HealthConnectManager mocked reads |
-| `data/model/` | 2 | DailyActivityMetrics, dog walk domain model |
+| `data/model/` | 3 | DailyActivityMetrics, dog walk domain model, DogWalkEventType |
 | `data/repository/` | 2 | BodyCompRepository, CharacterRepository |
 | `data/sync/` | 3 | FirestoreMappers, FirestoreSync, SyncStatusStore |
 | `screenshots/` | 7 | Component screenshots (StatGrid, PaceDisplay, LapTable, etc.) + base classes |
 | `screenshots/screens/` | 15 | Full-screen Roborazzi golden tests for every major screen |
-| `service/` | 4 | AutoPauseDetector, home arrival, WorkoutStateManager edge cases |
+| `service/` | 5 | AutoPauseDetector, home arrival, WorkoutStateManager edge cases + events |
 | `ui/analytics/` | 5 | BodyComp, Records, RouteOverlay, RoutePerformance, Trends ViewModels |
 | `ui/home/` | 1 | HomeViewModel goals integration |
 | `ui/settings/` | 1 | SettingsViewModel |
-| `util/` | 14 | Achievement checking, stats calc, streak, XP, lap analysis, trends |
+| `util/` | 17 | Achievement checking, stats calc, streak, XP, lap analysis, trends, narrative, foraging |
 
-**Total: ~92 unit test files**
+**Total: ~97 unit test files**
 
 ### Instrumented Tests (`app/src/androidTest/`)
 

@@ -1,6 +1,7 @@
 package com.gitfast.app.service
 
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.util.AchievementDef
@@ -81,6 +82,9 @@ class WorkoutStateManager @Inject constructor() {
     private var sprintLaps: MutableList<LapData> = mutableListOf()
     private var sprintNumber: Int = 0
 
+    // Dog walk event tracking
+    private var dogWalkEvents: MutableList<DogWalkEventData> = mutableListOf()
+
     // Phase history (for building entities at save time)
     private var completedPhases: MutableList<PhaseData> = mutableListOf()
 
@@ -112,6 +116,43 @@ class WorkoutStateManager @Inject constructor() {
         val steps: Int,
         val laps: List<LapData>
     )
+
+    data class DogWalkEventData(
+        val type: DogWalkEventType,
+        val timestamp: Instant,
+        val latitude: Double?,
+        val longitude: Double?,
+    )
+
+    // --- Dog walk event methods ---
+
+    fun logDogWalkEvent(type: DogWalkEventType, latitude: Double?, longitude: Double?) {
+        dogWalkEvents.add(DogWalkEventData(
+            type = type,
+            timestamp = Instant.now(),
+            latitude = latitude,
+            longitude = longitude,
+        ))
+        emitEventCounts()
+    }
+
+    fun undoLastEvent(type: DogWalkEventType): Boolean {
+        val index = dogWalkEvents.indexOfLast { it.type == type }
+        if (index < 0) return false
+        dogWalkEvents.removeAt(index)
+        emitEventCounts()
+        return true
+    }
+
+    fun getDogWalkEvents(): List<DogWalkEventData> = dogWalkEvents.toList()
+
+    private fun emitEventCounts() {
+        val counts = dogWalkEvents.groupBy { it.type }.mapValues { it.value.size }
+        _workoutState.value = _workoutState.value.copy(
+            dogWalkEventCount = dogWalkEvents.size,
+            dogWalkEventCounts = counts,
+        )
+    }
 
     fun setGhostLap(durationSeconds: Int?) {
         externalGhostLapDuration = durationSeconds
@@ -169,6 +210,9 @@ class WorkoutStateManager @Inject constructor() {
         sprintStartGpsIndex = 0
         sprintLaps.clear()
         sprintNumber = 0
+
+        // Reset dog walk events
+        dogWalkEvents.clear()
 
         _workoutState.value = WorkoutTrackingState(
             isActive = true,
@@ -540,7 +584,8 @@ class WorkoutStateManager @Inject constructor() {
             totalPausedDurationMillis = totalPausedDuration,
             phases = completedPhases.toList(),
             activityType = activityType,
-            totalSteps = currentStepCount
+            totalSteps = currentStepCount,
+            dogWalkEvents = dogWalkEvents.toList(),
         )
 
         // Reset all state
@@ -572,6 +617,7 @@ class WorkoutStateManager @Inject constructor() {
         sprintStartGpsIndex = 0
         sprintLaps.clear()
         sprintNumber = 0
+        dogWalkEvents.clear()
         _gpsPoints.value = emptyList()
         _workoutState.value = WorkoutTrackingState()
 
@@ -755,6 +801,9 @@ data class WorkoutTrackingState(
     val currentSprintElapsedSeconds: Int = 0,
     val totalSprintSeconds: Int = 0,
     val longestSprintSeconds: Int = 0,
+    // Dog walk events
+    val dogWalkEventCount: Int = 0,
+    val dogWalkEventCounts: Map<DogWalkEventType, Int> = emptyMap(),
 )
 
 data class WorkoutSnapshot(
@@ -766,5 +815,6 @@ data class WorkoutSnapshot(
     val totalPausedDurationMillis: Long,
     val phases: List<WorkoutStateManager.PhaseData>,
     val activityType: ActivityType,
-    val totalSteps: Int = 0
+    val totalSteps: Int = 0,
+    val dogWalkEvents: List<WorkoutStateManager.DogWalkEventData> = emptyList(),
 )

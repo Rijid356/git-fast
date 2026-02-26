@@ -1,6 +1,7 @@
 package com.gitfast.app.data.sync
 
 import com.gitfast.app.data.local.entity.CharacterProfileEntity
+import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
@@ -9,6 +10,7 @@ import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.local.entity.XpTransactionEntity
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WeatherCondition
@@ -145,6 +147,7 @@ fun CharacterProfileEntity.toFirestoreMap(): Map<String, Any?> = mapOf(
     "enduranceStat" to enduranceStat,
     "consistencyStat" to consistencyStat,
     "vitalityStat" to vitalityStat,
+    "foragingStat" to foragingStat,
 )
 
 fun Map<String, Any?>.toCharacterProfileEntity(): CharacterProfileEntity = CharacterProfileEntity(
@@ -156,6 +159,7 @@ fun Map<String, Any?>.toCharacterProfileEntity(): CharacterProfileEntity = Chara
     enduranceStat = (this["enduranceStat"] as Number).toInt(),
     consistencyStat = (this["consistencyStat"] as Number).toInt(),
     vitalityStat = (this["vitalityStat"] as? Number)?.toInt() ?: 1,
+    foragingStat = (this["foragingStat"] as? Number)?.toInt() ?: 1,
 )
 
 // --- XpTransactionEntity ---
@@ -192,6 +196,26 @@ fun Map<String, Any?>.toUnlockedAchievementEntity(): UnlockedAchievementEntity =
     unlockedAt = (this["unlockedAt"] as Number).toLong(),
     xpAwarded = (this["xpAwarded"] as Number).toInt(),
     profileId = (this["profileId"] as Number).toInt(),
+)
+
+// --- DogWalkEventEntity ---
+
+fun DogWalkEventEntity.toFirestoreMap(): Map<String, Any?> = mapOf(
+    "id" to id,
+    "workoutId" to workoutId,
+    "eventType" to eventType.name,
+    "timestamp" to timestamp,
+    "latitude" to latitude,
+    "longitude" to longitude,
+)
+
+fun Map<String, Any?>.toDogWalkEventEntity(): DogWalkEventEntity = DogWalkEventEntity(
+    id = this["id"] as String,
+    workoutId = this["workoutId"] as String,
+    eventType = DogWalkEventType.valueOf(this["eventType"] as String),
+    timestamp = (this["timestamp"] as Number).toLong(),
+    latitude = (this["latitude"] as? Number)?.toDouble(),
+    longitude = (this["longitude"] as? Number)?.toDouble(),
 )
 
 // --- Settings (to/from Map for user doc) ---

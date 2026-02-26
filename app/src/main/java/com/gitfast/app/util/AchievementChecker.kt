@@ -12,6 +12,8 @@ data class AchievementSnapshot(
     val characterLevel: Int,
     val unlockedIds: Set<String>,
     val totalDogWalkDistanceMiles: Double = 0.0,
+    val totalDogWalkEventCount: Int = 0,
+    val eventCountByType: Map<String, Int> = emptyMap(),
 )
 
 object AchievementChecker {
@@ -92,6 +94,15 @@ object AchievementChecker {
             AchievementDef.JUNIPER_PACK_LEADER -> snapshot.dogWalkCount >= 10
             AchievementDef.JUNIPER_TRAIL_MASTER -> snapshot.dogWalkCount >= 50
             AchievementDef.JUNIPER_GOOD_GIRL -> snapshot.characterLevel >= 5
+
+            // Dog Walk Events (Juniper)
+            AchievementDef.JUNIPER_FIRST_FIND -> snapshot.totalDogWalkEventCount >= 1
+            AchievementDef.JUNIPER_KEEN_NOSE -> (snapshot.eventCountByType["DEEP_SNIFF"] ?: 0) >= 10
+            AchievementDef.JUNIPER_SNACK_HUNTER -> (snapshot.eventCountByType["SNACK_FOUND"] ?: 0) >= 10
+            AchievementDef.JUNIPER_SQUIRREL_NEMESIS -> (snapshot.eventCountByType["SQUIRREL_CHASE"] ?: 0) >= 5
+            AchievementDef.JUNIPER_SOCIAL_BUTTERFLY -> (snapshot.eventCountByType["FRIENDLY_DOG"] ?: 0) >= 10
+            AchievementDef.JUNIPER_ZOOMIE_CHAMPION -> (snapshot.eventCountByType["ZOOMIES"] ?: 0) >= 10
+            AchievementDef.JUNIPER_ADVENTURE_LOG_50 -> snapshot.totalDogWalkEventCount >= 50
 
             // Body Composition (checked externally via BodyCompRepository, not workout-based)
             AchievementDef.FIRST_WEIGH_IN -> false

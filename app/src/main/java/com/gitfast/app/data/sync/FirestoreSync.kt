@@ -36,9 +36,12 @@ class FirestoreSync @Inject constructor(
             val laps = phases.flatMap { phase -> workoutDao.getLapsForPhase(phase.id) }
             val gpsPoints = workoutDao.getGpsPointsForWorkout(workoutId)
 
+            val dogWalkEvents = workoutDao.getDogWalkEventsForWorkout(workoutId)
+
             val workoutMap = workout.toFirestoreMap().toMutableMap()
             workoutMap["phases"] = phases.map { it.toFirestoreMap() }
             workoutMap["laps"] = laps.map { it.toFirestoreMap() }
+            workoutMap["dogWalkEvents"] = dogWalkEvents.map { it.toFirestoreMap() }
             workoutMap["gpsPointCount"] = gpsPoints.size
             workoutMap["syncedAt"] = System.currentTimeMillis()
 
@@ -175,6 +178,15 @@ class FirestoreSync @Inject constructor(
                 }
 
                 workoutDao.saveWorkoutTransaction(workout, phases, laps, gpsPoints)
+
+                // Pull dog walk events from the workout doc
+                @Suppress("UNCHECKED_CAST")
+                val dogWalkEvents = (data["dogWalkEvents"] as? List<Map<String, Any?>>)
+                    ?.map { it.toDogWalkEventEntity() } ?: emptyList()
+                if (dogWalkEvents.isNotEmpty()) {
+                    workoutDao.insertDogWalkEvents(dogWalkEvents)
+                }
+
                 pulled++
             }
 
