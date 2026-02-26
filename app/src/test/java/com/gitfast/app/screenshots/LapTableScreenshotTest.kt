@@ -11,7 +11,7 @@ class LapTableScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `LapTable with markers`() {
-        captureScreenshot("LapTable_with_markers") {
+        captureScreenshot("LapTable_with_markers", category = "laps") {
             LapTable(
                 laps = listOf(
                     LapDisplayItem(
@@ -54,14 +54,14 @@ class LapTableScreenshotTest : ScreenshotTestBase() {
 
     @Test
     fun `LapTable empty`() {
-        captureScreenshot("LapTable_empty") {
+        captureScreenshot("LapTable_empty", category = "laps") {
             LapTable(laps = emptyList())
         }
     }
 
     @Test
     fun `LapTable single lap`() {
-        captureScreenshot("LapTable_single") {
+        captureScreenshot("LapTable_single", category = "laps") {
             LapTable(
                 laps = listOf(
                     LapDisplayItem(

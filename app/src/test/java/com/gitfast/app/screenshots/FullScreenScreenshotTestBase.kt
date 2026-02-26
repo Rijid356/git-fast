@@ -27,7 +27,11 @@ abstract class FullScreenScreenshotTestBase {
         ),
     )
 
-    protected fun captureScreenshot(name: String, composable: @Composable () -> Unit) {
+    protected fun captureScreenshot(
+        name: String,
+        category: String = "",
+        composable: @Composable () -> Unit,
+    ) {
         composeTestRule.setContent {
             GitFastTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -35,8 +39,10 @@ abstract class FullScreenScreenshotTestBase {
                 }
             }
         }
+        val path = if (category.isNotEmpty()) "src/test/snapshots/screens/$category/$name.png"
+        else "src/test/snapshots/screens/$name.png"
         composeTestRule.onRoot().captureRoboImage(
-            "src/test/snapshots/screens/$name.png",
+            path,
             roborazziOptions = roborazziOptions,
         )
     }
