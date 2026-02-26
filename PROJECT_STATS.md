@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-03-03
+- **Last Active:** 2026-03-05
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 
@@ -68,10 +68,11 @@
 | 2026-03-03 | Fix Dog Run button color consistency (amber on workout screen to match home), add lap start point GPS auto-start feature, 4 new DOG_RUN screenshot tests, micro-lap threshold 5s→30s; merged PR #124 | 18 | 1 | +356/-20 |
 | 2026-03-03 | Auto-start laps test suite: 12 tests for GPS-based warmup→laps transition, endLaps lapCount fix, lessons learned entry; merged PR #125 | 4 | 1 | +244/-6 |
 | 2026-03-03 | Dog Walk Event Logger (Issue #95): DogWalkEventType enum, DogWalkEventStrip UI, WorkoutStateManager event tracking, DogWalkNarrativeGenerator, EventTimeline/EventRouteMap detail views, Forage stat, 7 Juniper achievements, Room v8→v9 migration, Firestore sync, settings auto-start laps, 63 new tests, updated screenshots; merged PR #126 | 64 | 5 | +2314/-32 |
+| 2026-03-04 | Clean up CLAUDE.md: remove 10+ hardcoded library versions, replace growing lists with file pointers, fix stale DB version/migration/routes/specs references; clean up project settings.local.json (105→48 entries); merged PR #127 | 1 | 1 | +16/-19 |
 
 ## Totals
-- **Total Sessions:** 57
-- **Total Commits:** 96
-- **Total Files Changed:** 784
-- **Total Lines Added:** 38809
-- **Total Lines Removed:** 2157
+- **Total Sessions:** 58
+- **Total Commits:** 97
+- **Total Files Changed:** 785
+- **Total Lines Added:** 38825
+- **Total Lines Removed:** 2176
