@@ -51,6 +51,8 @@ object DogWalkNarrativeGenerator {
             if (chases > 0) parts.add("chased ${pluralize(chases, "squirrel")}")
             if (zoomies > 0) parts.add("had ${pluralize(zoomies, "zoomie burst")}")
         }
+        val pulls = counts[DogWalkEventType.LEASH_PULL] ?: 0
+        if (pulls > 0) parts.add("pulled on the leash ${pluralize(pulls, "time")}")
 
         // Social
         val dogs = counts[DogWalkEventType.FRIENDLY_DOG] ?: 0
@@ -86,6 +88,7 @@ object DogWalkNarrativeGenerator {
             DogWalkEventType.PEE -> "Juniper marked ${pluralize(count, "territory", "territories")} in $durationMinutes minutes!"
             DogWalkEventType.WATER_BREAK -> "Hydration hero! Juniper took ${pluralize(count, "water break")} in $durationMinutes minutes!"
             DogWalkEventType.BARK_REACT -> "Juniper had opinions - barked at ${pluralize(count, "thing")} in $durationMinutes minutes!"
+            DogWalkEventType.LEASH_PULL -> "Juniper was strong-willed - ${pluralize(count, "leash pull")} in $durationMinutes minutes!"
         }
     }
 

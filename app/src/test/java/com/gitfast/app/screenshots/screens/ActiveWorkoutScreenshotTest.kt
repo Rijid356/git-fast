@@ -1,9 +1,14 @@
 package com.gitfast.app.screenshots.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.Modifier
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.screenshots.FullScreenScreenshotTestBase
+import com.gitfast.app.ui.workout.ExpandedWheelOverlay
 import com.gitfast.app.ui.workout.WorkoutContent
 import com.gitfast.app.ui.workout.WorkoutUiState
 import org.junit.Test
@@ -181,10 +186,66 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                     DogWalkEventType.SQUIRREL_CHASE to 2,
                     DogWalkEventType.ZOOMIES to 3,
                     DogWalkEventType.SNACK_FOUND to 1,
+                    DogWalkEventType.WATER_BREAK to 1,
                 ),
                 onLogEvent = {},
                 onUndoEvent = {},
             )
+        }
+    }
+
+    @Test
+    fun `Screen Workout DogWalk EventWheel Expanded`() {
+        val eventCounts = mapOf(
+            DogWalkEventType.DEEP_SNIFF to 3,
+            DogWalkEventType.PEE to 2,
+            DogWalkEventType.POOP to 1,
+            DogWalkEventType.SNACK_FOUND to 1,
+            DogWalkEventType.SQUIRREL_CHASE to 1,
+            DogWalkEventType.WATER_BREAK to 1,
+            DogWalkEventType.BARK_REACT to 2,
+        )
+        captureScreenshot("Screen_Workout_DogWalk_EventWheel_Expanded", category = "workout") {
+            Box(modifier = Modifier.fillMaxSize()) {
+                WorkoutContent(
+                    uiState = WorkoutUiState(
+                        isActive = true,
+                        isPaused = false,
+                        activityType = ActivityType.DOG_WALK,
+                        phase = PhaseType.WARMUP,
+                        phaseLabel = "WALKING",
+                        elapsedTimeFormatted = "15:42",
+                        distanceFormatted = "0.78 mi",
+                        currentPaceFormatted = "20:10 /mi",
+                        averagePaceFormatted = "20:10 /mi",
+                        currentSpeedFormatted = "3.0 MPH",
+                        stepCount = 1890,
+                    ),
+                    onStart = {},
+                    onPause = {},
+                    onResume = {},
+                    onStop = {},
+                    onDiscard = {},
+                    onStartLaps = {},
+                    onMarkLap = {},
+                    onEndLaps = {},
+                    dogWalkEventCounts = eventCounts,
+                    onLogEvent = {},
+                    onUndoEvent = {},
+                )
+                // BiasAlignment shifts the wheel center to where the FAB sits
+                // (0f, 0f) = screen center; (0f, 0.3f) = ~65% down
+                ExpandedWheelOverlay(
+                    eventCounts = eventCounts,
+                    expandProgress = 1f,
+                    onLogEvent = {},
+                    onUndoEvent = {},
+                    contentAlignment = BiasAlignment(
+                        horizontalBias = 0f,
+                        verticalBias = 0.3f,
+                    ),
+                )
+            }
         }
     }
 
