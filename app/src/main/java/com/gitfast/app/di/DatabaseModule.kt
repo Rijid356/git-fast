@@ -17,7 +17,10 @@ import com.gitfast.app.data.local.migrations.MIGRATION_6_7
 import com.gitfast.app.data.local.migrations.MIGRATION_7_8
 import com.gitfast.app.data.local.migrations.MIGRATION_8_9
 import com.gitfast.app.data.local.migrations.MIGRATION_9_10
+import com.gitfast.app.data.local.migrations.MIGRATION_10_11
+import com.gitfast.app.data.local.ExerciseDao
 import com.gitfast.app.data.local.SorenessDao
+import com.gitfast.app.data.repository.ExerciseRepository
 import com.gitfast.app.data.repository.SorenessRepository
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
@@ -42,7 +45,7 @@ object DatabaseModule {
             context,
             GitFastDatabase::class.java,
             "gitfast-database"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
          .build()
     }
 
@@ -99,6 +102,17 @@ object DatabaseModule {
     @Singleton
     fun provideSorenessRepository(sorenessDao: SorenessDao): SorenessRepository {
         return SorenessRepository(sorenessDao)
+    }
+
+    @Provides
+    fun provideExerciseDao(database: GitFastDatabase): ExerciseDao {
+        return database.exerciseDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideExerciseRepository(exerciseDao: ExerciseDao): ExerciseRepository {
+        return ExerciseRepository(exerciseDao)
     }
 
     @Provides

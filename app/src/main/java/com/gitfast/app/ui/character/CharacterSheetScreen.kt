@@ -663,6 +663,7 @@ private fun categoryLabel(category: AchievementCategory): String {
         AchievementCategory.DOG_WALK_EVENT -> "DOG WALK EVENTS"
         AchievementCategory.BODY_COMP -> "BODY COMP"
         AchievementCategory.RECOVERY -> "RECOVERY"
+        AchievementCategory.FITNESS -> "FITNESS"
         AchievementCategory.LEVELING -> "LEVELING"
     }
 }
