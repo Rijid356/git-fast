@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-03-06
+- **Last Active:** 2026-03-07
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 
@@ -73,10 +73,11 @@
 | 2026-03-05 | Archive 18 historical screenshots (Feb 17-20) with annotated README, dog walk event improvements, new achievements and narrative tests; merged PR #129 | 28 | 1 | +205/-21 |
 | 2026-03-06 | Polish stop/back-handler workout dialogs: custom pixel-art styled modals with big color-coded buttons, square corners, centered overlay; 2 new screenshot tests with before/after comparisons; global UI-change hook; merged PR #131 | 7 | 1 | +449/-60 |
 | 2026-03-06 | Checkpoint 22: Soreness check-in + TGH stat — daily soreness logging (11 muscle groups, 3 intensities), Toughness RPG stat with 30-day bracket interpolation, 4 RECOVERY achievements, soreness XP, home "Feeling sore?" card, Room v9→v10 migration, 38 new tests; merged PR #132 | 42 | 4 | +1584/-19 |
+| 2026-03-07 | Checkpoint 23: Exercise data model — ~80-exercise catalog (bodyweight/dumbbell/pull-up bar), ExerciseSession/Set domain+entity models, Room v10→v11 migration, STR stat with bracket interpolation, session XP formula, 6 FITNESS achievements, unified streak calc, 69 new tests; PR #133 | 32 | 3 | +1990/-4 |
 
 ## Totals
-- **Total Sessions:** 62
-- **Total Commits:** 104
-- **Total Files Changed:** 863
-- **Total Lines Added:** 41063
-- **Total Lines Removed:** 2276
+- **Total Sessions:** 63
+- **Total Commits:** 107
+- **Total Files Changed:** 895
+- **Total Lines Added:** 43053
+- **Total Lines Removed:** 2280
