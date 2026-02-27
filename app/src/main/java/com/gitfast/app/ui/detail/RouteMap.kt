@@ -16,7 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import com.gitfast.app.R
+import com.gitfast.app.data.model.DogWalkEvent
 import com.gitfast.app.ui.theme.NeonGreen
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -40,6 +44,7 @@ import androidx.compose.material3.Surface
 fun RouteMap(
     points: List<LatLngPoint>,
     bounds: RouteBounds?,
+    events: List<DogWalkEvent> = emptyList(),
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -134,6 +139,22 @@ fun RouteMap(
                         BitmapDescriptorFactory.HUE_RED,
                     ),
                 )
+
+                // Dog walk event markers (emoji icons)
+                events.forEach { event ->
+                    if (event.latitude != null && event.longitude != null) {
+                        val icon = remember(event.eventType.icon) {
+                            BitmapDescriptorFactory.fromBitmap(
+                                createEmojiBitmap(event.eventType.icon),
+                            )
+                        }
+                        Marker(
+                            state = MarkerState(position = LatLng(event.latitude, event.longitude)),
+                            title = event.eventType.displayName,
+                            icon = icon,
+                        )
+                    }
+                }
             }
         }
         // Dark overlay that hides the white flash while map tiles load
@@ -148,4 +169,16 @@ fun RouteMap(
         }
         }
     }
+}
+
+private fun createEmojiBitmap(emoji: String, sizePx: Int = 64): Bitmap {
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = sizePx * 0.75f
+        textAlign = Paint.Align.CENTER
+    }
+    val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val yOffset = (canvas.height / 2f) - ((paint.descent() + paint.ascent()) / 2f)
+    canvas.drawText(emoji, canvas.width / 2f, yOffset, paint)
+    return bitmap
 }
