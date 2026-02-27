@@ -27,7 +27,7 @@ fun Workout.toHistoryItem(): WorkoutHistoryItem {
     val pace = averagePaceSecondsPerMile?.toInt()
 
     val subtitle = when {
-        activityType.isDogActivity -> listOfNotNull(dogName, routeTag).joinToString(" \u00B7 ").ifEmpty { null }
+        activityType.isDogActivity -> routeTag
         else -> null
     }
 

@@ -170,8 +170,10 @@ Detailed specs for each development phase live in `.claude/specs/`. Always read 
 1. **Before**: Record current golden screenshots for affected screens (`./gradlew recordRoborazziDebug`)
 2. **Show the "before"** to the user as part of the plan discussion
 3. **Mock up the "after"** — describe or sketch the proposed UI change so the user can approve before implementation
-4. **After implementing**: Re-record screenshots and show "before vs after" side by side
+4. **After implementing**: Re-record screenshots, then **invoke `/ui-diff`** to generate side-by-side comparisons and open them in the editor
 5. Use existing screenshot tests in `app/src/test/java/com/gitfast/app/screenshots/screens/`
+
+**IMPORTANT**: After any `recordRoborazziDebug` that follows UI changes, ALWAYS run `/ui-diff` to generate and auto-open before/after comparisons in VS Code. Never skip this step.
 
 This applies to all UI work: new screens, layout changes, adding/removing/moving elements, theming changes, etc.
 
