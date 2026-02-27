@@ -73,6 +73,70 @@ object StreakCalculator {
     }
 
     /**
+     * Count consecutive active days ending at [today] or yesterday.
+     * A day counts as "active" if it has a workout OR an exercise session.
+     * This unifies both activity types into a single streak.
+     */
+    fun getCurrentStreak(
+        workouts: List<Workout>,
+        exerciseSessionDates: Set<LocalDate>,
+        today: LocalDate = LocalDate.now(),
+    ): Int {
+        if (workouts.isEmpty() && exerciseSessionDates.isEmpty()) return 0
+
+        val zone = ZoneId.systemDefault()
+        val workoutDates = workouts
+            .map { it.startTime.atZone(zone).toLocalDate() }
+            .toSet()
+        val dateSet = workoutDates + exerciseSessionDates
+
+        val startDate = when {
+            dateSet.contains(today) -> today
+            dateSet.contains(today.minusDays(1)) -> today.minusDays(1)
+            else -> return 0
+        }
+
+        var streak = 0
+        var checkDate = startDate
+        while (dateSet.contains(checkDate)) {
+            streak++
+            checkDate = checkDate.minusDays(1)
+        }
+
+        return streak
+    }
+
+    /**
+     * Find the longest consecutive-day streak across all workouts and exercise sessions.
+     */
+    fun getLongestStreak(
+        workouts: List<Workout>,
+        exerciseSessionDates: Set<LocalDate>,
+    ): Int {
+        val zone = ZoneId.systemDefault()
+        val workoutDates = workouts
+            .map { it.startTime.atZone(zone).toLocalDate() }
+            .toSet()
+        val allDates = (workoutDates + exerciseSessionDates).sorted()
+
+        if (allDates.isEmpty()) return 0
+
+        var longest = 1
+        var current = 1
+
+        for (i in 1 until allDates.size) {
+            if (allDates[i] == allDates[i - 1].plusDays(1)) {
+                current++
+                if (current > longest) longest = current
+            } else if (allDates[i] != allDates[i - 1]) {
+                current = 1
+            }
+        }
+
+        return longest
+    }
+
+    /**
      * XP multiplier for a given streak length.
      * Day 1 = 1.0x, Day 2 = 1.1x, Day 3 = 1.2x, ... capped at 1.5x.
      */

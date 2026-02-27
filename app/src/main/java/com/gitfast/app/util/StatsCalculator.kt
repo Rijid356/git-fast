@@ -89,6 +89,56 @@ object StatsCalculator {
         )
     }
 
+    /**
+     * Calculate STR (Strength) stat based on 30-day exercise set volume.
+     * Volume = sum of (reps * weight factor) for each set.
+     * Weight factor: hasWeight = 1.5, bodyweight = 1.0.
+     * Brackets: 0→1, 50→25, 150→50, 300→75, 500→99.
+     *
+     * @param setsWithReps list of (reps, hasWeight) for each set in the 30-day window
+     */
+    fun calculateStrength(setsWithReps: List<Pair<Int, Boolean>>): Int {
+        if (setsWithReps.isEmpty()) return MIN_STAT
+        val volume = setsWithReps.sumOf { (reps, hasWeight) ->
+            (reps * if (hasWeight) 1.5 else 1.0).toInt()
+        }
+        return interpolateBrackets(
+            value = volume.toDouble(),
+            brackets = listOf(
+                0.0 to 1,
+                50.0 to 25,
+                150.0 to 50,
+                300.0 to 75,
+                500.0 to 99,
+            ),
+            inverted = false,
+        )
+    }
+
+    fun strengthBreakdown(setsWithReps: List<Pair<Int, Boolean>>, effectiveScore: Int): StatBreakdown {
+        val totalSets = setsWithReps.size
+        val totalReps = setsWithReps.sumOf { it.first }
+        val weightedSets = setsWithReps.count { it.second }
+        val volume = setsWithReps.sumOf { (reps, hasWeight) ->
+            (reps * if (hasWeight) 1.5 else 1.0).toInt()
+        }
+
+        val details = listOf(
+            "Sets (30d)" to "$totalSets",
+            "Total reps" to "$totalReps",
+            "Weighted sets" to "$weightedSets",
+            "Volume score" to "$volume",
+            "Effective score" to "$effectiveScore",
+        )
+
+        return StatBreakdown(
+            description = "Based on 30-day exercise volume (reps \u00D7 weight factor)",
+            details = details,
+            brackets = "0\u21921 | 50\u219225 | 150\u219250 | 300\u219275 | 500\u219299",
+            decayNote = "Actively decays \u2014 uses a 30-day rolling window. Keep training!",
+        )
+    }
+
     fun toughnessBreakdown(recentLogs: List<SorenessLog>, effectiveScore: Int): StatBreakdown {
         val mildCount = recentLogs.count { it.intensity == SorenessIntensity.MILD }
         val moderateCount = recentLogs.count { it.intensity == SorenessIntensity.MODERATE }

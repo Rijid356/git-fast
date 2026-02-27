@@ -12,6 +12,8 @@ import com.gitfast.app.data.local.entity.SorenessLogEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.local.entity.DogWalkEventEntity
+import com.gitfast.app.data.local.entity.ExerciseSessionEntity
+import com.gitfast.app.data.local.entity.ExerciseSetEntity
 import com.gitfast.app.data.local.entity.UnlockedAchievementEntity
 import com.gitfast.app.data.local.entity.XpTransactionEntity
 
@@ -28,8 +30,10 @@ import com.gitfast.app.data.local.entity.XpTransactionEntity
         BodyCompEntry::class,
         DogWalkEventEntity::class,
         SorenessLogEntity::class,
+        ExerciseSessionEntity::class,
+        ExerciseSetEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -38,4 +42,5 @@ abstract class GitFastDatabase : RoomDatabase() {
     abstract fun characterDao(): CharacterDao
     abstract fun bodyCompDao(): BodyCompDao
     abstract fun sorenessDao(): SorenessDao
+    abstract fun exerciseDao(): ExerciseDao
 }

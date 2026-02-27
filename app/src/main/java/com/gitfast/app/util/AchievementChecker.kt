@@ -16,6 +16,10 @@ data class AchievementSnapshot(
     val eventCountByType: Map<String, Int> = emptyMap(),
     val totalSorenessLogCount: Int = 0,
     val toughnessStat: Int = 1,
+    val totalExerciseSessionCount: Int = 0,
+    val totalExerciseSetCount: Int = 0,
+    val totalExerciseReps: Int = 0,
+    val strengthStat: Int = 1,
 )
 
 object AchievementChecker {
@@ -113,6 +117,14 @@ object AchievementChecker {
             AchievementDef.IRON_BODY -> snapshot.totalSorenessLogCount >= 7
             AchievementDef.RECOVERY_WARRIOR -> snapshot.totalSorenessLogCount >= 30
             AchievementDef.BUILT_DIFFERENT -> snapshot.toughnessStat >= 50
+
+            // Fitness (Exercise Sessions)
+            AchievementDef.FIRST_REP -> snapshot.totalExerciseSessionCount >= 1
+            AchievementDef.GYM_RAT -> snapshot.totalExerciseSessionCount >= 10
+            AchievementDef.IRON_ADDICT -> snapshot.totalExerciseSessionCount >= 50
+            AchievementDef.CENTURY_SETS -> snapshot.totalExerciseSetCount >= 100
+            AchievementDef.THOUSAND_REPS -> snapshot.totalExerciseReps >= 1000
+            AchievementDef.STRENGTH_TITAN -> snapshot.strengthStat >= 50
 
             // Body Composition (checked externally via BodyCompRepository, not workout-based)
             AchievementDef.FIRST_WEIGH_IN -> false

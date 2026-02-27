@@ -186,6 +186,54 @@ object XpCalculator {
         )
     }
 
+    private const val XP_PER_SET = 3
+    private const val XP_WEIGHT_BONUS_PER_SET = 1
+    private const val XP_VOLUME_BONUS = 10
+    private const val VOLUME_THRESHOLD = 10
+
+    /**
+     * Calculate XP earned from a completed exercise session.
+     * Base: +3 XP per set. Weight bonus: +1 XP/set for weighted exercises.
+     * Volume bonus: +10 XP if 10+ sets. Streak multiplier applied.
+     */
+    fun calculateSessionXp(totalSets: Int, weightedSets: Int = 0, streakDays: Int = 0): XpResult {
+        val breakdown = mutableListOf<String>()
+        var rawXp = 0
+
+        val baseXp = totalSets * XP_PER_SET
+        if (baseXp > 0) {
+            breakdown.add("+$baseXp XP: $totalSets sets")
+        }
+        rawXp += baseXp
+
+        if (weightedSets > 0) {
+            val weightBonus = weightedSets * XP_WEIGHT_BONUS_PER_SET
+            breakdown.add("+$weightBonus XP: $weightedSets weighted sets")
+            rawXp += weightBonus
+        }
+
+        if (totalSets >= VOLUME_THRESHOLD) {
+            breakdown.add("+$XP_VOLUME_BONUS XP: volume bonus ($totalSets+ sets)")
+            rawXp += XP_VOLUME_BONUS
+        }
+
+        val streakMultiplier = StreakCalculator.getMultiplier(streakDays)
+        if (streakMultiplier > 1.0) {
+            val bonusXp = ((rawXp * streakMultiplier) - rawXp).toInt()
+            if (bonusXp > 0) {
+                breakdown.add("+$bonusXp XP: $streakDays-day streak (${StreakCalculator.getMultiplierLabel(streakDays)})")
+            }
+            rawXp = (rawXp * streakMultiplier).toInt()
+        }
+
+        return XpResult(
+            totalXp = max(rawXp, MINIMUM_XP),
+            breakdown = breakdown,
+            streakDays = streakDays,
+            streakMultiplier = streakMultiplier,
+        )
+    }
+
     private const val XP_PER_WEIGH_IN = 5
 
     /**
