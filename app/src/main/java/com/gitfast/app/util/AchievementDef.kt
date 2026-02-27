@@ -9,6 +9,7 @@ enum class AchievementCategory {
     DOG_WALK_EVENT,
     BODY_COMP,
     RECOVERY,
+    FITNESS,
     LEVELING,
 }
 
@@ -398,6 +399,56 @@ enum class AchievementDef(
         xpReward = 75,
         icon = "[BD]",
         category = AchievementCategory.RECOVERY,
+    ),
+
+    // Fitness (Exercise Sessions)
+    FIRST_REP(
+        id = "fitness_first_rep",
+        title = "First Rep",
+        description = "Complete your first exercise session",
+        xpReward = 25,
+        icon = "[1R]",
+        category = AchievementCategory.FITNESS,
+    ),
+    GYM_RAT(
+        id = "fitness_gym_rat",
+        title = "Gym Rat",
+        description = "Complete 10 exercise sessions",
+        xpReward = 50,
+        icon = "[GR]",
+        category = AchievementCategory.FITNESS,
+    ),
+    IRON_ADDICT(
+        id = "fitness_iron_addict",
+        title = "Iron Addict",
+        description = "Complete 50 exercise sessions",
+        xpReward = 100,
+        icon = "[IA]",
+        category = AchievementCategory.FITNESS,
+    ),
+    CENTURY_SETS(
+        id = "fitness_century_sets",
+        title = "Century Sets",
+        description = "Complete 100 total exercise sets",
+        xpReward = 50,
+        icon = "[CS]",
+        category = AchievementCategory.FITNESS,
+    ),
+    THOUSAND_REPS(
+        id = "fitness_thousand_reps",
+        title = "Thousand Reps",
+        description = "Complete 1000 total reps",
+        xpReward = 75,
+        icon = "[1K]",
+        category = AchievementCategory.FITNESS,
+    ),
+    STRENGTH_TITAN(
+        id = "fitness_strength_titan",
+        title = "Strength Titan",
+        description = "Reach STR stat 50 or higher",
+        xpReward = 100,
+        icon = "[ST]",
+        category = AchievementCategory.FITNESS,
     ),
 
     // Leveling

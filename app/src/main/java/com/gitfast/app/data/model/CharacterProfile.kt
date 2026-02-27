@@ -13,6 +13,7 @@ data class CharacterProfile(
     val vitalityStat: Int = 1,
     val foragingStat: Int = 1,
     val toughnessStat: Int = 1,
+    val strengthStat: Int = 1,
     val currentStreak: Int = 0,
     val streakMultiplier: Double = 1.0,
 )
