@@ -248,6 +248,7 @@ private fun DetailContent(
             RouteMap(
                 points = detail.routePoints,
                 bounds = detail.routeBounds,
+                events = if (detail.activityType.isDogActivity) dogWalkEvents else emptyList(),
             )
         } else {
             NoRouteContent()
