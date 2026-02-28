@@ -107,7 +107,6 @@ object AchievementChecker {
             AchievementDef.JUNIPER_SNACK_HUNTER -> (snapshot.eventCountByType["SNACK_FOUND"] ?: 0) >= 10
             AchievementDef.JUNIPER_SQUIRREL_NEMESIS -> (snapshot.eventCountByType["SQUIRREL_CHASE"] ?: 0) >= 5
             AchievementDef.JUNIPER_SOCIAL_BUTTERFLY -> (snapshot.eventCountByType["FRIENDLY_DOG"] ?: 0) >= 10
-            AchievementDef.JUNIPER_ZOOMIE_CHAMPION -> (snapshot.eventCountByType["ZOOMIES"] ?: 0) >= 10
             AchievementDef.JUNIPER_ADVENTURE_LOG_50 -> snapshot.totalDogWalkEventCount >= 50
             AchievementDef.JUNIPER_HYDRATION_HERO -> (snapshot.eventCountByType["WATER_BREAK"] ?: 0) >= 10
             AchievementDef.JUNIPER_VOCAL_PUP -> (snapshot.eventCountByType["BARK_REACT"] ?: 0) >= 10

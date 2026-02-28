@@ -16,7 +16,6 @@ enum class DogWalkEventType(
     DEEP_SNIFF("Deep Sniff", "🐾", EventCategory.FORAGING, "Sniff"),
     SQUIRREL_CHASE("Squirrel Chase", "🐿️", EventCategory.ENERGY, "Squirrel"),
     FRIENDLY_DOG("Friendly Dog", "🐶", EventCategory.SOCIAL, "Friend"),
-    ZOOMIES("Zoomies", "⚡", EventCategory.ENERGY, "Zoomies"),
     WATER_BREAK("Water Break", "💦", EventCategory.FORAGING, "Water"),
     BARK_REACT("Bark/React", "🗣️", EventCategory.SOCIAL, "Bark"),
     LEASH_PULL("Leash Pull", "🔗", EventCategory.ENERGY, "Pull"),

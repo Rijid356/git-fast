@@ -288,15 +288,6 @@ enum class AchievementDef(
         category = AchievementCategory.DOG_WALK_EVENT,
         profileId = 2,
     ),
-    JUNIPER_ZOOMIE_CHAMPION(
-        id = "juniper_zoomie_champ",
-        title = "Zoomie Champion",
-        description = "Have 10 zoomie bursts",
-        xpReward = 25,
-        icon = "[ZC]",
-        category = AchievementCategory.DOG_WALK_EVENT,
-        profileId = 2,
-    ),
     JUNIPER_ADVENTURE_LOG_50(
         id = "juniper_log_50",
         title = "Adventure Log 50",
