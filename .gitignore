@@ -48,7 +48,11 @@ replay_pid*.log
 bash.exe.stackdump
 
 # Node (screenshot composites)
-screenshots/node_modules/
+node_modules/
+
+# Firebase emulator logs
+firebase-debug.log
+firestore-debug.log
 
 # Claude Code
 .claude/
