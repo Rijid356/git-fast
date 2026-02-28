@@ -190,7 +190,7 @@ class DogWalkSummaryViewModelTest {
     }
 
     @Test
-    fun `saveWalk saves metadata with Juniper and marks saved`() {
+    fun `saveWalk saves metadata without dogName and marks saved`() {
         val vm = createViewModel()
         vm.saveWalk()
 
@@ -199,7 +199,7 @@ class DogWalkSummaryViewModelTest {
         coVerify {
             workoutSaveManager.updateDogWalkMetadata(
                 workoutId = "w1",
-                dogName = "Juniper",
+                dogName = null,
                 routeTag = null,
                 weatherCondition = null,
                 weatherTemp = null,
