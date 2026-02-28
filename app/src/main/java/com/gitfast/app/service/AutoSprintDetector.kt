@@ -12,6 +12,8 @@ class AutoSprintDetector @Inject constructor() {
         const val END_WINDOW_MS = 5_000L         // 5s sustained below threshold to end
         const val WINDOW_RETENTION_MS = 10_000L  // keep 10s of history
         const val MIN_POINTS = 3                 // minimum GPS readings for detection
+        const val MAX_SPRINT_DURATION_MS = 120_000L  // 2 min absolute cap
+        const val NULL_SPEED_TIMEOUT_MS = 10_000L    // 10s without speed data → end sprint
     }
 
     data class AnalysisResult(
@@ -20,6 +22,8 @@ class AutoSprintDetector @Inject constructor() {
     )
 
     private val recentPoints = mutableListOf<TimedSpeed>()
+    private var sprintStartMs: Long? = null
+    private var lastNonNullSpeedMs: Long? = null
 
     private data class TimedSpeed(
         val timestampMs: Long,
@@ -34,16 +38,27 @@ class AutoSprintDetector @Inject constructor() {
         // Evict points older than retention window
         recentPoints.removeAll { nowMs - it.timestampMs > WINDOW_RETENTION_MS }
 
-        // If speed data is unavailable on this point, return no-op
+        // Track sprint start time
+        if (isCurrentlySprinting && sprintStartMs == null) {
+            sprintStartMs = nowMs
+        }
+
+        // Track last non-null speed
+        if (point.speed != null) {
+            lastNonNullSpeedMs = nowMs
+        }
+
+        // When sprinting, always route to analyzeForEnd (even with null speed)
+        if (isCurrentlySprinting) {
+            return analyzeForEnd(nowMs)
+        }
+
+        // Not sprinting: need speed data to detect sprint start
         if (point.speed == null) {
             return AnalysisResult()
         }
 
-        return if (isCurrentlySprinting) {
-            analyzeForEnd(nowMs)
-        } else {
-            analyzeForStart(nowMs)
-        }
+        return analyzeForStart(nowMs)
     }
 
     private fun analyzeForStart(nowMs: Long): AnalysisResult {
@@ -60,6 +75,18 @@ class AutoSprintDetector @Inject constructor() {
     }
 
     private fun analyzeForEnd(nowMs: Long): AnalysisResult {
+        // Timeout: absolute max sprint duration
+        val startMs = sprintStartMs
+        if (startMs != null && nowMs - startMs >= MAX_SPRINT_DURATION_MS) {
+            return AnalysisResult(shouldEndSprint = true)
+        }
+
+        // Timeout: no speed data for too long
+        val lastSpeedMs = lastNonNullSpeedMs
+        if (lastSpeedMs != null && nowMs - lastSpeedMs >= NULL_SPEED_TIMEOUT_MS) {
+            return AnalysisResult(shouldEndSprint = true)
+        }
+
         val cutoff = nowMs - END_WINDOW_MS
         val windowPoints = recentPoints.filter { it.timestampMs >= cutoff }
 
@@ -74,5 +101,7 @@ class AutoSprintDetector @Inject constructor() {
 
     fun reset() {
         recentPoints.clear()
+        sprintStartMs = null
+        lastNonNullSpeedMs = null
     }
 }
