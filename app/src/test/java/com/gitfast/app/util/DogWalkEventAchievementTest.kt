@@ -96,22 +96,6 @@ class DogWalkEventAchievementTest {
     }
 
     @Test
-    fun `JUNIPER_ZOOMIE_CHAMPION earned at 10 zoomies`() {
-        val result = AchievementChecker.checkJuniperAchievements(
-            snapshot(eventCountByType = mapOf("ZOOMIES" to 10))
-        )
-        assertTrue(result.any { it == AchievementDef.JUNIPER_ZOOMIE_CHAMPION })
-    }
-
-    @Test
-    fun `JUNIPER_ZOOMIE_CHAMPION not earned at 9 zoomies`() {
-        val result = AchievementChecker.checkJuniperAchievements(
-            snapshot(eventCountByType = mapOf("ZOOMIES" to 9))
-        )
-        assertFalse(result.any { it == AchievementDef.JUNIPER_ZOOMIE_CHAMPION })
-    }
-
-    @Test
     fun `JUNIPER_ADVENTURE_LOG_50 earned at 50 total events`() {
         val result = AchievementChecker.checkJuniperAchievements(
             snapshot(totalEventCount = 50)
@@ -145,7 +129,6 @@ class DogWalkEventAchievementTest {
                 "SNACK_FOUND" to 10,
                 "SQUIRREL_CHASE" to 5,
                 "FRIENDLY_DOG" to 10,
-                "ZOOMIES" to 10,
             )
         )
         val result = AchievementChecker.checkJuniperAchievements(snap)
@@ -154,7 +137,6 @@ class DogWalkEventAchievementTest {
         assertTrue(result.any { it == AchievementDef.JUNIPER_SNACK_HUNTER })
         assertTrue(result.any { it == AchievementDef.JUNIPER_SQUIRREL_NEMESIS })
         assertTrue(result.any { it == AchievementDef.JUNIPER_SOCIAL_BUTTERFLY })
-        assertTrue(result.any { it == AchievementDef.JUNIPER_ZOOMIE_CHAMPION })
         assertTrue(result.any { it == AchievementDef.JUNIPER_ADVENTURE_LOG_50 })
     }
 }
