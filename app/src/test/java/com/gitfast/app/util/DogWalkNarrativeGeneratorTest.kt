@@ -114,14 +114,23 @@ class DogWalkNarrativeGeneratorTest {
 
     @Test
     fun `mixed events include Juniper and duration`() {
-        val events = listOf(
-            event(DogWalkEventType.SNACK_FOUND, 0),
-            event(DogWalkEventType.POOP, 5000),
-            event(DogWalkEventType.FRIENDLY_DOG, 10000),
+        // Run multiple times since Juniper is one of several possible refs
+        val allNarratives = (1..20).map {
+            DogWalkNarrativeGenerator.generateNarrative(
+                listOf(
+                    event(DogWalkEventType.SNACK_FOUND, 0),
+                    event(DogWalkEventType.POOP, 5000),
+                    event(DogWalkEventType.FRIENDLY_DOG, 10000),
+                ),
+                45
+            )
+        }
+        val anyHasJuniper = allNarratives.any { it.contains("Juniper") }
+        assertTrue("At least one narrative should mention Juniper", anyHasJuniper)
+        assertTrue(
+            "All narratives should mention 45 minutes",
+            allNarratives.all { it.contains("45") }
         )
-        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 45)
-        assertTrue("Should mention Juniper, got: $narrative", narrative.contains("Juniper"))
-        assertTrue("Should mention 45 minutes, got: $narrative", narrative.contains("45"))
     }
 
     @Test
@@ -219,7 +228,53 @@ class DogWalkNarrativeGeneratorTest {
         )
         val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 60)
         assertTrue(narrative.isNotBlank())
-        assertTrue("Should mention Juniper", narrative.contains("Juniper"))
         assertTrue("Should end with !", narrative.endsWith("!"))
+    }
+
+    // --- New tests for dynamic narrative engine ---
+
+    @Test
+    fun `squirrel plus leash pull triggers Berserker mode combo prefix`() {
+        val events = listOf(
+            event(DogWalkEventType.SQUIRREL_CHASE, 0),
+            event(DogWalkEventType.LEASH_PULL, 1000),
+        )
+        val narratives = (1..20).map {
+            DogWalkNarrativeGenerator.generateNarrative(events, 20)
+        }
+        assertTrue(
+            "All narratives should start with 'Berserker mode!'",
+            narratives.all { it.startsWith("Berserker mode!") }
+        )
+    }
+
+    @Test
+    fun `narrative contains quest framing word`() {
+        val questWords = listOf("quest", "expedition", "patrol", "adventure", "campaign", "raid", "mission")
+        val events = listOf(
+            event(DogWalkEventType.SNACK_FOUND, 0),
+            event(DogWalkEventType.FRIENDLY_DOG, 5000),
+        )
+        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 30)
+        assertTrue(
+            "Should contain a quest type word, got: $narrative",
+            questWords.any { narrative.lowercase().contains(it) }
+        )
+    }
+
+    @Test
+    fun `repeated calls produce variety in output`() {
+        val events = listOf(
+            event(DogWalkEventType.SNACK_FOUND, 0),
+            event(DogWalkEventType.SQUIRREL_CHASE, 5000),
+            event(DogWalkEventType.FRIENDLY_DOG, 10000),
+        )
+        val narratives = (1..20).map {
+            DogWalkNarrativeGenerator.generateNarrative(events, 45)
+        }.toSet()
+        assertTrue(
+            "Should produce at least 2 distinct narratives from 20 calls, got ${narratives.size}: $narratives",
+            narratives.size >= 2
+        )
     }
 }
