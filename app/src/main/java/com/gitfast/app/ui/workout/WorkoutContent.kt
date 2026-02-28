@@ -115,9 +115,16 @@ fun WorkoutContent(
                     )
                 }
                 uiState.activityType.isDogActivity && uiState.isSprintActive && uiState.isActive -> {
-                    SprintDisplay(
-                        currentSprintTimeFormatted = uiState.currentSprintTimeFormatted,
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        SpeedDisplay(
+                            currentSpeedFormatted = uiState.currentSpeedFormatted,
+                            currentPaceFormatted = uiState.currentPaceFormatted,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SprintDisplay(
+                            currentSprintTimeFormatted = uiState.currentSprintTimeFormatted,
+                        )
+                    }
                 }
                 uiState.phase == PhaseType.LAPS && uiState.isActive -> {
                     LapPhaseContent(
