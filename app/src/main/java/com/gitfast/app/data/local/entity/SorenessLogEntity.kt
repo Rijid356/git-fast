@@ -1,9 +1,13 @@
 package com.gitfast.app.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "soreness_logs")
+@Entity(
+    tableName = "soreness_logs",
+    indices = [Index("date")],
+)
 data class SorenessLogEntity(
     @PrimaryKey val id: String,
     val date: Long,
