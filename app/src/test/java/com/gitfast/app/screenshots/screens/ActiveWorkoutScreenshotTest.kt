@@ -1,14 +1,17 @@
 package com.gitfast.app.screenshots.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.screenshots.FullScreenScreenshotTestBase
-import com.gitfast.app.ui.workout.ExpandedWheelOverlay
+import com.gitfast.app.ui.workout.EventWheelContent
 import com.gitfast.app.ui.workout.WorkoutContent
 import com.gitfast.app.ui.workout.WorkoutUiState
 import org.junit.Test
@@ -143,7 +146,7 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                 onEndLaps = {},
                 dogWalkEventCounts = mapOf(
                     DogWalkEventType.SQUIRREL_CHASE to 1,
-                    DogWalkEventType.ZOOMIES to 2,
+
                     DogWalkEventType.BARK_REACT to 1,
                 ),
                 onLogEvent = {},
@@ -184,7 +187,7 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                 onEndLaps = {},
                 dogWalkEventCounts = mapOf(
                     DogWalkEventType.SQUIRREL_CHASE to 2,
-                    DogWalkEventType.ZOOMIES to 3,
+
                     DogWalkEventType.SNACK_FOUND to 1,
                     DogWalkEventType.WATER_BREAK to 1,
                 ),
@@ -207,6 +210,8 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
         )
         captureScreenshot("Screen_Workout_DogWalk_EventWheel_Expanded", category = "workout") {
             Box(modifier = Modifier.fillMaxSize()) {
+                // Workout screen visible underneath (no event counts so no
+                // duplicate FAB — in the real app the FAB fades to alpha=0)
                 WorkoutContent(
                     uiState = WorkoutUiState(
                         isActive = true,
@@ -229,22 +234,31 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
                     onStartLaps = {},
                     onMarkLap = {},
                     onEndLaps = {},
-                    dogWalkEventCounts = eventCounts,
                     onLogEvent = {},
                     onUndoEvent = {},
                 )
-                // BiasAlignment shifts the wheel center to where the FAB sits
-                // (0f, 0f) = screen center; (0f, 0.3f) = ~65% down
-                ExpandedWheelOverlay(
-                    eventCounts = eventCounts,
-                    expandProgress = 1f,
-                    onLogEvent = {},
-                    onUndoEvent = {},
+                // Scrim
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.6f)),
+                )
+                // Wheel at the FAB's position (~62% down the screen)
+                Box(
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = BiasAlignment(
                         horizontalBias = 0f,
                         verticalBias = 0.3f,
                     ),
-                )
+                ) {
+                    EventWheelContent(
+                        eventCounts = eventCounts,
+                        expandProgress = 1f,
+                        fabRotation = 45f,
+                        onLogEvent = {},
+                        onUndoEvent = {},
+                    )
+                }
             }
         }
     }
