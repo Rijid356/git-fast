@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-02-27
+- **Last Active:** 2026-02-28
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 
@@ -77,10 +77,12 @@
 | 2026-02-26 | Dog walk detail emoji markers + history cleanup: emoji map markers (🍖💩🐾⚡ etc.) on RouteMap/EventRouteMap via Canvas bitmap, event pins on detail screen map, remove redundant "Juniper" from history subtitle; merged PR #134 | 5 | 1 | +59/-10 |
 | 2026-02-27 | Fix event wheel centering (onGloballyPositioned + single Popup), remove Zoomies event type, update achievements/narrative/tests, before/after comparisons; merged PR #135 | 17 | 1 | +131/-121 |
 | 2026-02-27 | Organize screenshot comparisons into dated subfolders, update /ui-diff skill for YYYY-MM-DD folder format, clean up .gitignore; merged PR #136 | 13 | 1 | +5/-1 |
+| 2026-02-28 | Fix sprint stuck on null GPS speed (timeout safety nets) and show MPH during sprinting (SpeedDisplay hero + sprint timer below), 12 new AutoSprintDetector tests; PR #139 | 5 | 1 | +248/-9 |
+| 2026-02-28 | Epic narrative rewrite + remove redundant dog name: dynamic RPG narrative engine with randomized word pools, combo prefixes (Berserker mode/Diplomacy maxed/Legendary foraging), remove 🐕 Juniper metadata row from detail screen, HUMAN_FRIEND event type commit, 3 new tests; merged PR #138 | 8 | 5 | +523/-116 |
 
 ## Totals
-- **Total Sessions:** 66
-- **Total Commits:** 110
-- **Total Files Changed:** 930
-- **Total Lines Added:** 43248
-- **Total Lines Removed:** 2412
+- **Total Sessions:** 68
+- **Total Commits:** 116
+- **Total Files Changed:** 943
+- **Total Lines Added:** 44019
+- **Total Lines Removed:** 2537
