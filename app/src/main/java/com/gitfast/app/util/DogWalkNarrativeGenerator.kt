@@ -15,7 +15,6 @@ object DogWalkNarrativeGenerator {
 
         // Check for special combos first
         val hasSquirrelChase = (counts[DogWalkEventType.SQUIRREL_CHASE] ?: 0) > 0
-        val hasZoomies = (counts[DogWalkEventType.ZOOMIES] ?: 0) > 0
 
         if (counts.size == 1) {
             return singleTypeNarrative(counts.entries.first(), durationMinutes)
@@ -42,15 +41,9 @@ object DogWalkNarrativeGenerator {
             parts.add("marked ${pluralize(pees, "territory", "territories")}")
         }
 
-        // Energy - special combo
-        if (hasSquirrelChase && hasZoomies) {
-            parts.add("spotted a squirrel and went full zoomie mode")
-        } else {
-            val chases = counts[DogWalkEventType.SQUIRREL_CHASE] ?: 0
-            val zoomies = counts[DogWalkEventType.ZOOMIES] ?: 0
-            if (chases > 0) parts.add("chased ${pluralize(chases, "squirrel")}")
-            if (zoomies > 0) parts.add("had ${pluralize(zoomies, "zoomie burst")}")
-        }
+        // Energy
+        val chases = counts[DogWalkEventType.SQUIRREL_CHASE] ?: 0
+        if (chases > 0) parts.add("chased ${pluralize(chases, "squirrel")}")
         val pulls = counts[DogWalkEventType.LEASH_PULL] ?: 0
         if (pulls > 0) parts.add("pulled on the leash ${pluralize(pulls, "time")}")
 
@@ -82,7 +75,6 @@ object DogWalkNarrativeGenerator {
             DogWalkEventType.DEEP_SNIFF -> "Juniper was laser-focused on sniffing - ${pluralize(count, "deep sniff")} and nothing else on this $durationMinutes-minute walk!"
             DogWalkEventType.SNACK_FOUND -> "Juniper was in foraging mode - ${pluralize(count, "snack")} found in $durationMinutes minutes!"
             DogWalkEventType.SQUIRREL_CHASE -> "Squirrel alert! Juniper chased ${pluralize(count, "squirrel")} in $durationMinutes minutes!"
-            DogWalkEventType.ZOOMIES -> "Pure energy! ${pluralize(count, "zoomie burst")} in $durationMinutes minutes!"
             DogWalkEventType.FRIENDLY_DOG -> "Social butterfly! Juniper met ${pluralize(count, "friendly dog")} on a $durationMinutes-minute walk!"
             DogWalkEventType.POOP -> "All business - ${pluralize(count, "pit stop")} on a $durationMinutes-minute walk!"
             DogWalkEventType.PEE -> "Juniper marked ${pluralize(count, "territory", "territories")} in $durationMinutes minutes!"

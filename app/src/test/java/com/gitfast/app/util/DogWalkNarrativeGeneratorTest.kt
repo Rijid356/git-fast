@@ -59,16 +59,6 @@ class DogWalkNarrativeGeneratorTest {
     }
 
     @Test
-    fun `single ZOOMIES generates energy narrative`() {
-        val events = listOf(event(DogWalkEventType.ZOOMIES))
-        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 15)
-        assertTrue(
-            "Should mention zoomie, got: $narrative",
-            narrative.lowercase().contains("zoomie")
-        )
-    }
-
-    @Test
     fun `single FRIENDLY_DOG generates social narrative`() {
         val events = listOf(event(DogWalkEventType.FRIENDLY_DOG))
         val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 30)
@@ -110,15 +100,15 @@ class DogWalkNarrativeGeneratorTest {
     }
 
     @Test
-    fun `squirrel chase plus zoomies triggers combo`() {
+    fun `squirrel chase plus leash pull generates multi-energy narrative`() {
         val events = listOf(
             event(DogWalkEventType.SQUIRREL_CHASE, 0),
-            event(DogWalkEventType.ZOOMIES, 1000),
+            event(DogWalkEventType.LEASH_PULL, 1000),
         )
         val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 20)
         assertTrue(
-            "Should mention squirrel and zoomie combo, got: $narrative",
-            narrative.contains("squirrel") && narrative.contains("zoomie")
+            "Should mention squirrel and leash, got: $narrative",
+            narrative.contains("squirrel") && narrative.contains("leash")
         )
     }
 
@@ -202,8 +192,7 @@ class DogWalkNarrativeGeneratorTest {
             event(DogWalkEventType.POOP, 2000),
             event(DogWalkEventType.PEE, 3000),
             event(DogWalkEventType.SQUIRREL_CHASE, 4000),
-            event(DogWalkEventType.ZOOMIES, 5000),
-            event(DogWalkEventType.FRIENDLY_DOG, 6000),
+            event(DogWalkEventType.FRIENDLY_DOG, 5000),
         )
         val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 60)
         assertTrue(narrative.isNotBlank())

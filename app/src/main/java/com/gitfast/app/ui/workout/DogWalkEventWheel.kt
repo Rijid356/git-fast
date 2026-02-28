@@ -27,8 +27,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
@@ -41,6 +44,14 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
+private val FAB_SIZE = 56.dp
+private val ITEM_SIZE = 48.dp
+private val WHEEL_RADIUS = 120.dp
+private val LABEL_ALLOWANCE = 16.dp
+
+/** Wheel diameter: items extend radius + half-item + label beyond center on each side. */
+private val WHEEL_CONTENT_SIZE = WHEEL_RADIUS * 2 + ITEM_SIZE + LABEL_ALLOWANCE
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DogWalkEventWheel(
@@ -52,6 +63,7 @@ fun DogWalkEventWheel(
     val view = LocalView.current
     var expanded by remember { mutableStateOf(false) }
     val totalCount = eventCounts.values.sum()
+    var fabWindowPos by remember { mutableStateOf(Offset.Zero) }
 
     val expandProgress by animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
@@ -66,11 +78,17 @@ fun DogWalkEventWheel(
     )
 
     Box(modifier = modifier) {
-        // FAB
-        Box {
+        // FAB — fades out when wheel is open (wheel has its own center paw)
+        Box(
+            modifier = Modifier
+                .graphicsLayer { alpha = 1f - expandProgress }
+                .onGloballyPositioned { coords ->
+                    fabWindowPos = coords.positionInWindow()
+                },
+        ) {
             Surface(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(FAB_SIZE)
                     .clickable {
                         view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                         expanded = !expanded
@@ -115,67 +133,83 @@ fun DogWalkEventWheel(
             }
         }
 
-        // Expanded wheel — Popup centered directly on the FAB
+        // Expanded wheel overlay — single full-screen Popup with scrim + wheel.
+        // The wheel is offset to exact FAB coordinates so center aligns perfectly.
         if (expanded || expandProgress > 0.01f) {
+            val density = LocalDensity.current
+            val wheelPx = with(density) { WHEEL_CONTENT_SIZE.toPx() }
+            val fabPx = with(density) { FAB_SIZE.toPx() }
+
             Popup(
-                alignment = Alignment.Center,
                 onDismissRequest = { expanded = false },
                 properties = PopupProperties(focusable = true),
             ) {
-                ExpandedWheelOverlay(
-                    eventCounts = eventCounts,
-                    expandProgress = expandProgress,
-                    onLogEvent = { eventType ->
-                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                        onLogEvent(eventType)
-                    },
-                    onUndoEvent = { eventType ->
-                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                        onUndoEvent(eventType)
-                    },
-                    onDismiss = { expanded = false },
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.6f * expandProgress))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { expanded = false },
+                        ),
+                ) {
+                    // Position wheel so its center = FAB center
+                    Box(
+                        modifier = Modifier.offset {
+                            IntOffset(
+                                x = (fabWindowPos.x + fabPx / 2 - wheelPx / 2).roundToInt(),
+                                y = (fabWindowPos.y + fabPx / 2 - wheelPx / 2).roundToInt(),
+                            )
+                        },
+                    ) {
+                        EventWheelContent(
+                            eventCounts = eventCounts,
+                            expandProgress = expandProgress,
+                            fabRotation = fabRotation,
+                            onLogEvent = { eventType ->
+                                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                onLogEvent(eventType)
+                            },
+                            onUndoEvent = { eventType ->
+                                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                                onUndoEvent(eventType)
+                            },
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 /**
- * Full-screen overlay with scrim + radial wheel of event items.
- * Items orbit from the center of this composable — when used inside a
- * Popup(alignment = Center) anchored on the FAB, the center = the FAB.
+ * Fixed-size radial wheel. The Box is sized to exactly contain the orbit of
+ * items, so Popup(alignment=Center) places the center directly on the FAB.
+ * The paw button renders at the center of the wheel.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ExpandedWheelOverlay(
+fun EventWheelContent(
     eventCounts: Map<DogWalkEventType, Int>,
     expandProgress: Float,
+    fabRotation: Float = 0f,
     onLogEvent: (DogWalkEventType) -> Unit,
     onUndoEvent: (DogWalkEventType) -> Unit,
-    onDismiss: () -> Unit = {},
-    contentAlignment: Alignment = Alignment.Center,
 ) {
     val density = LocalDensity.current
     val events = DogWalkEventType.entries
     val n = events.size
-    val radiusDp = 120.dp
-    val radiusPx = with(density) { radiusDp.toPx() }
-    val itemSizeDp = 48.dp
+    val radiusPx = with(density) { WHEEL_RADIUS.toPx() }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.6f * expandProgress))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onDismiss,
-            ),
-        contentAlignment = contentAlignment,
+        modifier = Modifier.size(WHEEL_CONTENT_SIZE),
+        contentAlignment = Alignment.Center,
     ) {
+        // Radial event items
         events.forEachIndexed { index, eventType ->
             val count = eventCounts[eventType] ?: 0
-            // Full circle: start from top (12 o'clock), go clockwise
+            // Start from 12 o'clock, go clockwise
             val angle = 2.0 * Math.PI * index / n - Math.PI / 2.0
             val x = radiusPx * cos(angle).toFloat()
             val y = radiusPx * sin(angle).toFloat()
@@ -202,24 +236,19 @@ fun ExpandedWheelOverlay(
                 Box {
                     Surface(
                         modifier = Modifier
-                            .size(itemSizeDp)
+                            .size(ITEM_SIZE)
                             .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                             .combinedClickable(
                                 onClick = { onLogEvent(eventType) },
                                 onLongClick = {
-                                    if (count > 0) {
-                                        onUndoEvent(eventType)
-                                    }
+                                    if (count > 0) onUndoEvent(eventType)
                                 },
                             ),
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.surfaceVariant,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = eventType.icon,
-                                fontSize = 20.sp,
-                            )
+                            Text(text = eventType.icon, fontSize = 20.sp)
                         }
                     }
 
@@ -256,6 +285,22 @@ fun ExpandedWheelOverlay(
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 7.sp),
                     color = Color.White.copy(alpha = 0.8f),
                     modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+        }
+
+        // Center paw button (on top of radial items)
+        Surface(
+            modifier = Modifier.size(FAB_SIZE),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary,
+            shadowElevation = 6.dp,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = "\uD83D\uDC3E",
+                    fontSize = 24.sp,
+                    modifier = Modifier.rotate(fabRotation),
                 )
             }
         }

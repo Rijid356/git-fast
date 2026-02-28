@@ -77,12 +77,12 @@ class WorkoutStateManagerEventsTest {
     @Test
     fun `getDogWalkEvents returns copy of events`() {
         manager.startWorkout(ActivityType.DOG_WALK)
-        manager.logDogWalkEvent(DogWalkEventType.ZOOMIES, 40.0, -74.0)
+        manager.logDogWalkEvent(DogWalkEventType.LEASH_PULL, 40.0, -74.0)
         manager.logDogWalkEvent(DogWalkEventType.FRIENDLY_DOG, 40.0, -74.0)
 
         val events = manager.getDogWalkEvents()
         assertEquals(2, events.size)
-        assertEquals(DogWalkEventType.ZOOMIES, events[0].type)
+        assertEquals(DogWalkEventType.LEASH_PULL, events[0].type)
         assertEquals(DogWalkEventType.FRIENDLY_DOG, events[1].type)
     }
 
@@ -123,13 +123,13 @@ class WorkoutStateManagerEventsTest {
     fun `stopWorkout includes events in snapshot`() {
         manager.startWorkout(ActivityType.DOG_WALK)
         manager.logDogWalkEvent(DogWalkEventType.SQUIRREL_CHASE, 40.0, -74.0)
-        manager.logDogWalkEvent(DogWalkEventType.ZOOMIES, 40.0, -74.0)
+        manager.logDogWalkEvent(DogWalkEventType.LEASH_PULL, 40.0, -74.0)
 
         val snapshot = manager.stopWorkout()
 
         assertEquals(2, snapshot.dogWalkEvents.size)
         assertEquals(DogWalkEventType.SQUIRREL_CHASE, snapshot.dogWalkEvents[0].type)
-        assertEquals(DogWalkEventType.ZOOMIES, snapshot.dogWalkEvents[1].type)
+        assertEquals(DogWalkEventType.LEASH_PULL, snapshot.dogWalkEvents[1].type)
     }
 
     @Test
