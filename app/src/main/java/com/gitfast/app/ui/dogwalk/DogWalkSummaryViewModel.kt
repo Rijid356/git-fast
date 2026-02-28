@@ -180,7 +180,7 @@ class DogWalkSummaryViewModel @Inject constructor(
             // Update workout with metadata
             workoutSaveManager.updateDogWalkMetadata(
                 workoutId = workoutId,
-                dogName = "Juniper",
+                dogName = null,
                 routeTag = state.selectedRouteTag,
                 weatherCondition = state.weatherCondition,
                 weatherTemp = state.weatherTemp,
