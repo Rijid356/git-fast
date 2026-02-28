@@ -35,8 +35,8 @@ class DogWalkEventTypeTest {
     }
 
     @Test
-    fun `there are exactly 9 event types`() {
-        assertTrue(DogWalkEventType.entries.size == 9)
+    fun `there are exactly 10 event types`() {
+        assertTrue(DogWalkEventType.entries.size == 10)
     }
 
     @Test
@@ -80,10 +80,11 @@ class DogWalkEventTypeTest {
     }
 
     @Test
-    fun `SOCIAL category has FRIENDLY_DOG and BARK_REACT`() {
+    fun `SOCIAL category has FRIENDLY_DOG, BARK_REACT, and HUMAN_FRIEND`() {
         val social = DogWalkEventType.entries.filter { it.category == EventCategory.SOCIAL }
         assertTrue(social.contains(DogWalkEventType.FRIENDLY_DOG))
         assertTrue(social.contains(DogWalkEventType.BARK_REACT))
+        assertTrue(social.contains(DogWalkEventType.HUMAN_FRIEND))
     }
 
     @Test

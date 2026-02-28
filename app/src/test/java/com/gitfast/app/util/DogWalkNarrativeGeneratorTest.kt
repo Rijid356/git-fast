@@ -185,6 +185,29 @@ class DogWalkNarrativeGeneratorTest {
     }
 
     @Test
+    fun `single HUMAN_FRIEND generates human friend narrative`() {
+        val events = listOf(event(DogWalkEventType.HUMAN_FRIEND))
+        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 20)
+        assertTrue(
+            "Should mention human friend, got: $narrative",
+            narrative.lowercase().contains("human friend")
+        )
+    }
+
+    @Test
+    fun `mixed events with HUMAN_FRIEND includes greeted`() {
+        val events = listOf(
+            event(DogWalkEventType.FRIENDLY_DOG, 0),
+            event(DogWalkEventType.HUMAN_FRIEND, 5000),
+        )
+        val narrative = DogWalkNarrativeGenerator.generateNarrative(events, 30)
+        assertTrue(
+            "Should mention greeted, got: $narrative",
+            narrative.lowercase().contains("greeted")
+        )
+    }
+
+    @Test
     fun `many events from all categories produces valid narrative`() {
         val events = listOf(
             event(DogWalkEventType.SNACK_FOUND, 0),

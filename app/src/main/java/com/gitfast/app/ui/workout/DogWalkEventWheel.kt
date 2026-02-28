@@ -27,11 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
@@ -63,7 +60,6 @@ fun DogWalkEventWheel(
     val view = LocalView.current
     var expanded by remember { mutableStateOf(false) }
     val totalCount = eventCounts.values.sum()
-    var fabWindowPos by remember { mutableStateOf(Offset.Zero) }
 
     val expandProgress by animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
@@ -79,13 +75,7 @@ fun DogWalkEventWheel(
 
     Box(modifier = modifier) {
         // FAB — fades out when wheel is open (wheel has its own center paw)
-        Box(
-            modifier = Modifier
-                .graphicsLayer { alpha = 1f - expandProgress }
-                .onGloballyPositioned { coords ->
-                    fabWindowPos = coords.positionInWindow()
-                },
-        ) {
+        Box(modifier = Modifier.graphicsLayer { alpha = 1f - expandProgress }) {
             Surface(
                 modifier = Modifier
                     .size(FAB_SIZE)
@@ -133,17 +123,10 @@ fun DogWalkEventWheel(
             }
         }
 
-        // Expanded wheel overlay — single full-screen Popup with scrim + wheel.
-        // The wheel is offset to exact FAB coordinates so center aligns perfectly.
+        // Expanded wheel overlay
         if (expanded || expandProgress > 0.01f) {
-            val density = LocalDensity.current
-            val wheelPx = with(density) { WHEEL_CONTENT_SIZE.toPx() }
-            val fabPx = with(density) { FAB_SIZE.toPx() }
-
-            Popup(
-                onDismissRequest = { expanded = false },
-                properties = PopupProperties(focusable = true),
-            ) {
+            // Full-screen scrim (separate popup so it covers the whole screen)
+            Popup {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -153,31 +136,33 @@ fun DogWalkEventWheel(
                             indication = null,
                             onClick = { expanded = false },
                         ),
-                ) {
-                    // Position wheel so its center = FAB center
-                    Box(
-                        modifier = Modifier.offset {
-                            IntOffset(
-                                x = (fabWindowPos.x + fabPx / 2 - wheelPx / 2).roundToInt(),
-                                y = (fabWindowPos.y + fabPx / 2 - wheelPx / 2).roundToInt(),
-                            )
-                        },
-                    ) {
-                        EventWheelContent(
-                            eventCounts = eventCounts,
-                            expandProgress = expandProgress,
-                            fabRotation = fabRotation,
-                            onLogEvent = { eventType ->
-                                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                onLogEvent(eventType)
-                            },
-                            onUndoEvent = { eventType ->
-                                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                                onUndoEvent(eventType)
-                            },
-                        )
-                    }
-                }
+                )
+            }
+
+            // Fixed-size wheel — explicit offset so wheel center = FAB center.
+            val density = LocalDensity.current
+            val wheelPx = with(density) { WHEEL_CONTENT_SIZE.toPx() }
+            val fabPx = with(density) { FAB_SIZE.toPx() }
+            val centering = ((fabPx - wheelPx) / 2).roundToInt()
+
+            Popup(
+                offset = IntOffset(centering, centering),
+                onDismissRequest = { expanded = false },
+                properties = PopupProperties(focusable = true),
+            ) {
+                EventWheelContent(
+                    eventCounts = eventCounts,
+                    expandProgress = expandProgress,
+                    fabRotation = fabRotation,
+                    onLogEvent = { eventType ->
+                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                        onLogEvent(eventType)
+                    },
+                    onUndoEvent = { eventType ->
+                        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                        onUndoEvent(eventType)
+                    },
+                )
             }
         }
     }

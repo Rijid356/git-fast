@@ -49,8 +49,10 @@ object DogWalkNarrativeGenerator {
 
         // Social
         val dogs = counts[DogWalkEventType.FRIENDLY_DOG] ?: 0
+        val humans = counts[DogWalkEventType.HUMAN_FRIEND] ?: 0
         val barks = counts[DogWalkEventType.BARK_REACT] ?: 0
-        if (dogs > 0) parts.add("made ${pluralize(dogs, "friend")}")
+        if (dogs > 0) parts.add("made ${pluralize(dogs, "dog friend")}")
+        if (humans > 0) parts.add("greeted ${pluralize(humans, "human friend")}")
         if (barks > 0) parts.add("barked at ${pluralize(barks, "thing")}")
 
         val joined = joinNarrative(parts)
@@ -81,6 +83,7 @@ object DogWalkNarrativeGenerator {
             DogWalkEventType.WATER_BREAK -> "Hydration hero! Juniper took ${pluralize(count, "water break")} in $durationMinutes minutes!"
             DogWalkEventType.BARK_REACT -> "Juniper had opinions - barked at ${pluralize(count, "thing")} in $durationMinutes minutes!"
             DogWalkEventType.LEASH_PULL -> "Juniper was strong-willed - ${pluralize(count, "leash pull")} in $durationMinutes minutes!"
+            DogWalkEventType.HUMAN_FRIEND -> "People person! Juniper greeted ${pluralize(count, "human friend")} in $durationMinutes minutes!"
         }
     }
 

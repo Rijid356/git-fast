@@ -19,4 +19,5 @@ enum class DogWalkEventType(
     WATER_BREAK("Water Break", "💦", EventCategory.FORAGING, "Water"),
     BARK_REACT("Bark/React", "🗣️", EventCategory.SOCIAL, "Bark"),
     LEASH_PULL("Leash Pull", "🔗", EventCategory.ENERGY, "Pull"),
+    HUMAN_FRIEND("Human Friend", "🧑", EventCategory.SOCIAL, "Human"),
 }
