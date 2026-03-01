@@ -79,10 +79,11 @@
 | 2026-02-27 | Organize screenshot comparisons into dated subfolders, update /ui-diff skill for YYYY-MM-DD folder format, clean up .gitignore; merged PR #136 | 13 | 1 | +5/-1 |
 | 2026-02-28 | Fix sprint stuck on null GPS speed (timeout safety nets) and show MPH during sprinting (SpeedDisplay hero + sprint timer below), 12 new AutoSprintDetector tests; PR #139 | 5 | 1 | +248/-9 |
 | 2026-02-28 | Epic narrative rewrite + remove redundant dog name: dynamic RPG narrative engine with randomized word pools, combo prefixes (Berserker mode/Diplomacy maxed/Legendary foraging), remove 🐕 Juniper metadata row from detail screen, HUMAN_FRIEND event type commit, 3 new tests; merged PR #138 | 8 | 5 | +523/-116 |
+| 2026-02-28 | Remove Activity Goals settings page: delete GoalsSettingsScreen/ViewModel, hardcode defaults (22 min/1.5 mi/5 days) in HomeViewModel, make ActivityRings non-clickable, remove goals from Settings, clean up SettingsStore/tests/screenshots; merged PR #141 | 15 | 1 | +35/-484 |
 
 ## Totals
-- **Total Sessions:** 68
-- **Total Commits:** 116
-- **Total Files Changed:** 943
-- **Total Lines Added:** 44019
-- **Total Lines Removed:** 2537
+- **Total Sessions:** 69
+- **Total Commits:** 117
+- **Total Files Changed:** 958
+- **Total Lines Added:** 44054
+- **Total Lines Removed:** 3021
