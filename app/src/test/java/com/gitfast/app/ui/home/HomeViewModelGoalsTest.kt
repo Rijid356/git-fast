@@ -1,6 +1,5 @@
 package com.gitfast.app.ui.home
 
-import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.repository.BodyCompRepository
@@ -31,7 +30,6 @@ class HomeViewModelGoalsTest {
     private lateinit var bodyCompRepository: BodyCompRepository
     private lateinit var workoutStateStore: WorkoutStateStore
     private lateinit var sorenessRepository: SorenessRepository
-    private lateinit var settingsStore: SettingsStore
 
     @Before
     fun setUp() {
@@ -41,7 +39,6 @@ class HomeViewModelGoalsTest {
         bodyCompRepository = mockk()
         workoutStateStore = mockk()
         sorenessRepository = mockk()
-        settingsStore = mockk()
 
         every { bodyCompRepository.getLatestReading() } returns flowOf(null)
         every { sorenessRepository.observeTodayLog() } returns flowOf(null)
@@ -64,23 +61,21 @@ class HomeViewModelGoalsTest {
         Dispatchers.resetMain()
     }
 
+    private fun createViewModel(): HomeViewModel = HomeViewModel(
+        workoutStateStore = workoutStateStore,
+        workoutRepository = workoutRepository,
+        characterRepository = characterRepository,
+        bodyCompRepository = bodyCompRepository,
+        sorenessRepository = sorenessRepository,
+    )
+
     @Test
     fun `daily metrics with no workouts shows zero progress`() = runTest {
         every { workoutRepository.getTodaysActiveMillis() } returns flowOf(0L)
         every { workoutRepository.getTodaysDistanceMeters() } returns flowOf(0.0)
         every { workoutRepository.getWeeklyActiveDayCount() } returns flowOf(0)
-        every { settingsStore.dailyActiveMinutesGoal } returns 22
-        every { settingsStore.dailyDistanceGoalMiles } returns 1.5
-        every { settingsStore.weeklyActiveDaysGoal } returns 5
 
-        val viewModel = HomeViewModel(
-            workoutStateStore = workoutStateStore,
-            workoutRepository = workoutRepository,
-            characterRepository = characterRepository,
-            bodyCompRepository = bodyCompRepository,
-            sorenessRepository = sorenessRepository,
-            settingsStore = settingsStore,
-        )
+        val viewModel = createViewModel()
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.dailyMetrics.collect {}
@@ -100,18 +95,8 @@ class HomeViewModelGoalsTest {
         every { workoutRepository.getTodaysActiveMillis() } returns flowOf(1_320_000L) // 22 minutes
         every { workoutRepository.getTodaysDistanceMeters() } returns flowOf(2414.02) // ~1.5 miles
         every { workoutRepository.getWeeklyActiveDayCount() } returns flowOf(3)
-        every { settingsStore.dailyActiveMinutesGoal } returns 22
-        every { settingsStore.dailyDistanceGoalMiles } returns 1.5
-        every { settingsStore.weeklyActiveDaysGoal } returns 5
 
-        val viewModel = HomeViewModel(
-            workoutStateStore = workoutStateStore,
-            workoutRepository = workoutRepository,
-            characterRepository = characterRepository,
-            bodyCompRepository = bodyCompRepository,
-            sorenessRepository = sorenessRepository,
-            settingsStore = settingsStore,
-        )
+        val viewModel = createViewModel()
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.dailyMetrics.collect {}
@@ -124,30 +109,20 @@ class HomeViewModelGoalsTest {
     }
 
     @Test
-    fun `daily metrics uses custom goal values from settings`() = runTest {
+    fun `daily metrics uses hardcoded default goals`() = runTest {
         every { workoutRepository.getTodaysActiveMillis() } returns flowOf(0L)
         every { workoutRepository.getTodaysDistanceMeters() } returns flowOf(0.0)
         every { workoutRepository.getWeeklyActiveDayCount() } returns flowOf(0)
-        every { settingsStore.dailyActiveMinutesGoal } returns 45
-        every { settingsStore.dailyDistanceGoalMiles } returns 3.0
-        every { settingsStore.weeklyActiveDaysGoal } returns 7
 
-        val viewModel = HomeViewModel(
-            workoutStateStore = workoutStateStore,
-            workoutRepository = workoutRepository,
-            characterRepository = characterRepository,
-            bodyCompRepository = bodyCompRepository,
-            sorenessRepository = sorenessRepository,
-            settingsStore = settingsStore,
-        )
+        val viewModel = createViewModel()
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.dailyMetrics.collect {}
         }
 
         val metrics = viewModel.dailyMetrics.value
-        assertEquals(45, metrics.activeMinutesGoal)
-        assertEquals(3.0, metrics.distanceGoal, 0.001)
-        assertEquals(7, metrics.activeDaysGoal)
+        assertEquals(22, metrics.activeMinutesGoal)
+        assertEquals(1.5, metrics.distanceGoal, 0.001)
+        assertEquals(5, metrics.activeDaysGoal)
     }
 }
