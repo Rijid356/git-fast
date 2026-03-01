@@ -138,7 +138,6 @@ class HomeScreenScreenshotTest : FullScreenScreenshotTestBase() {
                 onSettingsClick = {},
                 onCharacterClick = {},
                 onAnalyticsClick = {},
-                onGoalsClick = {},
                 onBodyCompClick = {},
                 viewModel = viewModel,
             )

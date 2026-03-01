@@ -39,7 +39,6 @@ import com.gitfast.app.data.healthconnect.HealthConnectManager
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
-    onGoalsClick: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -124,17 +123,6 @@ fun SettingsScreen(
                 isCapturing = uiState.isCapturingLocation,
                 onCapture = { viewModel.captureCurrentLocation() },
                 onClear = { viewModel.clearHomeLocation() },
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- Goals section ---
-            SectionHeader(text = "Goals")
-
-            NavigationSettingItem(
-                title = "Activity Goals",
-                subtitle = "Set daily and weekly activity targets",
-                onClick = onGoalsClick,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -325,39 +313,6 @@ private fun SetLapStartPointItem(
                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
             )
         }
-    }
-}
-
-@Composable
-private fun NavigationSettingItem(
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            )
-        }
-        Text(
-            text = ">",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
     }
 }
 
