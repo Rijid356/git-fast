@@ -41,7 +41,6 @@ class SettingsScreenScreenshotTest : FullScreenScreenshotTestBase() {
         captureScreenshot("Screen_Settings", category = "settings") {
             SettingsScreen(
                 onBackClick = {},
-                onGoalsClick = {},
                 viewModel = viewModel,
             )
         }

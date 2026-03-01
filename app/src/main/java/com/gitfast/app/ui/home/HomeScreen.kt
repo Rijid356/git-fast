@@ -60,7 +60,6 @@ fun HomeScreen(
     onSettingsClick: () -> Unit,
     onCharacterClick: () -> Unit,
     onAnalyticsClick: () -> Unit,
-    onGoalsClick: () -> Unit,
     onBodyCompClick: () -> Unit = {},
     onSorenessClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
@@ -126,7 +125,6 @@ fun HomeScreen(
 
             ActivityRings(
                 metrics = dailyMetrics,
-                onGoalsClick = onGoalsClick,
             )
 
             latestWeight?.let { reading ->
