@@ -447,41 +447,42 @@ private fun StatBreakdownPanel(breakdown: StatBreakdown, color: Color) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 4.dp)
+            .padding(top = 8.dp)
             .clip(RectangleShape)
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
     ) {
         Text(
             text = breakdown.description,
             style = MaterialTheme.typography.bodySmall,
             color = color,
         )
-        Spacer(modifier = Modifier.height(6.dp))
-        for ((label, value) in breakdown.details) {
+        Spacer(modifier = Modifier.height(8.dp))
+        for ((index, entry) in breakdown.details.withIndex()) {
+            if (index > 0) Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = label,
+                    text = entry.first,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = value,
+                    text = entry.second,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = breakdown.brackets,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = breakdown.decayNote,
             style = MaterialTheme.typography.bodySmall,
