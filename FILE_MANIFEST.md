@@ -290,17 +290,10 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 
 | File | Purpose |
 |------|---------|
-| `SettingsScreen.kt` | Settings UI: workout toggles, backup, Health Connect, goals navigation |
+| `SettingsScreen.kt` | Settings UI: workout toggles, backup, Health Connect |
 | `SettingsViewModel.kt` | Manages toggle state, sync triggers, auth state, HC permissions |
 | `HealthConnectSection.kt` | Health Connect connection status, sync button, latest weight display |
 | `CloudBackupSection.kt` | Google Sign-In card, sync status, last synced timestamp |
-
-## ui/goals/
-
-| File | Purpose |
-|------|---------|
-| `GoalsSettingsScreen.kt` | Sliders for daily minutes, distance, weekly active days goals |
-| `GoalsSettingsViewModel.kt` | Goal value management with clamping and SharedPrefs persistence |
 
 ## ui/analytics/
 

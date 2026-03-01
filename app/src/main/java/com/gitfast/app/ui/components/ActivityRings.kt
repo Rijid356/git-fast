@@ -3,7 +3,6 @@ package com.gitfast.app.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.gitfast.app.data.model.DailyActivityMetrics
 import com.gitfast.app.ui.theme.AmberAccent
@@ -35,7 +33,6 @@ import com.gitfast.app.ui.theme.NeonGreen
 @Composable
 fun ActivityRings(
     metrics: DailyActivityMetrics,
-    onGoalsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val animatedMinutes by animateFloatAsState(
@@ -56,7 +53,7 @@ fun ActivityRings(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.clickable(onClick = onGoalsClick),
+        modifier = modifier,
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -114,14 +111,6 @@ fun ActivityRings(
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "GOALS",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-            textAlign = TextAlign.Center,
-        )
     }
 }
 

@@ -2,7 +2,6 @@ package com.gitfast.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutStateStore
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.CharacterProfile
@@ -35,7 +34,6 @@ class HomeViewModel @Inject constructor(
     characterRepository: CharacterRepository,
     bodyCompRepository: BodyCompRepository,
     sorenessRepository: SorenessRepository,
-    settingsStore: SettingsStore,
 ) : ViewModel() {
 
     private val _showRecoveryDialog = MutableStateFlow(false)
@@ -63,11 +61,11 @@ class HomeViewModel @Inject constructor(
             val distanceMiles = distanceMeters * 0.000621371
             DailyActivityMetrics(
                 activeMinutes = activeMinutes,
-                activeMinutesGoal = settingsStore.dailyActiveMinutesGoal,
+                activeMinutesGoal = 22,
                 distanceMiles = distanceMiles,
-                distanceGoal = settingsStore.dailyDistanceGoalMiles,
+                distanceGoal = 1.5,
                 activeDaysThisWeek = activeDays,
-                activeDaysGoal = settingsStore.weeklyActiveDaysGoal,
+                activeDaysGoal = 5,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DailyActivityMetrics())
 
@@ -83,7 +81,7 @@ class HomeViewModel @Inject constructor(
                 activeMinutes = (activeMillis / 60_000).toInt(),
                 distanceMiles = distMeters * 0.000621371,
                 activeDays = activeDays,
-                activeDaysGoal = settingsStore.weeklyActiveDaysGoal,
+                activeDaysGoal = 5,
                 workoutCount = count,
                 prevWeekActiveMinutes = (prevMillis / 60_000).toInt(),
             )
