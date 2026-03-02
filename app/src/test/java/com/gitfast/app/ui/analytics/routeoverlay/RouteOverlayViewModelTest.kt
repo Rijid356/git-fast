@@ -13,6 +13,7 @@ import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.ui.theme.AmberAccent
 import com.gitfast.app.ui.theme.CyanAccent
 import com.gitfast.app.ui.theme.NeonGreen
+import com.gitfast.app.util.formatDistance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -190,10 +191,89 @@ class RouteOverlayViewModelTest {
             workoutsByRoute = mapOf("Park" to emptyList()),
         )
 
-        // With UnconfinedTestDispatcher, loading completes immediately
-        // but we can verify final state is not loading
         viewModel.selectRouteTag("Park")
         assertEquals(false, viewModel.uiState.value.isLoading)
+    }
+
+    @Test
+    fun `single GPS point produces null bounds`() = runTest {
+        viewModel = createViewModel(
+            routeTags = listOf(RouteTagEntity("Trail", 1000L, 2000L)),
+            workoutsByRoute = mapOf("Trail" to listOf(createWorkoutEntity("w1"))),
+            gpsPointsByWorkout = mapOf("w1" to listOf(
+                createGpsPoint("w1", 0, 40.0, -74.0),
+            )),
+        )
+
+        viewModel.selectRouteTag("Trail")
+        val state = viewModel.uiState.value
+
+        assertEquals(1, state.traces.size)
+        assertEquals(1, state.traces[0].points.size)
+        assertNull(state.bounds)
+    }
+
+    @Test
+    fun `selecting different route tag clears previous traces`() = runTest {
+        viewModel = createViewModel(
+            routeTags = listOf(
+                RouteTagEntity("Park", 1000L, 3000L),
+                RouteTagEntity("City", 1000L, 2000L),
+            ),
+            workoutsByRoute = mapOf(
+                "Park" to listOf(createWorkoutEntity("w1"), createWorkoutEntity("w2")),
+                "City" to listOf(createWorkoutEntity("w3")),
+            ),
+            gpsPointsByWorkout = mapOf(
+                "w1" to listOf(createGpsPoint("w1", 0, 40.0, -74.0), createGpsPoint("w1", 1, 40.001, -74.001)),
+                "w2" to listOf(createGpsPoint("w2", 0, 40.0, -74.0), createGpsPoint("w2", 1, 40.002, -74.002)),
+                "w3" to listOf(createGpsPoint("w3", 0, 41.0, -75.0), createGpsPoint("w3", 1, 41.001, -75.001)),
+            ),
+        )
+
+        viewModel.selectRouteTag("Park")
+        assertEquals(2, viewModel.uiState.value.traces.size)
+        assertEquals("w1", viewModel.uiState.value.traces[0].workoutId)
+
+        viewModel.selectRouteTag("City")
+        val state = viewModel.uiState.value
+        assertEquals("City", state.selectedTag)
+        assertEquals(1, state.traces.size)
+        assertEquals("w3", state.traces[0].workoutId)
+    }
+
+    @Test
+    fun `trace date and distance formatted correctly`() = runTest {
+        viewModel = createViewModel(
+            routeTags = listOf(RouteTagEntity("Park", 1000L, 2000L)),
+            workoutsByRoute = mapOf("Park" to listOf(
+                createWorkoutEntity("w1", startTime = 1000L, endTime = 5000L, distanceMeters = 1609.34),
+            )),
+            gpsPointsByWorkout = mapOf("w1" to listOf(
+                createGpsPoint("w1", 0, 40.0, -74.0),
+                createGpsPoint("w1", 1, 40.001, -74.001),
+            )),
+        )
+
+        viewModel.selectRouteTag("Park")
+        val trace = viewModel.uiState.value.traces[0]
+
+        assertEquals(formatDistance(1609.34), trace.distanceFormatted)
+        assertEquals("00:04", trace.durationFormatted)
+        assertTrue(trace.date.isNotEmpty())
+    }
+
+    @Test
+    fun `no route tags produces empty state`() = runTest {
+        viewModel = createViewModel(
+            routeTags = emptyList(),
+        )
+
+        val state = viewModel.uiState.value
+        assertTrue(state.routeTags.isEmpty())
+        assertNull(state.selectedTag)
+        assertTrue(state.traces.isEmpty())
+        assertNull(state.bounds)
     }
 
     // --- Helpers ---
