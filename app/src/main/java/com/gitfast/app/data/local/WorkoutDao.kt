@@ -29,6 +29,12 @@ interface WorkoutDao {
     suspend fun insertLap(lap: LapEntity)
 
     @Insert
+    suspend fun insertPhases(phases: List<WorkoutPhaseEntity>)
+
+    @Insert
+    suspend fun insertLaps(laps: List<LapEntity>)
+
+    @Insert
     suspend fun insertGpsPoint(point: GpsPointEntity)
 
     @Insert
@@ -53,8 +59,14 @@ interface WorkoutDao {
     @Query("SELECT * FROM workout_phases WHERE workoutId = :workoutId ORDER BY startTime ASC")
     suspend fun getPhasesForWorkout(workoutId: String): List<WorkoutPhaseEntity>
 
+    @Query("SELECT * FROM workout_phases WHERE workoutId IN (:workoutIds) ORDER BY startTime ASC")
+    suspend fun getPhasesForWorkouts(workoutIds: List<String>): List<WorkoutPhaseEntity>
+
     @Query("SELECT * FROM laps WHERE phaseId = :phaseId ORDER BY lapNumber ASC")
     suspend fun getLapsForPhase(phaseId: String): List<LapEntity>
+
+    @Query("SELECT * FROM laps WHERE phaseId IN (:phaseIds) ORDER BY lapNumber ASC")
+    suspend fun getLapsForPhases(phaseIds: List<String>): List<LapEntity>
 
     @Query("SELECT * FROM gps_points WHERE workoutId = :workoutId ORDER BY sortIndex ASC")
     suspend fun getGpsPointsForWorkout(workoutId: String): List<GpsPointEntity>
@@ -164,8 +176,8 @@ interface WorkoutDao {
         } else {
             insertWorkout(workout)
         }
-        phases.forEach { insertPhase(it) }
-        laps.forEach { insertLap(it) }
+        if (phases.isNotEmpty()) insertPhases(phases)
+        if (laps.isNotEmpty()) insertLaps(laps)
         if (gpsPoints.isNotEmpty()) {
             insertGpsPoints(gpsPoints)
         }

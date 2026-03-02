@@ -235,7 +235,7 @@ class WorkoutRepositoryTest {
     fun `getCompletedWorkouts flow emits mapped domain models`() = runTest {
         val entity = buildEntity("w-flow")
         every { mockDao.getAllCompletedWorkouts() } returns flowOf(listOf(entity))
-        coEvery { mockDao.getPhasesForWorkout("w-flow") } returns emptyList()
+        coEvery { mockDao.getPhasesForWorkouts(listOf("w-flow")) } returns emptyList()
 
         val result = repository.getCompletedWorkouts().first()
 
@@ -304,7 +304,7 @@ class WorkoutRepositoryTest {
     fun `getDogWalksByRoute maps entities with phases`() = runTest {
         val entity = buildEntity("dw-1", activityType = ActivityType.DOG_WALK)
         every { mockDao.getDogWalksByRoute("Park Loop") } returns flowOf(listOf(entity))
-        coEvery { mockDao.getPhasesForWorkout("dw-1") } returns emptyList()
+        coEvery { mockDao.getPhasesForWorkouts(listOf("dw-1")) } returns emptyList()
 
         val result = repository.getDogWalksByRoute("Park Loop").first()
 
@@ -329,7 +329,7 @@ class WorkoutRepositoryTest {
     fun `getDogWalksByRouteOnce returns mapped domain models`() = runTest {
         val entity = buildEntity("dw-1", activityType = ActivityType.DOG_WALK)
         every { mockDao.getDogWalksByRoute("Trail") } returns flowOf(listOf(entity))
-        coEvery { mockDao.getPhasesForWorkout("dw-1") } returns emptyList()
+        coEvery { mockDao.getPhasesForWorkouts(listOf("dw-1")) } returns emptyList()
 
         val result = repository.getDogWalksByRouteOnce("Trail")
 
@@ -362,8 +362,8 @@ class WorkoutRepositoryTest {
         repository.saveWorkout(workout, phases, laps, gpsPoints)
 
         coVerify { mockDao.insertWorkout(workout) }
-        coVerify { mockDao.insertPhase(phases[0]) }
-        coVerify { mockDao.insertLap(laps[0]) }
+        coVerify { mockDao.insertPhases(phases) }
+        coVerify { mockDao.insertLaps(laps) }
         coVerify { mockDao.insertGpsPoints(gpsPoints) }
     }
 
@@ -374,7 +374,9 @@ class WorkoutRepositoryTest {
         repository.saveWorkout(workout, emptyList(), emptyList(), emptyList())
 
         coVerify { mockDao.insertWorkout(workout) }
-        coVerify { mockDao.insertGpsPoints(emptyList()) }
+        coVerify(exactly = 0) { mockDao.insertPhases(any()) }
+        coVerify(exactly = 0) { mockDao.insertLaps(any()) }
+        coVerify(exactly = 0) { mockDao.insertGpsPoints(any()) }
     }
 
     // =========================================================================
@@ -519,8 +521,8 @@ class WorkoutRepositoryTest {
         val phase = buildPhaseEntity("p-1", "w-run")
         val lap = LapEntity("lap-1", "p-1", 1, 1000L, 2000L, 400.0, 0, null, null)
         coEvery { mockDao.getAllCompletedRunsOnce() } returns listOf(entity)
-        coEvery { mockDao.getPhasesForWorkout("w-run") } returns listOf(phase)
-        coEvery { mockDao.getLapsForPhase("p-1") } returns listOf(lap)
+        coEvery { mockDao.getPhasesForWorkouts(listOf("w-run")) } returns listOf(phase)
+        coEvery { mockDao.getLapsForPhases(listOf("p-1")) } returns listOf(lap)
 
         val result = repository.getAllRunsWithLaps()
 
@@ -546,8 +548,8 @@ class WorkoutRepositoryTest {
         val entity = buildEntity("w-recent")
         val phase = buildPhaseEntity("p-1", "w-recent")
         coEvery { mockDao.getRecentWorkoutsWithLaps(5) } returns listOf(entity)
-        coEvery { mockDao.getPhasesForWorkout("w-recent") } returns listOf(phase)
-        coEvery { mockDao.getLapsForPhase("p-1") } returns emptyList()
+        coEvery { mockDao.getPhasesForWorkouts(listOf("w-recent")) } returns listOf(phase)
+        coEvery { mockDao.getLapsForPhases(listOf("p-1")) } returns emptyList()
 
         val result = repository.getRecentWorkoutsWithLaps(5)
 

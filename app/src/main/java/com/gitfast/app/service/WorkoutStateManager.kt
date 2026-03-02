@@ -20,6 +20,7 @@ class WorkoutStateManager @Inject constructor() {
     private val _workoutState = MutableStateFlow(WorkoutTrackingState())
     val workoutState: StateFlow<WorkoutTrackingState> = _workoutState.asStateFlow()
 
+    private val _gpsPointsList = mutableListOf<GpsPoint>()
     private val _gpsPoints = MutableStateFlow<List<GpsPoint>>(emptyList())
     val gpsPoints: StateFlow<List<GpsPoint>> = _gpsPoints.asStateFlow()
 
@@ -102,7 +103,10 @@ class WorkoutStateManager @Inject constructor() {
         val gpsEndIndex: Int,
         val splitLatitude: Double? = null,
         val splitLongitude: Double? = null
-    )
+    ) {
+        val durationSeconds: Int
+            get() = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000).toInt()
+    }
 
     /**
      * In-memory representation of a completed phase.
@@ -184,6 +188,7 @@ class WorkoutStateManager @Inject constructor() {
         workoutStartTime = now
         totalPausedDuration = 0L
         gpsPointIndex = 0
+        _gpsPointsList.clear()
         _gpsPoints.value = emptyList()
 
         // Initialize phase tracking
@@ -316,7 +321,7 @@ class WorkoutStateManager @Inject constructor() {
 
         // Capture GPS anchor for auto-lap detection
         if (autoLapEnabled) {
-            val lastGps = _gpsPoints.value.lastOrNull()
+            val lastGps = _gpsPointsList.lastOrNull()
             anchorLatitude = lastGps?.latitude
             anchorLongitude = lastGps?.longitude
             hasLeftAnchorRadius = false
@@ -342,11 +347,11 @@ class WorkoutStateManager @Inject constructor() {
 
         val now = Instant.now()
         val currentDistance = _workoutState.value.distanceMeters
-        val currentGpsIndex = _gpsPoints.value.size - 1
+        val currentGpsIndex = _gpsPointsList.size - 1
 
         val lapStartGpsIndex = if (laps.isEmpty()) {
             // First lap: GPS index when laps phase started
-            _gpsPoints.value.indexOfFirst {
+            _gpsPointsList.indexOfFirst {
                 !it.timestamp.isBefore(phaseStartTime)
             }.coerceAtLeast(0)
         } else {
@@ -354,7 +359,7 @@ class WorkoutStateManager @Inject constructor() {
         }
 
         // Capture GPS pin at lap split
-        val lastGps = _gpsPoints.value.lastOrNull()
+        val lastGps = _gpsPointsList.lastOrNull()
 
         // Record completed lap
         val completedLap = LapData(
@@ -373,9 +378,7 @@ class WorkoutStateManager @Inject constructor() {
         // Calculate delta vs previous lap
         val deltaSeconds = if (laps.size >= 2) {
             val prevLap = laps[laps.size - 2]
-            val prevDuration = prevLap.endTime.toEpochMilli() - prevLap.startTime.toEpochMilli()
-            val thisDuration = completedLap.endTime.toEpochMilli() - completedLap.startTime.toEpochMilli()
-            ((thisDuration - prevDuration) / 1000).toInt()
+            completedLap.durationSeconds - prevLap.durationSeconds
         } else null
 
         // Update auto-ghost (best lap so far) if no external ghost is set
@@ -394,9 +397,7 @@ class WorkoutStateManager @Inject constructor() {
             currentLapNumber = currentLapNumber,
             currentLapElapsedSeconds = 0,
             lastLapDeltaSeconds = deltaSeconds,
-            lastLapDurationFormatted = formatElapsedTime(
-                ((completedLap.endTime.toEpochMilli() - completedLap.startTime.toEpochMilli()) / 1000).toInt()
-            ),
+            lastLapDurationFormatted = formatElapsedTime(completedLap.durationSeconds),
             ghostLapDurationSeconds = externalGhostLapDuration,
             ghostDeltaSeconds = null,
         )
@@ -451,9 +452,7 @@ class WorkoutStateManager @Inject constructor() {
      */
     fun getBestLapDuration(): Int? {
         if (laps.isEmpty()) return null
-        return laps.minOf {
-            ((it.endTime.toEpochMilli() - it.startTime.toEpochMilli()) / 1000).toInt()
-        }
+        return laps.minOf { it.durationSeconds }
     }
 
     /**
@@ -462,23 +461,16 @@ class WorkoutStateManager @Inject constructor() {
      */
     fun getAverageLapDuration(): Int? {
         if (laps.isEmpty()) return null
-        val totalSeconds = laps.sumOf {
-            ((it.endTime.toEpochMilli() - it.startTime.toEpochMilli()) / 1000).toInt()
-        }
-        return totalSeconds / laps.size
+        return laps.sumOf { it.durationSeconds } / laps.size
     }
 
     fun getBestLapNumber(): Int? {
         if (laps.isEmpty()) return null
-        return laps.minByOrNull {
-            it.endTime.toEpochMilli() - it.startTime.toEpochMilli()
-        }?.lapNumber
+        return laps.minByOrNull { it.endTime.toEpochMilli() - it.startTime.toEpochMilli() }?.lapNumber
     }
 
     fun getLapDurations(): List<Int> {
-        return laps.map {
-            ((it.endTime.toEpochMilli() - it.startTime.toEpochMilli()) / 1000).toInt()
-        }
+        return laps.map { it.durationSeconds }
     }
 
     // --- Sprint tracking methods ---
@@ -490,7 +482,7 @@ class WorkoutStateManager @Inject constructor() {
         sprintStartTime = Instant.now()
         sprintStartDistance = _workoutState.value.distanceMeters
         sprintStartSteps = currentStepCount
-        sprintStartGpsIndex = _gpsPoints.value.size - 1
+        sprintStartGpsIndex = _gpsPointsList.size - 1
 
         emitSprintState()
     }
@@ -510,7 +502,7 @@ class WorkoutStateManager @Inject constructor() {
         }
 
         val currentDistance = _workoutState.value.distanceMeters
-        val currentGpsIndex = (_gpsPoints.value.size - 1).coerceAtLeast(0)
+        val currentGpsIndex = (_gpsPointsList.size - 1).coerceAtLeast(0)
 
         sprintLaps.add(LapData(
             lapNumber = sprintNumber,
@@ -583,7 +575,7 @@ class WorkoutStateManager @Inject constructor() {
             workoutId = workoutId ?: "",
             startTime = workoutStartTime ?: endTime,
             endTime = endTime,
-            gpsPoints = _gpsPoints.value,
+            gpsPoints = _gpsPointsList.toList(),
             totalDistanceMeters = currentDistance,
             totalPausedDurationMillis = totalPausedDuration,
             phases = completedPhases.toList(),
@@ -626,6 +618,7 @@ class WorkoutStateManager @Inject constructor() {
         sprintLaps.clear()
         sprintNumber = 0
         dogWalkEvents.clear()
+        _gpsPointsList.clear()
         _gpsPoints.value = emptyList()
         _workoutState.value = WorkoutTrackingState()
 
@@ -702,14 +695,13 @@ class WorkoutStateManager @Inject constructor() {
     fun addGpsPoint(point: GpsPoint) {
         if (_workoutState.value.isPaused) return
 
-        val updatedPoints = _gpsPoints.value + point
-        _gpsPoints.value = updatedPoints
+        _gpsPointsList.add(point)
         gpsPointIndex++
 
         // Calculate running distance by adding the distance from
         // the previous point to the new point.
-        val distanceMeters = if (updatedPoints.size >= 2) {
-            val prev = updatedPoints[updatedPoints.size - 2]
+        val distanceMeters = if (_gpsPointsList.size >= 2) {
+            val prev = _gpsPointsList[_gpsPointsList.size - 2]
             val segmentDistance = DistanceCalculator.haversineMeters(
                 prev.latitude, prev.longitude,
                 point.latitude, point.longitude
@@ -722,7 +714,7 @@ class WorkoutStateManager @Inject constructor() {
         val elapsedSeconds = _workoutState.value.elapsedSeconds
 
         // Calculate smoothed speed from last 5 GPS points with non-null speed
-        val smoothedSpeedMph = calculateSmoothedSpeed(updatedPoints)
+        val smoothedSpeedMph = calculateSmoothedSpeed(_gpsPointsList)
         val currentMax = _workoutState.value.maxSpeedMph
         val newMax = if (smoothedSpeedMph != null && smoothedSpeedMph > currentMax) {
             smoothedSpeedMph
@@ -732,7 +724,7 @@ class WorkoutStateManager @Inject constructor() {
 
         _workoutState.value = _workoutState.value.copy(
             distanceMeters = distanceMeters,
-            currentPaceSecondsPerMile = PaceCalculator.currentPace(updatedPoints),
+            currentPaceSecondsPerMile = PaceCalculator.currentPace(_gpsPointsList),
             averagePaceSecondsPerMile = PaceCalculator.averagePace(
                 elapsedSeconds, distanceMeters
             ),
@@ -782,6 +774,9 @@ class WorkoutStateManager @Inject constructor() {
                 }
             }
         }
+
+        // Emit snapshot for external consumers (map display, etc.)
+        _gpsPoints.value = _gpsPointsList.toList()
     }
 
     fun updateElapsedTime() {
