@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.auth.GoogleAuthManager
 import com.gitfast.app.data.healthconnect.HealthConnectManager
+import com.gitfast.app.data.local.LapStartPointDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.sync.FirestoreSync
@@ -19,7 +20,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -28,8 +28,7 @@ data class SettingsUiState(
     val autoPauseEnabled: Boolean = true,
     val keepScreenOn: Boolean = true,
     val autoLapEnabled: Boolean = false,
-    val hasLapStartPoint: Boolean = false,
-    val isCapturingLapStartPoint: Boolean = false,
+    val lapStartPointCount: Int = 0,
     val homeArrivalEnabled: Boolean = false,
     val hasHomeLocation: Boolean = false,
     val isCapturingLocation: Boolean = false,
@@ -57,6 +56,7 @@ class SettingsViewModel @Inject constructor(
     private val syncStatusStore: SyncStatusStore,
     val healthConnectManager: HealthConnectManager,
     private val bodyCompRepository: BodyCompRepository,
+    private val lapStartPointDao: LapStartPointDao,
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(
@@ -64,7 +64,6 @@ class SettingsViewModel @Inject constructor(
             autoPauseEnabled = settingsStore.autoPauseEnabled,
             keepScreenOn = settingsStore.keepScreenOn,
             autoLapEnabled = settingsStore.autoLapEnabled,
-            hasLapStartPoint = settingsStore.hasLapStartPoint,
             homeArrivalEnabled = settingsStore.homeArrivalEnabled,
             hasHomeLocation = settingsStore.hasHomeLocation,
             isSignedIn = googleAuthManager.currentUser.value != null,
@@ -97,6 +96,13 @@ class SettingsViewModel @Inject constructor(
                     isSyncing = status is SyncStatus.Syncing,
                     lastSyncedAt = syncStatusStore.lastSyncedAt,
                 )
+            }
+        }
+
+        // Observe lap start point count
+        viewModelScope.launch {
+            lapStartPointDao.observeCount().collect { count ->
+                _uiState.value = _uiState.value.copy(lapStartPointCount = count)
             }
         }
 
@@ -243,30 +249,9 @@ class SettingsViewModel @Inject constructor(
         )
     }
 
-    @SuppressLint("MissingPermission")
-    fun captureLapStartPoint() {
-        _uiState.value = _uiState.value.copy(isCapturingLapStartPoint = true)
-        val fusedClient = LocationServices.getFusedLocationProviderClient(getApplication<Application>())
-        fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-            .addOnSuccessListener { location ->
-                if (location != null) {
-                    settingsStore.lapStartLatitude = location.latitude
-                    settingsStore.lapStartLongitude = location.longitude
-                    _uiState.value = _uiState.value.copy(
-                        hasLapStartPoint = true,
-                        isCapturingLapStartPoint = false
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(isCapturingLapStartPoint = false)
-                }
-            }
-            .addOnFailureListener {
-                _uiState.value = _uiState.value.copy(isCapturingLapStartPoint = false)
-            }
-    }
-
-    fun clearLapStartPoint() {
-        settingsStore.clearLapStartPoint()
-        _uiState.value = _uiState.value.copy(hasLapStartPoint = false)
+    fun clearAllLapStartPoints() {
+        viewModelScope.launch {
+            lapStartPointDao.deleteAll()
+        }
     }
 }

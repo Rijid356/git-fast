@@ -1,6 +1,7 @@
 package com.gitfast.app.data.sync
 
 import com.gitfast.app.data.local.CharacterDao
+import com.gitfast.app.data.local.LapStartPointDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.CharacterProfileEntity
@@ -40,6 +41,7 @@ class FirestoreSyncTest {
     private lateinit var characterDao: CharacterDao
     private lateinit var settingsStore: SettingsStore
     private lateinit var syncStatusStore: SyncStatusStore
+    private lateinit var lapStartPointDao: LapStartPointDao
     private lateinit var sync: FirestoreSync
 
     private lateinit var user: FirebaseUser
@@ -54,6 +56,7 @@ class FirestoreSyncTest {
         characterDao = mockk(relaxed = true)
         settingsStore = mockk(relaxed = true)
         syncStatusStore = mockk(relaxed = true)
+        lapStartPointDao = mockk(relaxed = true)
 
         user = mockk(relaxed = true)
         usersCollection = mockk(relaxed = true)
@@ -64,7 +67,7 @@ class FirestoreSyncTest {
         every { firestore.collection("users") } returns usersCollection
         every { usersCollection.document("test-uid") } returns userDoc
 
-        sync = FirestoreSync(firestore, auth, workoutDao, characterDao, settingsStore, syncStatusStore)
+        sync = FirestoreSync(firestore, auth, workoutDao, characterDao, settingsStore, syncStatusStore, lapStartPointDao)
     }
 
     // --- Helpers to build completed Firebase Tasks ---
@@ -628,6 +631,8 @@ class FirestoreSyncTest {
 
         mockSubCollection("characterProfiles")
         mockSubCollection("routeTags")
+        val lapStartPointsCol = mockSubCollection("lapStartPoints")
+        stubCollectionGet(lapStartPointsCol, emptyList())
 
         // Pull stubs
         val workoutsCol = mockSubCollection("workouts")
@@ -688,6 +693,8 @@ class FirestoreSyncTest {
 
         mockSubCollection("characterProfiles")
         mockSubCollection("routeTags")
+        val lapStartPointsCol2 = mockSubCollection("lapStartPoints")
+        stubCollectionGet(lapStartPointsCol2, emptyList())
 
         sync.initialMigration()
 

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.gitfast.app.auth.GoogleAuthManager
 import com.gitfast.app.data.healthconnect.HealthConnectManager
+import com.gitfast.app.data.local.LapStartPointDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.sync.FirestoreSync
@@ -29,6 +30,7 @@ class SettingsViewModelTest {
     private lateinit var syncStatusStore: SyncStatusStore
     private lateinit var healthConnectManager: HealthConnectManager
     private lateinit var bodyCompRepository: BodyCompRepository
+    private lateinit var lapStartPointDao: LapStartPointDao
     private lateinit var viewModel: SettingsViewModel
     private lateinit var app: Application
 
@@ -41,12 +43,13 @@ class SettingsViewModelTest {
         syncStatusStore = mockk(relaxed = true)
         healthConnectManager = mockk(relaxed = true)
         bodyCompRepository = mockk(relaxed = true)
+        lapStartPointDao = mockk(relaxed = true)
         every { settingsStore.autoPauseEnabled } returns true
         every { settingsStore.keepScreenOn } returns true
         every { googleAuthManager.currentUser } returns MutableStateFlow(null)
         every { syncStatusStore.lastSyncedAt } returns 0L
         every { syncStatusStore.syncStatus } returns MutableStateFlow(com.gitfast.app.data.sync.SyncStatus.Idle)
-        viewModel = SettingsViewModel(app, settingsStore, googleAuthManager, firestoreSync, syncStatusStore, healthConnectManager, bodyCompRepository)
+        viewModel = SettingsViewModel(app, settingsStore, googleAuthManager, firestoreSync, syncStatusStore, healthConnectManager, bodyCompRepository, lapStartPointDao)
     }
 
     @Test
@@ -86,7 +89,7 @@ class SettingsViewModelTest {
         every { customStore.autoPauseEnabled } returns false
         every { customStore.keepScreenOn } returns false
 
-        val vm = SettingsViewModel(app, customStore, googleAuthManager, firestoreSync, syncStatusStore, healthConnectManager, bodyCompRepository)
+        val vm = SettingsViewModel(app, customStore, googleAuthManager, firestoreSync, syncStatusStore, healthConnectManager, bodyCompRepository, lapStartPointDao)
         val state = vm.uiState.value
 
         assertFalse(state.autoPauseEnabled)

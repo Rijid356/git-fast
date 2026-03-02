@@ -3,6 +3,7 @@ package com.gitfast.app.ui.settings
 import android.app.Application
 import com.gitfast.app.auth.GoogleAuthManager
 import com.gitfast.app.data.healthconnect.HealthConnectManager
+import com.gitfast.app.data.local.LapStartPointDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.sync.FirestoreSync
@@ -41,6 +42,7 @@ class SettingsViewModelTest {
     private lateinit var mockSyncStatusStore: SyncStatusStore
     private lateinit var mockHealthConnectManager: HealthConnectManager
     private lateinit var mockBodyCompRepository: BodyCompRepository
+    private lateinit var mockLapStartPointDao: LapStartPointDao
 
     private val currentUserFlow = MutableStateFlow<FirebaseUser?>(null)
     private val syncStatusFlow = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
@@ -56,13 +58,13 @@ class SettingsViewModelTest {
         mockSyncStatusStore = mockk(relaxed = true)
         mockHealthConnectManager = mockk(relaxed = true)
         mockBodyCompRepository = mockk(relaxed = true)
+        mockLapStartPointDao = mockk(relaxed = true)
 
         every { mockSettingsStore.autoPauseEnabled } returns true
         every { mockSettingsStore.keepScreenOn } returns true
         every { mockSettingsStore.autoLapEnabled } returns false
         every { mockSettingsStore.homeArrivalEnabled } returns false
         every { mockSettingsStore.hasHomeLocation } returns false
-        every { mockSettingsStore.hasLapStartPoint } returns false
         every { mockGoogleAuthManager.currentUser } returns currentUserFlow
         every { mockSyncStatusStore.syncStatus } returns syncStatusFlow
         every { mockSyncStatusStore.lastSyncedAt } returns 0L
@@ -81,6 +83,7 @@ class SettingsViewModelTest {
         syncStatusStore = mockSyncStatusStore,
         healthConnectManager = mockHealthConnectManager,
         bodyCompRepository = mockBodyCompRepository,
+        lapStartPointDao = mockLapStartPointDao,
     )
 
     // =========================================================================
@@ -344,25 +347,22 @@ class SettingsViewModelTest {
     }
 
     // =========================================================================
-    // Lap Start Point
+    // Lap Start Points (multi-park)
     // =========================================================================
 
     @Test
-    fun `initial state loads hasLapStartPoint from store`() {
-        every { mockSettingsStore.hasLapStartPoint } returns true
+    fun `initial state has zero lap start point count`() {
         val vm = createViewModel()
-        assertTrue(vm.uiState.value.hasLapStartPoint)
+        assertEquals(0, vm.uiState.value.lapStartPointCount)
     }
 
     @Test
-    fun `clearLapStartPoint clears store and updates state`() {
-        every { mockSettingsStore.hasLapStartPoint } returns true
+    fun `clearAllLapStartPoints calls deleteAll on DAO`() = runTest {
         val vm = createViewModel()
 
-        vm.clearLapStartPoint()
+        vm.clearAllLapStartPoints()
 
-        verify { mockSettingsStore.clearLapStartPoint() }
-        assertFalse(vm.uiState.value.hasLapStartPoint)
+        coVerify { mockLapStartPointDao.deleteAll() }
     }
 
     @Test

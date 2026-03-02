@@ -37,7 +37,7 @@ class WorkoutStateManagerAutoStartLapsTest {
 
     private fun configureAutoStartLaps() {
         manager.setAutoLapConfig(enabled = true, anchorRadiusMeters = 5)
-        manager.setAutoStartLapsConfig(lapStartLat = startLat, lapStartLng = startLon)
+        manager.setAutoStartLapsConfig(listOf(startLat to startLon))
     }
 
     @Test
@@ -54,7 +54,7 @@ class WorkoutStateManagerAutoStartLapsTest {
     @Test
     fun `does NOT auto-start when auto-lap disabled`() {
         manager.setAutoLapConfig(enabled = false, anchorRadiusMeters = 5)
-        manager.setAutoStartLapsConfig(lapStartLat = startLat, lapStartLng = startLon)
+        manager.setAutoStartLapsConfig(listOf(startLat to startLon))
         manager.startWorkout(ActivityType.RUN)
 
         manager.addGpsPoint(gpsPoint(startLat, startLon))
@@ -65,7 +65,7 @@ class WorkoutStateManagerAutoStartLapsTest {
     @Test
     fun `does NOT auto-start when no start point configured`() {
         manager.setAutoLapConfig(enabled = true, anchorRadiusMeters = 5)
-        manager.setAutoStartLapsConfig(lapStartLat = null, lapStartLng = null)
+        manager.setAutoStartLapsConfig(emptyList())
         manager.startWorkout(ActivityType.RUN)
 
         manager.addGpsPoint(gpsPoint(startLat, startLon))
@@ -200,6 +200,34 @@ class WorkoutStateManagerAutoStartLapsTest {
 
         manager.stopWorkout()
         assertFalse(manager.workoutState.value.autoLapAnchorSet)
+    }
+
+    @Test
+    fun `auto-starts at second saved point when approaching it`() {
+        val secondLat = offsetNorth(startLat, 500.0) // 500m away = different park
+        val secondLon = startLon
+        manager.setAutoLapConfig(enabled = true, anchorRadiusMeters = 5)
+        manager.setAutoStartLapsConfig(listOf(startLat to startLon, secondLat to secondLon))
+        manager.startWorkout(ActivityType.RUN)
+
+        // GPS point near second park's saved point
+        manager.addGpsPoint(gpsPoint(secondLat, secondLon))
+
+        assertEquals(PhaseType.LAPS, manager.workoutState.value.phase)
+    }
+
+    @Test
+    fun `does not auto-start when far from all saved points`() {
+        val secondLat = offsetNorth(startLat, 500.0)
+        manager.setAutoLapConfig(enabled = true, anchorRadiusMeters = 5)
+        manager.setAutoStartLapsConfig(listOf(startLat to startLon, secondLat to startLon))
+        manager.startWorkout(ActivityType.RUN)
+
+        // GPS point far from both saved points (250m north of first)
+        val midLat = offsetNorth(startLat, 250.0)
+        manager.addGpsPoint(gpsPoint(midLat, startLon))
+
+        assertEquals(PhaseType.WARMUP, manager.workoutState.value.phase)
     }
 
     @Test

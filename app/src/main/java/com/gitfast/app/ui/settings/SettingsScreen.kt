@@ -76,11 +76,9 @@ fun SettingsScreen(
             if (uiState.autoLapEnabled) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
-                SetLapStartPointItem(
-                    hasLapStartPoint = uiState.hasLapStartPoint,
-                    isCapturing = uiState.isCapturingLapStartPoint,
-                    onCapture = { viewModel.captureLapStartPoint() },
-                    onClear = { viewModel.clearLapStartPoint() },
+                LapStartPointsItem(
+                    count = uiState.lapStartPointCount,
+                    onClearAll = { viewModel.clearAllLapStartPoints() },
                 )
             }
 
@@ -252,47 +250,36 @@ private fun SetHomeLocationItem(
 }
 
 @Composable
-private fun SetLapStartPointItem(
-    hasLapStartPoint: Boolean,
-    isCapturing: Boolean,
-    onCapture: () -> Unit,
-    onClear: () -> Unit,
+private fun LapStartPointsItem(
+    count: Int,
+    onClearAll: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = !isCapturing) {
-                if (hasLapStartPoint) onClear() else onCapture()
-            }
+            .clickable(enabled = count > 0) { onClearAll() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = if (hasLapStartPoint) "Lap Start Point" else "Set Lap Start Point",
+                text = "Lap Start Points",
                 style = MaterialTheme.typography.bodyLarge,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = if (hasLapStartPoint) "Tap to clear"
-                else "Tap to capture GPS start/finish line",
+                text = if (count == 0) "Start laps during a run to save a location"
+                else "$count saved location(s) — tap to clear all",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             )
         }
-        if (isCapturing) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                strokeWidth = 2.dp,
-            )
-        } else {
-            Text(
-                text = if (hasLapStartPoint) "Set" else "Not set",
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (hasLapStartPoint) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-            )
-        }
+        Text(
+            text = if (count > 0) "$count" else "0",
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (count > 0) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+        )
     }
 }
 

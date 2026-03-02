@@ -1,8 +1,11 @@
 package com.gitfast.app.data.sync
 
 import com.gitfast.app.data.local.CharacterDao
+import com.gitfast.app.data.local.LapStartPointDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutDao
+import com.gitfast.app.data.local.entity.LapStartPointEntity
+import com.gitfast.app.util.DistanceCalculator
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.google.firebase.auth.FirebaseAuth
@@ -20,6 +23,7 @@ class FirestoreSync @Inject constructor(
     private val characterDao: CharacterDao,
     private val settingsStore: SettingsStore,
     private val syncStatusStore: SyncStatusStore,
+    private val lapStartPointDao: LapStartPointDao,
 ) {
     private fun userDocRef() = auth.currentUser?.uid?.let {
         firestore.collection("users").document(it)
@@ -143,6 +147,68 @@ class FirestoreSync @Inject constructor(
             Timber.d("Pushed %d route tags", tags.size)
         } catch (e: Exception) {
             Timber.e(e, "Failed to push route tags")
+        }
+    }
+
+    /** Push all saved lap start points to Firestore. */
+    suspend fun pushLapStartPoints() {
+        val userDoc = userDocRef() ?: return
+        try {
+            val points = lapStartPointDao.getAll()
+            for (point in points) {
+                userDoc.collection("lapStartPoints")
+                    .document(point.id.toString())
+                    .set(
+                        mapOf(
+                            "latitude" to point.latitude,
+                            "longitude" to point.longitude,
+                            "createdAt" to point.createdAt,
+                        )
+                    )
+                    .await()
+            }
+            Timber.d("Pushed %d lap start points", points.size)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to push lap start points")
+        }
+    }
+
+    /** Pull lap start points from Firestore, inserting any not within 50m of existing local points. */
+    suspend fun pullLapStartPoints() {
+        val userDoc = userDocRef() ?: return
+        try {
+            val remoteDocs = userDoc.collection("lapStartPoints").get().await()
+            val localPoints = lapStartPointDao.getAll()
+            var pulled = 0
+
+            for (doc in remoteDocs.documents) {
+                val data = doc.data ?: continue
+                val remoteLat = (data["latitude"] as? Number)?.toDouble() ?: continue
+                val remoteLng = (data["longitude"] as? Number)?.toDouble() ?: continue
+                val remoteCreatedAt = (data["createdAt"] as? Number)?.toLong() ?: System.currentTimeMillis()
+
+                val isNearExisting = localPoints.any { local ->
+                    DistanceCalculator.haversineMeters(
+                        remoteLat, remoteLng,
+                        local.latitude, local.longitude
+                    ) <= SettingsStore.LAP_START_CLUSTER_RADIUS_METERS
+                }
+
+                if (!isNearExisting) {
+                    lapStartPointDao.insert(
+                        LapStartPointEntity(
+                            latitude = remoteLat,
+                            longitude = remoteLng,
+                            createdAt = remoteCreatedAt,
+                        )
+                    )
+                    pulled++
+                }
+            }
+
+            Timber.d("Pulled %d lap start points from Firestore", pulled)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to pull lap start points")
         }
     }
 
@@ -283,11 +349,13 @@ class FirestoreSync @Inject constructor(
             pushCharacterData()
             pushSettings()
             pushRouteTags()
+            pushLapStartPoints()
 
             // Pull remote data
             pullWorkouts()
             pullCharacterData()
             pullSettings()
+            pullLapStartPoints()
 
             syncStatusStore.setSuccess()
             Timber.d("Full sync complete")
@@ -306,6 +374,7 @@ class FirestoreSync @Inject constructor(
             pushCharacterData()
             pushSettings()
             pushRouteTags()
+            pushLapStartPoints()
 
             syncStatusStore.hasCompletedInitialSync = true
             syncStatusStore.setSuccess()

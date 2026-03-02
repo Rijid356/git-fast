@@ -607,8 +607,7 @@ class WorkoutStateManager @Inject constructor() {
         hasLeftAnchorRadius = false
         lastAutoLapTime = null
         autoStartLapsEnabled = false
-        lapStartPointLatitude = null
-        lapStartPointLongitude = null
+        lapStartPoints = emptyList()
         autoStartLapsTriggered = false
         sprintActive = false
         sprintStartTime = null
@@ -681,10 +680,9 @@ class WorkoutStateManager @Inject constructor() {
     private var hasLeftAnchorRadius: Boolean = false
     private var lastAutoLapTime: Instant? = null
 
-    // Auto-start laps from saved GPS point
+    // Auto-start laps from saved GPS points (multi-park)
     private var autoStartLapsEnabled: Boolean = false
-    private var lapStartPointLatitude: Double? = null
-    private var lapStartPointLongitude: Double? = null
+    private var lapStartPoints: List<Pair<Double, Double>> = emptyList()
     private var autoStartLapsTriggered: Boolean = false
 
     fun setAutoLapConfig(enabled: Boolean, anchorRadiusMeters: Int) {
@@ -692,10 +690,9 @@ class WorkoutStateManager @Inject constructor() {
         autoLapAnchorRadiusMeters = anchorRadiusMeters
     }
 
-    fun setAutoStartLapsConfig(lapStartLat: Double?, lapStartLng: Double?) {
-        lapStartPointLatitude = lapStartLat
-        lapStartPointLongitude = lapStartLng
-        autoStartLapsEnabled = autoLapEnabled && lapStartLat != null && lapStartLng != null
+    fun setAutoStartLapsConfig(points: List<Pair<Double, Double>>) {
+        lapStartPoints = points
+        autoStartLapsEnabled = autoLapEnabled && points.isNotEmpty()
     }
 
     fun addGpsPoint(point: GpsPoint) {
@@ -738,23 +735,24 @@ class WorkoutStateManager @Inject constructor() {
             maxSpeedMph = newMax,
         )
 
-        // Auto-start laps: trigger startLaps() when near saved start point during WARMUP
+        // Auto-start laps: trigger startLaps() when near any saved start point during WARMUP
         if (autoStartLapsEnabled && !autoStartLapsTriggered &&
             currentPhase == PhaseType.WARMUP && activityType == ActivityType.RUN
         ) {
-            val startLat = lapStartPointLatitude
-            val startLng = lapStartPointLongitude
-            if (startLat != null && startLng != null) {
-                val distToStart = DistanceCalculator.haversineMeters(
+            val nearest = lapStartPoints.minByOrNull { (lat, lng) ->
+                DistanceCalculator.haversineMeters(point.latitude, point.longitude, lat, lng)
+            }
+            if (nearest != null) {
+                val distToNearest = DistanceCalculator.haversineMeters(
                     point.latitude, point.longitude,
-                    startLat, startLng
+                    nearest.first, nearest.second
                 )
-                if (distToStart <= autoLapAnchorRadiusMeters) {
+                if (distToNearest <= autoLapAnchorRadiusMeters) {
                     autoStartLapsTriggered = true
                     startLaps()
                     // Override anchor with saved start point coords
-                    anchorLatitude = startLat
-                    anchorLongitude = startLng
+                    anchorLatitude = nearest.first
+                    anchorLongitude = nearest.second
                 }
             }
         }

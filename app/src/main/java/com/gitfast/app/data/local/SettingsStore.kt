@@ -133,6 +133,7 @@ class SettingsStore @Inject constructor(
 
     companion object {
         const val AUTO_LAP_ANCHOR_RADIUS_METERS = 5
+        const val LAP_START_CLUSTER_RADIUS_METERS = 50.0
 
         private const val PREFS_NAME = "gitfast_settings"
         private const val KEY_AUTO_PAUSE_ENABLED = "auto_pause_enabled"
