@@ -27,6 +27,7 @@ data class WorkoutDetailItem(
     val weatherSummary: String?,
     val energyLevel: EnergyLevel?,
     val notes: String?,
+    val narrativeDescription: String? = null,
     val startTimeMillis: Long = 0L,
     val xpEarned: Int = 0,
     val xpBreakdown: String? = null,
@@ -85,6 +86,7 @@ fun Workout.toDetailItem(): WorkoutDetailItem {
         weatherSummary = weatherSummary,
         energyLevel = energyLevel,
         notes = notes,
+        narrativeDescription = narrativeDescription,
         startTimeMillis = startTime.toEpochMilli(),
     )
 }

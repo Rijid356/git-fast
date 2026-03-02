@@ -657,15 +657,21 @@ class WorkoutStateManager @Inject constructor() {
     companion object {
         private const val AUTO_LAP_COOLDOWN_MS = 30_000L
         private const val SPEED_SMOOTHING_WINDOW = 5
+        private const val SPEED_STALENESS_MS = 4_000L
         private const val MS_TO_MPH = 2.23694f
     }
 
     /**
      * Calculate smoothed speed in MPH from the last N GPS points with non-null speed.
-     * Uses a rolling average to reduce GPS jitter.
+     * Uses a rolling average to reduce GPS jitter. Only considers points from the
+     * last [SPEED_STALENESS_MS] to avoid showing stale speed after stopping.
      */
     private fun calculateSmoothedSpeed(points: List<GpsPoint>): Float? {
+        if (points.isEmpty()) return null
+        val now = points.last().timestamp
+        val cutoff = now.minusMillis(SPEED_STALENESS_MS)
         val recentSpeeds = points.takeLast(SPEED_SMOOTHING_WINDOW)
+            .filter { it.timestamp.isAfter(cutoff) }
             .mapNotNull { it.speed }
         if (recentSpeeds.isEmpty()) return null
         val avgMetersPerSecond = recentSpeeds.average().toFloat()

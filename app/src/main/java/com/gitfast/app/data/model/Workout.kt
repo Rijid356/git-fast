@@ -17,7 +17,8 @@ data class Workout(
     val weatherCondition: WeatherCondition?,
     val weatherTemp: WeatherTemp?,
     val energyLevel: EnergyLevel?,
-    val routeTag: String?
+    val routeTag: String?,
+    val narrativeDescription: String? = null
 ) {
     val durationMillis: Long?
         get() = endTime?.let { it.toEpochMilli() - startTime.toEpochMilli() }

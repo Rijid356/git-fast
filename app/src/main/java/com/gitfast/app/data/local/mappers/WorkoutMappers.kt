@@ -28,7 +28,8 @@ fun WorkoutEntity.toDomain(
     weatherCondition = weatherCondition,
     weatherTemp = weatherTemp,
     energyLevel = energyLevel,
-    routeTag = routeTag
+    routeTag = routeTag,
+    narrativeDescription = narrativeDescription
 )
 
 fun Workout.toEntity() = WorkoutEntity(
@@ -44,7 +45,8 @@ fun Workout.toEntity() = WorkoutEntity(
     weatherCondition = weatherCondition,
     weatherTemp = weatherTemp,
     energyLevel = energyLevel,
-    routeTag = routeTag
+    routeTag = routeTag,
+    narrativeDescription = narrativeDescription
 )
 
 fun WorkoutPhaseEntity.toDomain(laps: List<Lap>) = WorkoutPhase(

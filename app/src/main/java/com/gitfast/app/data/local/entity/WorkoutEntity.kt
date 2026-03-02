@@ -23,5 +23,6 @@ data class WorkoutEntity(
     val weatherCondition: WeatherCondition?,
     val weatherTemp: WeatherTemp?,
     val energyLevel: EnergyLevel?,
-    val routeTag: String?
+    val routeTag: String?,
+    val narrativeDescription: String? = null
 )
