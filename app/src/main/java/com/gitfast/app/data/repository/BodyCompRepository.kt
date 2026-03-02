@@ -1,6 +1,5 @@
 package com.gitfast.app.data.repository
 
-import android.util.Log
 import com.gitfast.app.data.healthconnect.HealthConnectManager
 import com.gitfast.app.data.local.BodyCompDao
 import com.gitfast.app.data.local.entity.BodyCompEntry
@@ -9,6 +8,7 @@ import com.gitfast.app.data.model.BodyCompReading
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -23,7 +23,6 @@ class BodyCompRepository @Inject constructor(
 ) {
 
     companion object {
-        private const val TAG = "BodyCompRepository"
         private const val SYNC_DAYS = 90L
     }
 
@@ -42,12 +41,12 @@ class BodyCompRepository @Inject constructor(
      */
     suspend fun syncFromHealthConnect(): SyncResult {
         if (!healthConnectManager.isAvailable()) {
-            Log.w(TAG, "Health Connect not available")
+            Timber.w("Health Connect not available")
             return SyncResult.NotAvailable
         }
 
         if (!healthConnectManager.hasPermissions()) {
-            Log.w(TAG, "Health Connect permissions not granted, skipping sync")
+            Timber.w("Health Connect permissions not granted, skipping sync")
             return SyncResult.NoPermissions
         }
 
@@ -89,14 +88,14 @@ class BodyCompRepository @Inject constructor(
 
             if (entries.isNotEmpty()) {
                 bodyCompDao.insertAll(entries)
-                Log.d(TAG, "Synced ${entries.size} body comp entries from Health Connect")
+                Timber.d("Synced %d body comp entries from Health Connect", entries.size)
                 SyncResult.Success(entries.size)
             } else {
-                Log.d(TAG, "No weight records found in Health Connect")
+                Timber.d("No weight records found in Health Connect")
                 SyncResult.NoData
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error syncing from Health Connect", e)
+            Timber.e(e, "Error syncing from Health Connect")
             SyncResult.Error(e.message ?: "Unknown error")
         }
     }

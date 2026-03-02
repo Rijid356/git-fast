@@ -1,6 +1,5 @@
 package com.gitfast.app.data.repository
 
-import android.util.Log
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
@@ -22,6 +21,7 @@ import com.gitfast.app.util.StatsCalculator
 import com.gitfast.app.util.StreakCalculator
 import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.util.XpCalculator
+import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
@@ -131,10 +131,10 @@ class WorkoutSaveManager @Inject constructor(
                 firestoreSync?.pushWorkout(snapshot.workoutId)
                 firestoreSync?.pushCharacterData()
             } catch (e: Exception) {
-                Log.w("WorkoutSaveManager", "Cloud sync failed (non-blocking)", e)
+                Timber.w(e, "Cloud sync failed (non-blocking)")
             }
 
-            Log.d("WorkoutSaveManager", "Saved workout ${snapshot.workoutId}, awarded $xpAwarded XP, streak=$streakDays, ${newAchievements.size} achievements unlocked")
+            Timber.d("Saved workout %s, awarded %d XP, streak=%d, %d achievements unlocked", snapshot.workoutId, xpAwarded, streakDays, newAchievements.size)
             SaveResult(
                 workoutId = snapshot.workoutId,
                 xpEarned = xpAwarded,
@@ -143,7 +143,7 @@ class WorkoutSaveManager @Inject constructor(
                 streakMultiplier = xpResult.streakMultiplier,
             )
         } catch (e: Exception) {
-            Log.e("WorkoutSaveManager", "Failed to save workout", e)
+            Timber.e(e, "Failed to save workout")
             null
         }
     }
@@ -203,7 +203,7 @@ class WorkoutSaveManager @Inject constructor(
             }
             newAchievements
         } catch (e: Exception) {
-            Log.e("WorkoutSaveManager", "Failed to check achievements", e)
+            Timber.e(e, "Failed to check achievements")
             emptyList()
         }
     }
@@ -239,7 +239,7 @@ class WorkoutSaveManager @Inject constructor(
             }
             newAchievements
         } catch (e: Exception) {
-            Log.e("WorkoutSaveManager", "Failed to check Juniper achievements", e)
+            Timber.e(e, "Failed to check Juniper achievements")
             emptyList()
         }
     }
@@ -251,7 +251,7 @@ class WorkoutSaveManager @Inject constructor(
             val stats = StatsCalculator.calculateAll(allWorkouts, recentRuns)
             characterRepository.updateStats(stats = stats)
         } catch (e: Exception) {
-            Log.e("WorkoutSaveManager", "Failed to recalculate stats", e)
+            Timber.e(e, "Failed to recalculate stats")
         }
     }
 
@@ -262,7 +262,7 @@ class WorkoutSaveManager @Inject constructor(
             val stats = StatsCalculator.calculateDogStats(dogWalks, totalEventCount)
             characterRepository.updateStats(profileId = 2, stats = stats)
         } catch (e: Exception) {
-            Log.e("WorkoutSaveManager", "Failed to recalculate Juniper stats", e)
+            Timber.e(e, "Failed to recalculate Juniper stats")
         }
     }
 
@@ -294,7 +294,7 @@ class WorkoutSaveManager @Inject constructor(
             firestoreSync?.pushWorkout(workoutId)
             firestoreSync?.pushRouteTags()
         } catch (e: Exception) {
-            Log.w("WorkoutSaveManager", "Cloud sync failed (non-blocking)", e)
+            Timber.w(e, "Cloud sync failed (non-blocking)")
         }
     }
 }

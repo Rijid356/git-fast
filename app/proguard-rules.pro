@@ -8,6 +8,13 @@
     public static int v(...);
 }
 
+# ── Strip Timber debug/verbose/info logs in release ──
+-assumenosideeffects class timber.log.Timber {
+    public static void d(...);
+    public static void v(...);
+    public static void i(...);
+}
+
 # ── Firebase ──
 -keepattributes Signature
 -keepattributes *Annotation*

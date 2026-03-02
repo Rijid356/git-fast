@@ -1,6 +1,5 @@
 package com.gitfast.app.ui.dogwalk
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
@@ -40,6 +39,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import timber.log.Timber
 
 @Composable
 fun EventRouteMap(
@@ -60,7 +60,7 @@ fun EventRouteMap(
         try {
             MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_dark)
         } catch (e: Exception) {
-            Log.e("EventRouteMap", "Failed to load map style", e)
+            Timber.e(e, "Failed to load map style")
             null
         }
     }

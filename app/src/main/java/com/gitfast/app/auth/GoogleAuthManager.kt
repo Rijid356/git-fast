@@ -1,7 +1,6 @@
 package com.gitfast.app.auth
 
 import android.content.Context
-import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
@@ -14,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,8 +21,6 @@ import javax.inject.Singleton
 class GoogleAuthManager @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
 ) {
-    private val TAG = "GoogleAuthManager"
-
     private val _currentUser = MutableStateFlow(firebaseAuth.currentUser)
     val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
 
@@ -71,13 +69,13 @@ class GoogleAuthManager @Inject constructor(
             val authResult = firebaseAuth.signInWithCredential(firebaseCredential).await()
             val user = authResult.user ?: throw IllegalStateException("Sign-in succeeded but user is null")
 
-            Log.d(TAG, "Signed in successfully")
+            Timber.d("Signed in successfully")
             Result.success(user)
         } catch (e: androidx.credentials.exceptions.NoCredentialException) {
-            Log.d(TAG, "No credentials available", e)
+            Timber.d(e, "No credentials available")
             Result.failure(e)
         } catch (e: Exception) {
-            Log.e(TAG, "Sign-in failed", e)
+            Timber.e(e, "Sign-in failed")
             Result.failure(e)
         }
     }
@@ -90,9 +88,9 @@ class GoogleAuthManager @Inject constructor(
                 firebaseAuth.app.applicationContext
             )
             credentialManager.clearCredentialState(ClearCredentialStateRequest())
-            Log.d(TAG, "Signed out")
+            Timber.d("Signed out")
         } catch (e: Exception) {
-            Log.e(TAG, "Sign-out error", e)
+            Timber.e(e, "Sign-out error")
         }
     }
 }
