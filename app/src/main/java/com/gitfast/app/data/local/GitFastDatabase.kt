@@ -33,7 +33,7 @@ import com.gitfast.app.data.local.entity.XpTransactionEntity
         ExerciseSessionEntity::class,
         ExerciseSetEntity::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

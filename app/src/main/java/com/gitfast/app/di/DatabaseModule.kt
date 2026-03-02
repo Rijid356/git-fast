@@ -18,6 +18,7 @@ import com.gitfast.app.data.local.migrations.MIGRATION_7_8
 import com.gitfast.app.data.local.migrations.MIGRATION_8_9
 import com.gitfast.app.data.local.migrations.MIGRATION_9_10
 import com.gitfast.app.data.local.migrations.MIGRATION_10_11
+import com.gitfast.app.data.local.migrations.MIGRATION_11_12
 import com.gitfast.app.data.local.ExerciseDao
 import com.gitfast.app.data.local.SorenessDao
 import com.gitfast.app.data.repository.ExerciseRepository
@@ -45,7 +46,7 @@ object DatabaseModule {
             context,
             GitFastDatabase::class.java,
             "gitfast-database"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
          .build()
     }
 

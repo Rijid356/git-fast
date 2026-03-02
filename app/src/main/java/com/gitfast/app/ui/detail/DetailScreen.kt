@@ -220,6 +220,23 @@ private fun DetailContent(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
+        // Dog walk narrative
+        if (detail.activityType.isDogActivity && detail.narrativeDescription != null) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RectangleShape,
+                color = MaterialTheme.colorScheme.surface,
+            ) {
+                Text(
+                    text = detail.narrativeDescription,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
         // Phase breakdown (only for runs with multiple phases)
         if (detail.activityType == ActivityType.RUN) {
             PhaseBreakdownSection(phases = phases)

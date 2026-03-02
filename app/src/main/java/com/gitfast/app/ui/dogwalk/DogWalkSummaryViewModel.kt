@@ -185,7 +185,8 @@ class DogWalkSummaryViewModel @Inject constructor(
                 weatherCondition = state.weatherCondition,
                 weatherTemp = state.weatherTemp,
                 energyLevel = state.energyLevel,
-                notes = state.notes.ifEmpty { null }
+                notes = state.notes.ifEmpty { null },
+                narrativeDescription = state.narrative
             )
 
             _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)
