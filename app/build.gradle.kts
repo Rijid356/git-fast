@@ -144,8 +144,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.5")
@@ -168,7 +168,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:19.0.0")
 
     // Lifecycle Service
-    implementation("androidx.lifecycle:lifecycle-service:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-service:2.10.0")
 
     // Health Connect
     implementation("androidx.health.connect:connect-client:1.1.0-alpha11")
@@ -185,7 +185,7 @@ dependencies {
 
     // Core
     implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
