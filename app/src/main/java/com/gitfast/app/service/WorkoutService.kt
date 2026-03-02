@@ -12,8 +12,10 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.gitfast.app.MainActivity
 import com.gitfast.app.R
+import com.gitfast.app.data.local.LapStartPointDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutStateStore
+import com.gitfast.app.data.local.entity.LapStartPointEntity
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.GpsPoint
@@ -42,6 +44,7 @@ class WorkoutService : LifecycleService() {
     @Inject lateinit var autoPauseDetector: AutoPauseDetector
     @Inject lateinit var autoSprintDetector: AutoSprintDetector
     @Inject lateinit var settingsStore: SettingsStore
+    @Inject lateinit var lapStartPointDao: LapStartPointDao
 
     private var gpsCollectionJob: Job? = null
     private var stepCollectionJob: Job? = null
@@ -98,7 +101,10 @@ class WorkoutService : LifecycleService() {
             ACTION_RESUME -> resumeWorkout()
             ACTION_STOP -> stopWorkout()
             ACTION_DISCARD -> discardWorkout()
-            ACTION_START_LAPS -> workoutStateManager.startLaps()
+            ACTION_START_LAPS -> {
+                workoutStateManager.startLaps()
+                saveLapStartPoint()
+            }
             ACTION_MARK_LAP -> workoutStateManager.markLap()
             ACTION_END_LAPS -> workoutStateManager.endLaps()
             ACTION_LOG_EVENT -> {
@@ -132,11 +138,12 @@ class WorkoutService : LifecycleService() {
             anchorRadiusMeters = SettingsStore.AUTO_LAP_ANCHOR_RADIUS_METERS
         )
 
-        // Configure auto-start laps from saved GPS start point
-        workoutStateManager.setAutoStartLapsConfig(
-            lapStartLat = settingsStore.lapStartLatitude,
-            lapStartLng = settingsStore.lapStartLongitude,
-        )
+        // Load saved lap start points from Room and configure auto-start
+        lifecycleScope.launch {
+            migrateOldLapStartPoint()
+            val savedPoints = lapStartPointDao.getAll().map { it.latitude to it.longitude }
+            workoutStateManager.setAutoStartLapsConfig(savedPoints)
+        }
 
         workoutStateStore.setActiveWorkout(workoutId, Instant.now().toEpochMilli())
 
@@ -292,6 +299,48 @@ class WorkoutService : LifecycleService() {
             workoutStateManager.homeArrivalPause()
             updateNotification()
         }
+    }
+
+    /**
+     * Save the current GPS location as a lap start point if it's not within
+     * the cluster radius of any existing saved point.
+     */
+    private fun saveLapStartPoint() {
+        val lastPoint = workoutStateManager.gpsPoints.value.lastOrNull() ?: return
+        lifecycleScope.launch {
+            val existing = lapStartPointDao.getAll()
+            val isNearExisting = existing.any { saved ->
+                DistanceCalculator.haversineMeters(
+                    lastPoint.latitude, lastPoint.longitude,
+                    saved.latitude, saved.longitude
+                ) <= SettingsStore.LAP_START_CLUSTER_RADIUS_METERS
+            }
+            if (!isNearExisting) {
+                lapStartPointDao.insert(
+                    LapStartPointEntity(
+                        latitude = lastPoint.latitude,
+                        longitude = lastPoint.longitude,
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * One-time migration: seed old SharedPrefs lap start point into Room table.
+     */
+    private suspend fun migrateOldLapStartPoint() {
+        if (!settingsStore.hasLapStartPoint) return
+        val existing = lapStartPointDao.getAll()
+        if (existing.isNotEmpty()) {
+            // Room already has data — clear old prefs
+            settingsStore.clearLapStartPoint()
+            return
+        }
+        val lat = settingsStore.lapStartLatitude ?: return
+        val lng = settingsStore.lapStartLongitude ?: return
+        lapStartPointDao.insert(LapStartPointEntity(latitude = lat, longitude = lng))
+        settingsStore.clearLapStartPoint()
     }
 
     private fun handleAutoSprint(point: GpsPoint, activityType: ActivityType) {

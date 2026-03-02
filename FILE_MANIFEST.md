@@ -114,13 +114,14 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 
 | File | Purpose |
 |------|---------|
-| `GitFastDatabase.kt` | Room database v11: 13 entity tables, DAOs, migration chain, schema export |
+| `GitFastDatabase.kt` | Room database v13: 14 entity tables, DAOs, migration chain, schema export |
 | `ExerciseDao.kt` | DAO for exercise sessions/sets: insert, query by date, counts, @Transaction save |
 | `SorenessDao.kt` | DAO for soreness logs: insert, update, observe by date, count queries |
 | `WorkoutDao.kt` | DAO for workouts, phases, laps, GPS points, route tags; `@Transaction` upsert |
 | `CharacterDao.kt` | DAO for character profiles, XP transactions, unlocked achievements |
 | `BodyCompDao.kt` | DAO for body composition entries (weight, fat%, BMR, height) |
 | `Converters.kt` | Room type converters for Instant and enums (stored as TEXT) |
+| `LapStartPointDao.kt` | DAO for saved lap start GPS points: insert, getAll, deleteAll, observeCount |
 | `SettingsStore.kt` | SharedPrefs wrapper for app settings (auto-pause, units, goals, home location) |
 | `WorkoutStateStore.kt` | SharedPrefs for crash recovery — persists active workout ID |
 
@@ -138,6 +139,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `UnlockedAchievementEntity.kt` | Room entity: achievement unlock with composite key (achievementId, profileId) |
 | `BodyCompEntry.kt` | Room entity: Health Connect body comp reading (weight, fat, BMR, height) |
 | `DogWalkEventEntity.kt` | Room entity: dog walk event with FK to workout, GPS, cascade delete |
+| `LapStartPointEntity.kt` | Room entity: saved lap start GPS point for multi-park auto-start |
 | `SorenessLogEntity.kt` | Room entity: soreness log with comma-separated muscle groups, intensity, date index |
 | `ExerciseSessionEntity.kt` | Room entity: exercise session with start/end time, notes, XP awarded |
 | `ExerciseSetEntity.kt` | Room entity: exercise set with FK to session, reps, weight, warmup flag, cascade delete |
@@ -166,6 +168,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `Migration_8_9.kt` | v8→v9: Create dog_walk_events table; add foragingStat to character_profiles |
 | `Migration_9_10.kt` | v9→v10: Create soreness_logs table; add toughnessStat to character_profiles |
 | `Migration_10_11.kt` | v10→v11: Create exercise_sessions/exercise_sets tables; add strengthStat to character_profiles |
+| `Migration_12_13.kt` | v12→v13: Create lap_start_points table for multi-park auto-start |
 
 ## data/repository/
 
