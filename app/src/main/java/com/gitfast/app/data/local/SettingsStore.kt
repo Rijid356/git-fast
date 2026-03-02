@@ -84,8 +84,7 @@ class SettingsStore @Inject constructor(
 
     var lapStartLatitude: Double?
         get() {
-            val raw = prefs.getString(KEY_LAP_START_LATITUDE, null)
-                ?: return DEFAULT_LAP_START_LATITUDE
+            val raw = prefs.getString(KEY_LAP_START_LATITUDE, null) ?: return null
             return raw.toDoubleOrNull()
         }
         set(value) {
@@ -98,8 +97,7 @@ class SettingsStore @Inject constructor(
 
     var lapStartLongitude: Double?
         get() {
-            val raw = prefs.getString(KEY_LAP_START_LONGITUDE, null)
-                ?: return DEFAULT_LAP_START_LONGITUDE
+            val raw = prefs.getString(KEY_LAP_START_LONGITUDE, null) ?: return null
             return raw.toDoubleOrNull()
         }
         set(value) {
@@ -135,8 +133,6 @@ class SettingsStore @Inject constructor(
 
     companion object {
         const val AUTO_LAP_ANCHOR_RADIUS_METERS = 5
-        private const val DEFAULT_LAP_START_LATITUDE = 38.929031
-        private const val DEFAULT_LAP_START_LONGITUDE = -94.418978
 
         private const val PREFS_NAME = "gitfast_settings"
         private const val KEY_AUTO_PAUSE_ENABLED = "auto_pause_enabled"

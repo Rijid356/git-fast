@@ -71,7 +71,7 @@ class GoogleAuthManager @Inject constructor(
             val authResult = firebaseAuth.signInWithCredential(firebaseCredential).await()
             val user = authResult.user ?: throw IllegalStateException("Sign-in succeeded but user is null")
 
-            Log.d(TAG, "Signed in as ${user.email}")
+            Log.d(TAG, "Signed in successfully")
             Result.success(user)
         } catch (e: androidx.credentials.exceptions.NoCredentialException) {
             Log.d(TAG, "No credentials available", e)

@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -154,11 +153,6 @@ class WorkoutService : LifecycleService() {
                 handleHomeArrival(point)
                 workoutStateManager.addGpsPoint(point)
                 handleAutoSprint(point, activityType)
-                Log.d(
-                    "WorkoutService",
-                    "GPS: ${point.latitude}, ${point.longitude} " +
-                        "accuracy=${point.accuracy}m speed=${point.speed}"
-                )
             }
         }
 
