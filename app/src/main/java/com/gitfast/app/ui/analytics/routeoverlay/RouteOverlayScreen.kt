@@ -1,6 +1,5 @@
 package com.gitfast.app.ui.analytics.routeoverlay
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -61,6 +60,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -237,7 +237,7 @@ private fun OverlayMap(
         try {
             MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_dark)
         } catch (e: Exception) {
-            Log.e("RouteOverlay", "Failed to load map style", e)
+            Timber.e(e, "Failed to load map style")
             null
         }
     }

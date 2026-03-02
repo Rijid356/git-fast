@@ -1,7 +1,6 @@
 package com.gitfast.app.data.healthconnect
 
 import android.content.Context
-import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -13,6 +12,7 @@ import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import timber.log.Timber
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,8 +23,6 @@ class HealthConnectManager @Inject constructor(
 ) {
 
     companion object {
-        private const val TAG = "HealthConnectManager"
-
         val PERMISSIONS = setOf(
             HealthPermission.getReadPermission(WeightRecord::class),
             HealthPermission.getReadPermission(BodyFatRecord::class),
@@ -39,7 +37,7 @@ class HealthConnectManager @Inject constructor(
         try {
             if (isAvailable()) HealthConnectClient.getOrCreate(context) else null
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to create HealthConnectClient", e)
+            Timber.w(e, "Failed to create HealthConnectClient")
             null
         }
     }
@@ -48,7 +46,7 @@ class HealthConnectManager @Inject constructor(
         return try {
             HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE
         } catch (e: Exception) {
-            Log.w(TAG, "Error checking Health Connect availability", e)
+            Timber.w(e, "Error checking Health Connect availability")
             false
         }
     }
@@ -59,7 +57,7 @@ class HealthConnectManager @Inject constructor(
             val granted = hcClient.permissionController.getGrantedPermissions()
             PERMISSIONS.all { it in granted }
         } catch (e: Exception) {
-            Log.w(TAG, "Error checking permissions", e)
+            Timber.w(e, "Error checking permissions")
             false
         }
     }
@@ -76,7 +74,7 @@ class HealthConnectManager @Inject constructor(
                 )
             ).records
         } catch (e: Exception) {
-            Log.w(TAG, "Error reading weight records", e)
+            Timber.w(e, "Error reading weight records")
             emptyList()
         }
     }
@@ -91,7 +89,7 @@ class HealthConnectManager @Inject constructor(
                 )
             ).records
         } catch (e: Exception) {
-            Log.w(TAG, "Error reading body fat records", e)
+            Timber.w(e, "Error reading body fat records")
             emptyList()
         }
     }
@@ -106,7 +104,7 @@ class HealthConnectManager @Inject constructor(
                 )
             ).records
         } catch (e: Exception) {
-            Log.w(TAG, "Error reading lean body mass records", e)
+            Timber.w(e, "Error reading lean body mass records")
             emptyList()
         }
     }
@@ -121,7 +119,7 @@ class HealthConnectManager @Inject constructor(
                 )
             ).records
         } catch (e: Exception) {
-            Log.w(TAG, "Error reading bone mass records", e)
+            Timber.w(e, "Error reading bone mass records")
             emptyList()
         }
     }
@@ -136,7 +134,7 @@ class HealthConnectManager @Inject constructor(
                 )
             ).records
         } catch (e: Exception) {
-            Log.w(TAG, "Error reading BMR records", e)
+            Timber.w(e, "Error reading BMR records")
             emptyList()
         }
     }
@@ -151,7 +149,7 @@ class HealthConnectManager @Inject constructor(
                 )
             ).records
         } catch (e: Exception) {
-            Log.w(TAG, "Error reading height records", e)
+            Timber.w(e, "Error reading height records")
             emptyList()
         }
     }

@@ -36,7 +36,7 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
-import android.util.Log
+import timber.log.Timber
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 
@@ -58,7 +58,7 @@ fun RouteMap(
         try {
             MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style_dark)
         } catch (e: Exception) {
-            Log.e("RouteMap", "Failed to load map style", e)
+            Timber.e(e, "Failed to load map style")
             null
         }
     }
@@ -110,7 +110,7 @@ fun RouteMap(
             uiSettings = mapUiSettings,
             properties = mapProperties,
             onMapLoaded = {
-                Log.d("RouteMap", "Map tiles loaded successfully")
+                Timber.d("Map tiles loaded successfully")
                 mapLoaded = true
             },
         ) {

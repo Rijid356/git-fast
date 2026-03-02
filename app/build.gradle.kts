@@ -8,6 +8,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlinx.kover")
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     id("io.github.takahirom.roborazzi")
 }
 
@@ -118,6 +119,8 @@ kover {
                 classes("com.gitfast.app.BuildConfig", "com.gitfast.app.GitFastApp", "com.gitfast.app.MainActivity")
                 // Firebase SDK wrappers (not unit-testable)
                 packages("com.gitfast.app.auth")
+                // Logging infrastructure (Crashlytics/file trees)
+                packages("com.gitfast.app.logging")
             }
         }
         verify {
@@ -177,6 +180,10 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-crashlytics")
+
+    // Logging
+    implementation("com.jakewharton.timber:timber:5.0.1")
 
     // Credential Manager (Google Sign-In)
     implementation("androidx.credentials:credentials:1.5.0-beta01")

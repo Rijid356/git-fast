@@ -1,6 +1,5 @@
 package com.gitfast.app.data.sync
 
-import android.util.Log
 import com.gitfast.app.data.local.CharacterDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutDao
@@ -9,6 +8,7 @@ import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,8 +21,6 @@ class FirestoreSync @Inject constructor(
     private val settingsStore: SettingsStore,
     private val syncStatusStore: SyncStatusStore,
 ) {
-    private val TAG = "FirestoreSync"
-
     private fun userDocRef() = auth.currentUser?.uid?.let {
         firestore.collection("users").document(it)
     }
@@ -61,9 +59,9 @@ class FirestoreSync @Inject constructor(
                 ).await()
             }
 
-            Log.d(TAG, "Pushed workout $workoutId with ${gpsPoints.size} GPS points")
+            Timber.d("Pushed workout %s with %d GPS points", workoutId, gpsPoints.size)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to push workout $workoutId", e)
+            Timber.e(e, "Failed to push workout %s", workoutId)
         }
     }
 
@@ -101,9 +99,9 @@ class FirestoreSync @Inject constructor(
                 }
             }
 
-            Log.d(TAG, "Pushed character data")
+            Timber.d("Pushed character data")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to push character data", e)
+            Timber.e(e, "Failed to push character data")
         }
     }
 
@@ -125,9 +123,9 @@ class FirestoreSync @Inject constructor(
                 lapStartLongitude = settingsStore.lapStartLongitude,
             )
             userDoc.set(mapOf("settings" to settingsMap)).await()
-            Log.d(TAG, "Pushed settings")
+            Timber.d("Pushed settings")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to push settings", e)
+            Timber.e(e, "Failed to push settings")
         }
     }
 
@@ -142,9 +140,9 @@ class FirestoreSync @Inject constructor(
                     .set(tag.toFirestoreMap())
                     .await()
             }
-            Log.d(TAG, "Pushed ${tags.size} route tags")
+            Timber.d("Pushed %d route tags", tags.size)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to push route tags", e)
+            Timber.e(e, "Failed to push route tags")
         }
     }
 
@@ -176,7 +174,7 @@ class FirestoreSync @Inject constructor(
                     val pointsList = gpsDoc.data?.get("points") as? List<Map<String, Any?>>
                     gpsPoints = pointsList?.map { it.toGpsPointEntity() } ?: emptyList()
                 } catch (e: Exception) {
-                    Log.w(TAG, "No GPS points for workout $workoutId", e)
+                    Timber.w(e, "No GPS points for workout %s", workoutId)
                 }
 
                 workoutDao.saveWorkoutTransaction(workout, phases, laps, gpsPoints)
@@ -192,9 +190,9 @@ class FirestoreSync @Inject constructor(
                 pulled++
             }
 
-            Log.d(TAG, "Pulled $pulled workouts from Firestore")
+            Timber.d("Pulled %d workouts from Firestore", pulled)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to pull workouts", e)
+            Timber.e(e, "Failed to pull workouts")
         }
     }
 
@@ -227,7 +225,7 @@ class FirestoreSync @Inject constructor(
                         characterDao.insertXpTransaction(tx)
                     } catch (e: Exception) {
                         // Foreign key constraint may fail if workout not yet pulled
-                        Log.w(TAG, "Skipped XP transaction ${tx.id}: ${e.message}")
+                        Timber.w("Skipped XP transaction %s: %s", tx.id, e.message)
                     }
                 }
             }
@@ -240,9 +238,9 @@ class FirestoreSync @Inject constructor(
                 characterDao.insertUnlockedAchievement(achievement) // IGNORE conflict
             }
 
-            Log.d(TAG, "Pulled character data")
+            Timber.d("Pulled character data")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to pull character data", e)
+            Timber.e(e, "Failed to pull character data")
         }
     }
 
@@ -270,9 +268,9 @@ class FirestoreSync @Inject constructor(
             (settings["lapStartLatitude"] as? Number)?.let { settingsStore.lapStartLatitude = it.toDouble() }
             (settings["lapStartLongitude"] as? Number)?.let { settingsStore.lapStartLongitude = it.toDouble() }
 
-            Log.d(TAG, "Pulled settings")
+            Timber.d("Pulled settings")
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to pull settings", e)
+            Timber.e(e, "Failed to pull settings")
         }
     }
 
@@ -292,10 +290,10 @@ class FirestoreSync @Inject constructor(
             pullSettings()
 
             syncStatusStore.setSuccess()
-            Log.d(TAG, "Full sync complete")
+            Timber.d("Full sync complete")
         } catch (e: Exception) {
             syncStatusStore.setError(e.message ?: "Sync failed")
-            Log.e(TAG, "Full sync failed", e)
+            Timber.e(e, "Full sync failed")
         }
     }
 
@@ -311,10 +309,10 @@ class FirestoreSync @Inject constructor(
 
             syncStatusStore.hasCompletedInitialSync = true
             syncStatusStore.setSuccess()
-            Log.d(TAG, "Initial migration complete")
+            Timber.d("Initial migration complete")
         } catch (e: Exception) {
             syncStatusStore.setError(e.message ?: "Initial migration failed")
-            Log.e(TAG, "Initial migration failed", e)
+            Timber.e(e, "Initial migration failed")
         }
     }
 
