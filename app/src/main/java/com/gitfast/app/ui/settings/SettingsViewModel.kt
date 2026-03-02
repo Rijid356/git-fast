@@ -181,6 +181,8 @@ class SettingsViewModel @Inject constructor(
     fun signOut() {
         viewModelScope.launch {
             googleAuthManager.signOut()
+            syncStatusStore.hasCompletedInitialSync = false
+            syncStatusStore.lastSyncedAt = 0L
         }
     }
 
