@@ -2,11 +2,11 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24"
+    android:viewportWidth="56"
+    android:viewportHeight="56"
     android:tint="#FFFFFF">
-    <!-- Simple directional arrow placeholder for notification icon -->
+    <!-- Pixel-art running man matching app launcher icon -->
     <path
         android:fillColor="@android:color/white"
-        android:pathData="M12,2L4.5,20.29l0.71,0.71L12,18l6.79,3 0.71,-0.71z" />
+        android:pathData="M22,0h20v4h-20z M22,4h20v4h-20z M22,8h20v4h-20z M26,12h16v4h-16z M30,16h8v4h-8z M46,16h4v4h-4z M22,20h24v4h-24z M18,24h24v4h-24z M14,28h24v4h-24z M10,32h4v4h-4z M22,32h16v4h-16z M18,36h16v4h-16z M14,40h8v4h-8z M34,40h8v4h-8z M10,44h8v4h-8z M38,44h8v4h-8z M6,48h8v4h-8z M42,48h8v4h-8z M6,52h12v4h-12z M38,52h12v4h-12z" />
 </vector>
