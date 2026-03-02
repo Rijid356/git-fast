@@ -80,100 +80,25 @@ fun WorkoutControls(
         } else {
             if (activityType.isDogActivity) {
                 // Dog activity: simple Pause/Stop controls only
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    if (isPaused) {
-                        Button(
-                            onClick = onResume,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary,
-                                contentColor = MaterialTheme.colorScheme.onSecondary,
-                            ),
-                        ) {
-                            Text("RESUME", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 8.dp))
-                        }
-                    } else {
-                        Button(
-                            onClick = onPause,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
-                                contentColor = MaterialTheme.colorScheme.onTertiary,
-                            ),
-                        ) {
-                            Text("PAUSE", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 8.dp))
-                        }
-                    }
-
-                    Button(
-                        onClick = { showStopConfirmation = true },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError,
-                        ),
-                    ) {
-                        Text("STOP", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 8.dp))
-                    }
-                }
+                PauseStopRow(
+                    isPaused = isPaused,
+                    resumeText = "RESUME",
+                    onPause = onPause,
+                    onResume = onResume,
+                    secondaryText = "STOP",
+                    onSecondary = { showStopConfirmation = true },
+                )
             } else {
             when (phase) {
                 PhaseType.WARMUP -> {
-                    // Pause/Stop row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        if (isPaused) {
-                            Button(
-                                onClick = onResume,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary,
-                                    contentColor = MaterialTheme.colorScheme.onSecondary,
-                                ),
-                            ) {
-                                Text(
-                                    text = resumeButtonText,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                )
-                            }
-                        } else {
-                            Button(
-                                onClick = onPause,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary,
-                                    contentColor = MaterialTheme.colorScheme.onTertiary,
-                                ),
-                            ) {
-                                Text(
-                                    text = "PAUSE",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                )
-                            }
-                        }
-
-                        Button(
-                            onClick = { showStopConfirmation = true },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError,
-                            ),
-                        ) {
-                            Text(
-                                text = "STOP",
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(vertical = 8.dp),
-                            )
-                        }
-                    }
+                    PauseStopRow(
+                        isPaused = isPaused,
+                        resumeText = resumeButtonText,
+                        onPause = onPause,
+                        onResume = onResume,
+                        secondaryText = "STOP",
+                        onSecondary = { showStopConfirmation = true },
+                    )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -213,113 +138,25 @@ fun WorkoutControls(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Pause/End Laps row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        if (isPaused) {
-                            Button(
-                                onClick = onResume,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary,
-                                    contentColor = MaterialTheme.colorScheme.onSecondary,
-                                ),
-                            ) {
-                                Text(
-                                    text = resumeButtonText,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                )
-                            }
-                        } else {
-                            Button(
-                                onClick = onPause,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary,
-                                    contentColor = MaterialTheme.colorScheme.onTertiary,
-                                ),
-                            ) {
-                                Text(
-                                    text = "PAUSE",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                )
-                            }
-                        }
-
-                        Button(
-                            onClick = onEndLaps,
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError,
-                            ),
-                        ) {
-                            Text(
-                                text = "COOL DOWN",
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(vertical = 8.dp),
-                            )
-                        }
-                    }
+                    PauseStopRow(
+                        isPaused = isPaused,
+                        resumeText = resumeButtonText,
+                        onPause = onPause,
+                        onResume = onResume,
+                        secondaryText = "COOL DOWN",
+                        onSecondary = onEndLaps,
+                    )
                 }
 
                 PhaseType.COOLDOWN -> {
-                    // Standard pause/stop (same as original)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        if (isPaused) {
-                            Button(
-                                onClick = onResume,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary,
-                                    contentColor = MaterialTheme.colorScheme.onSecondary,
-                                ),
-                            ) {
-                                Text(
-                                    text = resumeButtonText,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                )
-                            }
-                        } else {
-                            Button(
-                                onClick = onPause,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary,
-                                    contentColor = MaterialTheme.colorScheme.onTertiary,
-                                ),
-                            ) {
-                                Text(
-                                    text = "PAUSE",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                )
-                            }
-                        }
-
-                        Button(
-                            onClick = { showStopConfirmation = true },
-                            modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError,
-                            ),
-                        ) {
-                            Text(
-                                text = "STOP",
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(vertical = 8.dp),
-                            )
-                        }
-                    }
+                    PauseStopRow(
+                        isPaused = isPaused,
+                        resumeText = resumeButtonText,
+                        onPause = onPause,
+                        onResume = onResume,
+                        secondaryText = "STOP",
+                        onSecondary = { showStopConfirmation = true },
+                    )
                 }
             }
             }
@@ -338,6 +175,68 @@ fun WorkoutControls(
             },
             onDismiss = { showStopConfirmation = false },
         )
+    }
+}
+
+@Composable
+private fun PauseStopRow(
+    isPaused: Boolean,
+    resumeText: String,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    secondaryText: String,
+    onSecondary: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        if (isPaused) {
+            Button(
+                onClick = onResume,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
+            ) {
+                Text(
+                    text = resumeText,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            }
+        } else {
+            Button(
+                onClick = onPause,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                    contentColor = MaterialTheme.colorScheme.onTertiary,
+                ),
+            ) {
+                Text(
+                    text = "PAUSE",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            }
+        }
+
+        Button(
+            onClick = onSecondary,
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError,
+            ),
+        ) {
+            Text(
+                text = secondaryText,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(vertical = 8.dp),
+            )
+        }
     }
 }
 

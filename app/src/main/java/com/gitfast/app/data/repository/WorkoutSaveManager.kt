@@ -7,6 +7,7 @@ import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WeatherCondition
@@ -97,7 +98,7 @@ class WorkoutSaveManager @Inject constructor(
                 workoutDao.insertDogWalkEvents(eventEntities)
             }
 
-            // Calculate current streak (includes the just-saved workout)
+            // Load all workouts once and reuse across streak, achievements, and stats
             val allWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
             val streakDays = StreakCalculator.getCurrentStreak(allWorkouts)
 
@@ -109,10 +110,10 @@ class WorkoutSaveManager @Inject constructor(
                 reason = xpResult.breakdown.joinToString("; "),
             )
 
-            recalculateStats()
+            recalculateStats(allWorkouts)
 
             // Check for newly unlocked user achievements
-            val newAchievements = checkAchievements()
+            val newAchievements = checkAchievements(allWorkouts)
 
             // If dog activity, also award XP to Juniper (profileId=2)
             if (snapshot.activityType.isDogActivity) {
@@ -123,7 +124,7 @@ class WorkoutSaveManager @Inject constructor(
                     reason = xpResult.breakdown.joinToString("; "),
                 )
                 recalculateJuniperStats()
-                checkJuniperAchievements()
+                checkJuniperAchievements(allWorkouts)
             }
 
             // Fire-and-forget cloud sync
@@ -179,9 +180,8 @@ class WorkoutSaveManager @Inject constructor(
         }
     }
 
-    private suspend fun checkAchievements(): List<AchievementDef> {
+    private suspend fun checkAchievements(allWorkouts: List<Workout>): List<AchievementDef> {
         return try {
-            val allWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
             val unlockedIds = characterRepository.getUnlockedAchievementIds()
             val characterLevel = characterRepository.getProfileLevel()
             val totalLaps = workoutRepository.getTotalLapCount()
@@ -208,9 +208,8 @@ class WorkoutSaveManager @Inject constructor(
         }
     }
 
-    private suspend fun checkJuniperAchievements(): List<AchievementDef> {
+    private suspend fun checkJuniperAchievements(allWorkouts: List<Workout>): List<AchievementDef> {
         return try {
-            val allWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
             val unlockedIds = characterRepository.getUnlockedAchievementIds(profileId = 2)
             val juniperLevel = characterRepository.getProfileLevel(profileId = 2)
             val dogWalkCount = workoutRepository.getCompletedDogWalkCount()
@@ -244,9 +243,8 @@ class WorkoutSaveManager @Inject constructor(
         }
     }
 
-    private suspend fun recalculateStats() {
+    private suspend fun recalculateStats(allWorkouts: List<Workout>) {
         try {
-            val allWorkouts = workoutRepository.getAllCompletedWorkoutsOnce()
             val recentRuns = workoutRepository.getRecentCompletedRuns(20)
             val stats = StatsCalculator.calculateAll(allWorkouts, recentRuns)
             characterRepository.updateStats(stats = stats)

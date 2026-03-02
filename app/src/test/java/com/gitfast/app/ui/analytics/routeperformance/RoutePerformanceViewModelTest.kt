@@ -294,12 +294,16 @@ class RoutePerformanceViewModelTest {
         override suspend fun insertLap(lap: LapEntity) {}
         override suspend fun insertGpsPoint(point: GpsPointEntity) {}
         override suspend fun insertGpsPoints(points: List<GpsPointEntity>) {}
+        override suspend fun insertPhases(phases: List<WorkoutPhaseEntity>) { phases.forEach { insertPhase(it) } }
+        override suspend fun insertLaps(laps: List<LapEntity>) { laps.forEach { insertLap(it) } }
         override suspend fun updateWorkout(workout: WorkoutEntity) {}
         override suspend fun updatePhase(phase: WorkoutPhaseEntity) {}
         override suspend fun updateLap(lap: LapEntity) {}
         override suspend fun getWorkoutById(workoutId: String): WorkoutEntity? = null
         override suspend fun getPhasesForWorkout(workoutId: String): List<WorkoutPhaseEntity> = emptyList()
         override suspend fun getLapsForPhase(phaseId: String): List<LapEntity> = emptyList()
+        override suspend fun getPhasesForWorkouts(workoutIds: List<String>): List<WorkoutPhaseEntity> = workoutIds.flatMap { getPhasesForWorkout(it) }
+        override suspend fun getLapsForPhases(phaseIds: List<String>): List<LapEntity> = phaseIds.flatMap { getLapsForPhase(it) }
         override suspend fun getGpsPointsForWorkout(workoutId: String): List<GpsPointEntity> = emptyList()
         override fun getAllCompletedWorkouts(): Flow<List<WorkoutEntity>> = flowOf(emptyList())
         override suspend fun getAllCompletedWorkoutsOnce(): List<WorkoutEntity> = emptyList()

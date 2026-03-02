@@ -21,51 +21,42 @@ import javax.inject.Inject
 class WorkoutRepository @Inject constructor(
     private val workoutDao: WorkoutDao
 ) {
-    fun getCompletedWorkouts(): Flow<List<Workout>> {
-        return workoutDao.getAllCompletedWorkouts().map { entities ->
-            entities.map { entity ->
-                val phases = workoutDao.getPhasesForWorkout(entity.id)
-                    .map { it.toDomain(emptyList()) }
-                entity.toDomain(phases, emptyList())
-            }
+    /**
+     * Batch-load phases for a list of workouts in a single query,
+     * then map entities to domain models. Eliminates N+1 queries.
+     */
+    private suspend fun List<WorkoutEntity>.toDomainWithPhases(): List<Workout> {
+        if (isEmpty()) return emptyList()
+        val allPhases = workoutDao.getPhasesForWorkouts(map { it.id })
+        val phasesByWorkout = allPhases.groupBy { it.workoutId }
+        return map { entity ->
+            val phases = phasesByWorkout[entity.id]?.map { it.toDomain(emptyList()) } ?: emptyList()
+            entity.toDomain(phases, emptyList())
         }
+    }
+
+    private fun Flow<List<WorkoutEntity>>.toDomainWithPhases(): Flow<List<Workout>> {
+        return map { entities -> entities.toDomainWithPhases() }
+    }
+
+    fun getCompletedWorkouts(): Flow<List<Workout>> {
+        return workoutDao.getAllCompletedWorkouts().toDomainWithPhases()
     }
 
     fun getCompletedWorkoutsByType(activityType: ActivityType): Flow<List<Workout>> {
-        return workoutDao.getCompletedWorkoutsByType(activityType.name).map { entities ->
-            entities.map { entity ->
-                val phases = workoutDao.getPhasesForWorkout(entity.id)
-                    .map { it.toDomain(emptyList()) }
-                entity.toDomain(phases, emptyList())
-            }
-        }
+        return workoutDao.getCompletedWorkoutsByType(activityType.name).toDomainWithPhases()
     }
 
     fun getCompletedDogActivityWorkouts(): Flow<List<Workout>> {
-        return workoutDao.getCompletedDogActivityWorkouts().map { entities ->
-            entities.map { entity ->
-                val phases = workoutDao.getPhasesForWorkout(entity.id)
-                    .map { it.toDomain(emptyList()) }
-                entity.toDomain(phases, emptyList())
-            }
-        }
+        return workoutDao.getCompletedDogActivityWorkouts().toDomainWithPhases()
     }
 
     fun getDogWalksByRoute(routeTag: String): Flow<List<Workout>> {
-        return workoutDao.getDogWalksByRoute(routeTag).map { entities ->
-            entities.map { entity ->
-                val phases = workoutDao.getPhasesForWorkout(entity.id)
-                    .map { it.toDomain(emptyList()) }
-                entity.toDomain(phases, emptyList())
-            }
-        }
+        return workoutDao.getDogWalksByRoute(routeTag).toDomainWithPhases()
     }
 
     suspend fun getDogWalksByRouteOnce(routeTag: String): List<Workout> {
-        return workoutDao.getDogWalksByRoute(routeTag).first().map { entity ->
-            val phases = workoutDao.getPhasesForWorkout(entity.id).map { it.toDomain(emptyList()) }
-            entity.toDomain(phases, emptyList())
-        }
+        return workoutDao.getDogWalksByRoute(routeTag).first().toDomainWithPhases()
     }
 
     suspend fun getWorkoutWithDetails(workoutId: String): Workout? {
@@ -86,10 +77,10 @@ class WorkoutRepository @Inject constructor(
         laps: List<LapEntity>,
         gpsPoints: List<GpsPointEntity>
     ) {
-        workout.let { workoutDao.insertWorkout(it) }
-        phases.forEach { workoutDao.insertPhase(it) }
-        laps.forEach { workoutDao.insertLap(it) }
-        workoutDao.insertGpsPoints(gpsPoints)
+        workoutDao.insertWorkout(workout)
+        if (phases.isNotEmpty()) workoutDao.insertPhases(phases)
+        if (laps.isNotEmpty()) workoutDao.insertLaps(laps)
+        if (gpsPoints.isNotEmpty()) workoutDao.insertGpsPoints(gpsPoints)
     }
 
     suspend fun updateWorkout(workout: WorkoutEntity) {
@@ -188,11 +179,28 @@ class WorkoutRepository @Inject constructor(
     }
 
     suspend fun getAllRunsWithLaps(): List<Workout> {
-        return workoutDao.getAllCompletedRunsOnce().map { entity ->
-            val phases = workoutDao.getPhasesForWorkout(entity.id).map { phase ->
-                val laps = workoutDao.getLapsForPhase(phase.id).map { it.toDomain() }
+        val entities = workoutDao.getAllCompletedRunsOnce()
+        return entities.toDomainWithPhasesAndLaps()
+    }
+
+    /**
+     * Batch-load phases AND laps for a list of workouts in 3 queries total
+     * (workouts, phases, laps) instead of 1+N+M.
+     */
+    private suspend fun List<WorkoutEntity>.toDomainWithPhasesAndLaps(): List<Workout> {
+        if (isEmpty()) return emptyList()
+        val allPhases = workoutDao.getPhasesForWorkouts(map { it.id })
+        val phaseIds = allPhases.map { it.id }
+        val allLaps = if (phaseIds.isNotEmpty()) {
+            workoutDao.getLapsForPhases(phaseIds)
+        } else emptyList()
+        val lapsByPhase = allLaps.groupBy { it.phaseId }
+        val phasesByWorkout = allPhases.groupBy { it.workoutId }
+        return map { entity ->
+            val phases = phasesByWorkout[entity.id]?.map { phase ->
+                val laps = lapsByPhase[phase.id]?.map { it.toDomain() } ?: emptyList()
                 phase.toDomain(laps)
-            }
+            } ?: emptyList()
             entity.toDomain(phases, emptyList())
         }
     }
@@ -274,13 +282,7 @@ class WorkoutRepository @Inject constructor(
     }
 
     suspend fun getRecentWorkoutsWithLaps(limit: Int): List<Workout> {
-        return workoutDao.getRecentWorkoutsWithLaps(limit).map { entity ->
-            val phases = workoutDao.getPhasesForWorkout(entity.id).map { phase ->
-                val laps = workoutDao.getLapsForPhase(phase.id).map { it.toDomain() }
-                phase.toDomain(laps)
-            }
-            entity.toDomain(phases, emptyList())
-        }
+        return workoutDao.getRecentWorkoutsWithLaps(limit).toDomainWithPhasesAndLaps()
     }
 
     // --- Dog Walk Events ---

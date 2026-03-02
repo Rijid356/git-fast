@@ -13,22 +13,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import com.gitfast.app.ui.components.GitFastTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -41,10 +36,7 @@ import com.gitfast.app.ui.theme.AmberAccent
 import com.gitfast.app.ui.theme.ErrorRed
 import com.gitfast.app.ui.theme.NeonGreen
 
-@OptIn(
-    androidx.compose.material3.ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class,
-)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SorenessLogScreen(
     onBackClick: () -> Unit,
@@ -57,27 +49,7 @@ fun SorenessLogScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "> Soreness Check-In",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            )
+            GitFastTopAppBar(title = "> Soreness Check-In", onBackClick = onBackClick)
         },
     ) { innerPadding ->
         Column(

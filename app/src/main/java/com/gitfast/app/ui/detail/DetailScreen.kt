@@ -15,11 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,8 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import com.gitfast.app.ui.components.GitFastTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,7 +41,6 @@ import com.gitfast.app.analysis.RouteComparisonAnalyzer
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.EnergyLevel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
     onBackClick: () -> Unit,
@@ -55,25 +51,13 @@ fun DetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = when ((uiState as? DetailUiState.Loaded)?.detail?.activityType) {
-                            ActivityType.DOG_WALK -> "Dog Walk"
-                            ActivityType.DOG_RUN -> "Dog Run"
-                            else -> "Run Details"
-                        },
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+            GitFastTopAppBar(
+                title = when ((uiState as? DetailUiState.Loaded)?.detail?.activityType) {
+                    ActivityType.DOG_WALK -> "Dog Walk"
+                    ActivityType.DOG_RUN -> "Dog Run"
+                    else -> "Run Details"
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
-                    }
-                },
+                onBackClick = onBackClick,
                 actions = {
                     if (uiState is DetailUiState.Loaded) {
                         IconButton(onClick = { showDeleteConfirmation = true }) {
@@ -84,12 +68,6 @@ fun DetailScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.onBackground,
-                ),
             )
         },
         containerColor = MaterialTheme.colorScheme.background,

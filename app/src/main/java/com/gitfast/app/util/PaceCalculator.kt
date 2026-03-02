@@ -42,10 +42,13 @@ object PaceCalculator {
         val first = window.first()
         val last = window.last()
 
-        val distanceMeters = DistanceCalculator.haversineMeters(
-            first.latitude, first.longitude,
-            last.latitude, last.longitude
-        )
+        // Sum path distance through all consecutive points (not straight-line)
+        val distanceMeters = window.zipWithNext().sumOf { (a, b) ->
+            DistanceCalculator.haversineMeters(
+                a.latitude, a.longitude,
+                b.latitude, b.longitude
+            )
+        }
         val miles = DistanceCalculator.metersToMiles(distanceMeters)
 
         // Need meaningful distance to calculate pace

@@ -198,90 +198,45 @@ class ActiveWorkoutViewModel @Inject constructor(
         _permissionState.value = permissionManager.checkPermissions()
     }
 
+    private fun sendServiceAction(action: String, foreground: Boolean = false, extras: (Intent.() -> Unit)? = null) {
+        val context = getApplication<Application>()
+        val intent = Intent(context, WorkoutService::class.java).apply {
+            this.action = action
+            extras?.invoke(this)
+        }
+        if (foreground) context.startForegroundService(intent) else context.startService(intent)
+    }
+
     fun startWorkout() {
         if (WorkoutService.isRunning) return
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_START
+        sendServiceAction(WorkoutService.ACTION_START, foreground = true) {
             putExtra(WorkoutService.EXTRA_ACTIVITY_TYPE, activityType.name)
         }
-        context.startForegroundService(intent)
     }
 
-    fun pauseWorkout() {
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_PAUSE
-        }
-        context.startService(intent)
-    }
-
-    fun resumeWorkout() {
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_RESUME
-        }
-        context.startService(intent)
-    }
+    fun pauseWorkout() = sendServiceAction(WorkoutService.ACTION_PAUSE)
+    fun resumeWorkout() = sendServiceAction(WorkoutService.ACTION_RESUME)
 
     fun stopWorkout() {
         snapshotSummaryStats()
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_STOP
-        }
-        context.startService(intent)
+        sendServiceAction(WorkoutService.ACTION_STOP)
     }
 
     fun discardWorkout() {
         _didDiscard = true
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_DISCARD
-        }
-        context.startService(intent)
+        sendServiceAction(WorkoutService.ACTION_DISCARD)
     }
 
-    fun startLaps() {
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_START_LAPS
-        }
-        context.startService(intent)
+    fun startLaps() = sendServiceAction(WorkoutService.ACTION_START_LAPS)
+    fun markLap() = sendServiceAction(WorkoutService.ACTION_MARK_LAP)
+    fun endLaps() = sendServiceAction(WorkoutService.ACTION_END_LAPS)
+
+    fun logEvent(eventType: DogWalkEventType) = sendServiceAction(WorkoutService.ACTION_LOG_EVENT) {
+        putExtra(WorkoutService.EXTRA_EVENT_TYPE, eventType.name)
     }
 
-    fun markLap() {
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_MARK_LAP
-        }
-        context.startService(intent)
-    }
-
-    fun endLaps() {
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_END_LAPS
-        }
-        context.startService(intent)
-    }
-
-    fun logEvent(eventType: DogWalkEventType) {
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_LOG_EVENT
-            putExtra(WorkoutService.EXTRA_EVENT_TYPE, eventType.name)
-        }
-        context.startService(intent)
-    }
-
-    fun undoEvent(eventType: DogWalkEventType) {
-        val context = getApplication<Application>()
-        val intent = Intent(context, WorkoutService::class.java).apply {
-            action = WorkoutService.ACTION_UNDO_EVENT
-            putExtra(WorkoutService.EXTRA_EVENT_TYPE, eventType.name)
-        }
-        context.startService(intent)
+    fun undoEvent(eventType: DogWalkEventType) = sendServiceAction(WorkoutService.ACTION_UNDO_EVENT) {
+        putExtra(WorkoutService.EXTRA_EVENT_TYPE, eventType.name)
     }
 
     private fun snapshotSummaryStats() {
@@ -384,20 +339,12 @@ class ActiveWorkoutViewModel @Inject constructor(
                     currentLapTimeFormatted = formatElapsedTime(state.currentLapElapsedSeconds),
                     lastLapTimeFormatted = state.lastLapDurationFormatted,
                     lastLapDeltaSeconds = state.lastLapDeltaSeconds,
-                    lastLapDeltaFormatted = state.lastLapDeltaSeconds?.let { delta ->
-                        if (delta < 0) "\u25B2 ${delta}s"
-                        else if (delta > 0) "\u25BC +${delta}s"
-                        else "= 0s"
-                    },
+                    lastLapDeltaFormatted = state.lastLapDeltaSeconds?.let { LapAnalyzer.formatDelta(it) },
                     bestLapTimeFormatted = bestLap?.let { formatElapsedTime(it) },
                     averageLapTimeFormatted = avgLap?.let { formatElapsedTime(it) },
                     ghostLapTimeFormatted = state.ghostLapDurationSeconds?.let { formatElapsedTime(it) },
                     ghostDeltaSeconds = state.ghostDeltaSeconds,
-                    ghostDeltaFormatted = state.ghostDeltaSeconds?.let { delta ->
-                        if (delta < 0) "\u25B2 ${delta}s"
-                        else if (delta > 0) "\u25BC +${delta}s"
-                        else "= 0s"
-                    },
+                    ghostDeltaFormatted = state.ghostDeltaSeconds?.let { LapAnalyzer.formatDelta(it) },
                     autoLapAnchorSet = state.autoLapAnchorSet,
                     isSprintActive = state.isSprintActive,
                     sprintCount = state.sprintCount,
