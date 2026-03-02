@@ -354,7 +354,8 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | `analysis/` | 1 | RouteComparisonAnalyzer logic |
 | `data/healthconnect/` | 1 | HealthConnectManager mocked reads |
 | `data/model/` | 3 | DailyActivityMetrics, dog walk domain model, DogWalkEventType |
-| `data/repository/` | 2 | BodyCompRepository, CharacterRepository |
+| `data/local/mappers/` | 1 | DogWalkEventMappers round-trip and field mapping |
+| `data/repository/` | 4 | BodyCompRepository, CharacterRepository, SorenessRepository, ExerciseRepository |
 | `data/sync/` | 3 | FirestoreMappers, FirestoreSync, SyncStatusStore |
 | `screenshots/` | 7 | Component screenshots (StatGrid, PaceDisplay, LapTable, etc.) + base classes |
 | `screenshots/screens/` | 15 | Full-screen Roborazzi golden tests for every major screen |
@@ -364,7 +365,7 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | `ui/settings/` | 1 | SettingsViewModel |
 | `util/` | 17 | Achievement checking, stats calc, streak, XP, lap analysis, trends, narrative, foraging |
 
-**Total: ~97 unit test files**
+**Total: ~100 unit test files**
 
 ### Instrumented Tests (`app/src/androidTest/`)
 

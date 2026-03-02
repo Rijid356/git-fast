@@ -6,7 +6,7 @@
 - **Last Active:** 2026-03-02
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
-- **Test Coverage:** 66.1% line / 49.3% branch
+- **Test Coverage:** 68.1% line / 51.5% branch
 
 ## Activity Log
 
