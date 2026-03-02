@@ -1,5 +1,27 @@
 # Field Notes
 
+## 2026-03-02 — Dog Walk (field observation)
+
+**Workout ID:** _(not pulled — Firebase token refresh issue)_
+**Conditions:** N/A — general observations from recent walks
+
+### Observations
+- Narrative description generated after dog walk save is not visible when viewing the walk from history
+- MPH display stays active for several seconds after stopping walking
+
+### Bugs / Issues
+- [x] **Dog walk narrative not displayed in history detail view** (fixed PR #158) — `DogWalkNarrativeGenerator` creates a narrative in `DogWalkSummaryViewModel` (line 92-93) and it's shown on the immediate `DogWalkSummaryScreen` (lines 158-171). However, the narrative is **never persisted** to the database — `WorkoutDetailItem` in `DetailModels.kt` has no `narrativeDescription` field, and `DetailScreen.kt` doesn't display it. Fix: either (a) persist the narrative to the workout entity/Room DB so it can be loaded in the detail screen, or (b) re-generate it on-the-fly from stored dog walk events when opening the detail view. Option (b) is simpler — just call `DogWalkNarrativeGenerator.generateNarrative()` with the events loaded from history.
+- [x] **MPH stays active too long after stopping movement** (fixed PR #158) — `WorkoutStateManager.kt:660-668` uses a 5-point smoothing window (`SPEED_SMOOTHING_WINDOW = 5`, line 652) with GPS updates every 2 seconds. This means ~10 seconds of speed data is averaged, and the display won't clear until 5 consecutive null-speed points arrive. When the user stops walking, the last known speed persists in the UI. Fix: add a time-based decay — if the most recent GPS point is older than N seconds (e.g., 3-4 seconds) or if the user hasn't moved beyond a threshold distance, zero out the displayed speed immediately rather than waiting for the smoothing window to flush.
+
+### Feature Ideas
+- (none this session)
+
+### Data Notes
+- Firebase data pull blocked by token refresh issue in this session — workout data not reviewed
+- Both issues are reproducible from general use patterns, not specific to one workout
+
+---
+
 ## 2026-02-28 — Dog Walk (1.53 mi)
 
 **Workout ID:** `61972b8c-9f2a-4c12-9520-fb18626525c7`

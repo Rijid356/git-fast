@@ -3,9 +3,10 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-02-28
+- **Last Active:** 2026-03-02
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
+- **Test Coverage:** 66.1% line / 49.3% branch
 
 ## Activity Log
 
@@ -80,10 +81,11 @@
 | 2026-02-28 | Fix sprint stuck on null GPS speed (timeout safety nets) and show MPH during sprinting (SpeedDisplay hero + sprint timer below), 12 new AutoSprintDetector tests; PR #139 | 5 | 1 | +248/-9 |
 | 2026-02-28 | Epic narrative rewrite + remove redundant dog name: dynamic RPG narrative engine with randomized word pools, combo prefixes (Berserker mode/Diplomacy maxed/Legendary foraging), remove 🐕 Juniper metadata row from detail screen, HUMAN_FRIEND event type commit, 3 new tests; merged PR #138 | 8 | 5 | +523/-116 |
 | 2026-02-28 | Remove Activity Goals settings page: delete GoalsSettingsScreen/ViewModel, hardcode defaults (22 min/1.5 mi/5 days) in HomeViewModel, make ActivityRings non-clickable, remove goals from Settings, clean up SettingsStore/tests/screenshots; merged PR #141 | 15 | 1 | +35/-484 |
+| 2026-03-02 | Simplify audit: fix O(n^2) GPS allocation, N+1 batch queries, triple-load elimination, PaceCalculator path fix, extract PauseStopRow/sendServiceAction/GitFastTopAppBar; PR #156 | 25 | 1 | +321/-679 |
 
 ## Totals
-- **Total Sessions:** 69
-- **Total Commits:** 117
-- **Total Files Changed:** 958
-- **Total Lines Added:** 44054
-- **Total Lines Removed:** 3021
+- **Total Sessions:** 70
+- **Total Commits:** 118
+- **Total Files Changed:** 983
+- **Total Lines Added:** 44375
+- **Total Lines Removed:** 3700
