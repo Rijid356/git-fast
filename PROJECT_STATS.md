@@ -82,10 +82,11 @@
 | 2026-02-28 | Epic narrative rewrite + remove redundant dog name: dynamic RPG narrative engine with randomized word pools, combo prefixes (Berserker mode/Diplomacy maxed/Legendary foraging), remove 🐕 Juniper metadata row from detail screen, HUMAN_FRIEND event type commit, 3 new tests; merged PR #138 | 8 | 5 | +523/-116 |
 | 2026-02-28 | Remove Activity Goals settings page: delete GoalsSettingsScreen/ViewModel, hardcode defaults (22 min/1.5 mi/5 days) in HomeViewModel, make ActivityRings non-clickable, remove goals from Settings, clean up SettingsStore/tests/screenshots; merged PR #141 | 15 | 1 | +35/-484 |
 | 2026-03-02 | Simplify audit: fix O(n^2) GPS allocation, N+1 batch queries, triple-load elimination, PaceCalculator path fix, extract PauseStopRow/sendServiceAction/GitFastTopAppBar; PR #156 | 25 | 1 | +321/-679 |
+| 2026-03-02 | Multi-park lap start points: Room table (DB v13), multi-point auto-start, auto-save on Start Laps, Firestore sync, Settings count+clear UI, old SharedPrefs migration, 2 new tests; PR #160 | 17 | 1 | +296/-102 |
 
 ## Totals
-- **Total Sessions:** 70
-- **Total Commits:** 118
-- **Total Files Changed:** 983
-- **Total Lines Added:** 44375
-- **Total Lines Removed:** 3700
+- **Total Sessions:** 71
+- **Total Commits:** 119
+- **Total Files Changed:** 1000
+- **Total Lines Added:** 44671
+- **Total Lines Removed:** 3802
