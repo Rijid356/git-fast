@@ -97,6 +97,9 @@ Added Dog Run as a new workout type with automatic sprint detection — the app 
 
 The most feature-rich phase. Added Juniper's Adventure Log — a dog walk event logger with emoji map markers and a radial event wheel. Built a weekly summary card for the home screen. Introduced exercise data model with RPG stat integration, soreness check-in with toughness tracking, and status bar chronometer. The app narrative was rewritten for an epic RPG tone.
 
+### Screenshots
+<img src="docs/screenshots/history/19-exercise-model-home.png" alt="Home — Exercise Model" width="180"> <img src="docs/screenshots/history/20-exercise-model-character-sheet-me.png" alt="Character Sheet — Exercise Stats" width="180"> <img src="docs/screenshots/history/21-exercise-model-character-sheet-juniper.png" alt="Character Sheet — Juniper Exercise" width="180"> <img src="docs/screenshots/history/22-dog-walk-event-strip.png" alt="Dog Walk Event Strip" width="180"> <img src="docs/screenshots/history/23-dog-run-event-strip.png" alt="Dog Run Event Strip" width="180"> <img src="docs/screenshots/history/24-dog-run-sprinting-event-strip.png" alt="Dog Run Sprinting" width="180"> <img src="docs/screenshots/history/25-character-sheet-juniper-after-events.png" alt="Juniper — After Events" width="180"> <img src="docs/screenshots/history/26-stop-confirmation-dialog.png" alt="Stop Confirmation Dialog" width="180"> <img src="docs/screenshots/history/27-back-confirmation-dialog.png" alt="Back Confirmation Dialog" width="180"> <img src="docs/screenshots/history/28-dog-walk-detail-narrative-rewrite.png" alt="Dog Walk Detail — Epic Narrative" width="180"> <img src="docs/screenshots/history/29-sprint-mph-display-fix.png" alt="Sprint MPH Display" width="180">
+
 ### Highlights
 - Dog walk event logger (Juniper's Adventure Log) with emoji map markers
 - Radial event wheel FAB replacing the event strip
@@ -111,3 +114,49 @@ The most feature-rich phase. Added Juniper's Adventure Log — a dog walk event 
 - **Checkpoints Completed:** 23
 - **Screenshot Comparisons:** 6 dated folders
 - **Event Types:** Dog walk events with emoji markers
+
+---
+
+## Phase: Security Hardening & Test Coverage
+**Date:** Mar 1, 2026 to Mar 2, 2026
+**Duration:** 2 days
+
+Shifted focus from features to foundations. Ran a full OWASP Top 10 security audit and fixed every finding — removed PII logging, hardcoded coordinates, disabled Android backup, added Firestore security rules, enabled R8 with ProGuard, and hardened CI. Wrote 114 new unit tests across 8 packages, pushing coverage from patchy to solid. Dependency bumps via Dependabot, custom notification icon, and CI fixes for fork PRs.
+
+### Highlights
+- Full OWASP security audit with all findings resolved
+- Firestore security rules and R8/ProGuard obfuscation enabled
+- 114 new unit tests across 8 packages (mappers, repos, settings)
+- CI hardened: Dependabot support, fallback google-services.json
+- Custom running man notification icon
+- Character sheet polish and activity goals page removed
+
+### Metrics
+- **PRs Merged (this phase):** 16
+- **New Unit Tests:** 114
+- **Security Findings Fixed:** All (PII logging, hardcoded coords, backup, sign-out cleanup)
+- **Dependencies Updated:** 6 (via Dependabot)
+
+---
+
+## Phase: Observability, Optimization & New Features
+**Date:** Mar 2, 2026 to Mar 3, 2026
+**Duration:** 2 days
+
+Added production-grade observability with Crashlytics, Timber structured logging, and persistent file logging. Optimized performance by fixing O(n^2) GPS processing, adding batch DAO queries, and deduplicating UI. Built multi-park lap start points that auto-save locations. Added FOR and STR stats to the character sheet. Shipped an in-app screenshot capture overlay for field testing, and restructured the screenshot directory for long-term organization.
+
+### Highlights
+- Crashlytics crash reporting, Timber logging, persistent file logs
+- Performance optimization: batch queries, O(n^2) GPS fix, UI dedup
+- Dog walk narrative persisted to database
+- Multi-park lap start points with auto-save
+- FOR and STR stats displayed on character sheet
+- In-app screenshot capture with floating overlay button
+- Screenshot directory restructured (current/ + history/)
+- T-Watch S3 firmware docs extracted to watch/CLAUDE.md
+
+### Metrics
+- **Total PRs Merged:** 130
+- **PRs Merged (this phase):** 14
+- **Observability:** Crashlytics + Timber + file logging
+- **New RPG Stats:** FOR (Fortitude) and STR (Strength) on character sheet
