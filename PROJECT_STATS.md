@@ -85,10 +85,12 @@
 | 2026-03-02 | Multi-park lap start points: Room table (DB v13), multi-point auto-start, auto-save on Start Laps, Firestore sync, Settings count+clear UI, old SharedPrefs migration, 2 new tests; PR #160 | 17 | 1 | +296/-102 |
 | 2026-03-03 | Test coverage: 15 BodyCompMappers tests (BMI calc, kg→lbs, null handling, round-trips) + 16 new SettingsStore tests (autoLap, homeArrival, locations, computed props, clear methods); merged PR #161 | 2 | 1 | +492/-0 |
 | 2026-03-03 | Display FOR and STR stats on Character Sheet: foragingBreakdown(), ForestGreen/GoldAccent colors, ForagingUiState/StrengthUiState in ViewModel, stat bars with tab visibility, updated tests and screenshots; merged PR #162 | 8 | 1 | +141/-5 |
+| 2026-03-03 | In-app screenshot capture: PixelCopy floating overlay button, MediaStore gallery save, Room screenshots table (DB v14), ScreenCaptureManager singleton, Settings Developer toggle, workout correlation, 9 new tests; merged PR #163 | 18 | 1 | +474/-25 |
+| 2026-03-03 | Screenshot directory restructure: merge historical/ + comparisons/ into history/ (29 entries), add current/ with 24 Roborazzi goldens, unified README with history log; PR #164 | 63 | 1 | +106/-47 |
 
 ## Totals
-- **Total Sessions:** 73
-- **Total Commits:** 121
-- **Total Files Changed:** 1010
-- **Total Lines Added:** 45304
-- **Total Lines Removed:** 3807
+- **Total Sessions:** 75
+- **Total Commits:** 123
+- **Total Files Changed:** 1091
+- **Total Lines Added:** 45884
+- **Total Lines Removed:** 3879
