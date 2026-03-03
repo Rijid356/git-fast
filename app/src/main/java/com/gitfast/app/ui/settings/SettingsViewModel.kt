@@ -45,6 +45,8 @@ data class SettingsUiState(
     val healthConnectLastSync: Long = 0L,
     val latestWeight: String? = null,
     val latestWeightDate: String? = null,
+    // Developer
+    val screenshotOverlayEnabled: Boolean = false,
 )
 
 @HiltViewModel
@@ -71,6 +73,7 @@ class SettingsViewModel @Inject constructor(
             lastSyncedAt = syncStatusStore.lastSyncedAt,
             healthConnectAvailable = healthConnectManager.isAvailable(),
             healthConnectLastSync = settingsStore.healthConnectLastSync,
+            screenshotOverlayEnabled = settingsStore.screenshotOverlayEnabled,
         )
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -253,5 +256,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             lapStartPointDao.deleteAll()
         }
+    }
+
+    fun setScreenshotOverlayEnabled(enabled: Boolean) {
+        settingsStore.screenshotOverlayEnabled = enabled
+        _uiState.value = _uiState.value.copy(screenshotOverlayEnabled = enabled)
     }
 }

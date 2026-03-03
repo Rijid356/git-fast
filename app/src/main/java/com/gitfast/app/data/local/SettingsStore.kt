@@ -131,6 +131,12 @@ class SettingsStore @Inject constructor(
             .apply()
     }
 
+    var screenshotOverlayEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SCREENSHOT_OVERLAY_ENABLED, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_SCREENSHOT_OVERLAY_ENABLED, value).apply()
+        }
+
     companion object {
         const val AUTO_LAP_ANCHOR_RADIUS_METERS = 5
         const val LAP_START_CLUSTER_RADIUS_METERS = 50.0
@@ -147,5 +153,6 @@ class SettingsStore @Inject constructor(
         private const val KEY_HC_LAST_SYNC = "health_connect_last_sync"
         private const val KEY_LAP_START_LATITUDE = "lap_start_latitude"
         private const val KEY_LAP_START_LONGITUDE = "lap_start_longitude"
+        private const val KEY_SCREENSHOT_OVERLAY_ENABLED = "screenshot_overlay_enabled"
     }
 }

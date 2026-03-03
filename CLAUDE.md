@@ -98,7 +98,7 @@ Enums (`WorkoutStatus`, `PhaseType`, `ActivityType`, etc.) are shared by both la
 
 ### Database Schema
 
-Current version and entities are in `GitFastDatabase.kt`. Tables: `workouts` → `workout_phases` → `laps`, `workouts` → `gps_points`, `route_tags`, `character_profiles`, `xp_transactions`, `unlocked_achievements`, `body_comp_entries`, `dog_walk_events`, `lap_start_points`. Cascade deletes on workout relationships. `exportSchema = true` (schemas in `app/schemas/`).
+Current version and entities are in `GitFastDatabase.kt`. Tables: `workouts` → `workout_phases` → `laps`, `workouts` → `gps_points`, `route_tags`, `character_profiles`, `xp_transactions`, `unlocked_achievements`, `body_comp_entries`, `dog_walk_events`, `lap_start_points`, `screenshots`. Cascade deletes on workout relationships. `exportSchema = true` (schemas in `app/schemas/`).
 
 Migrations live in `data/local/migrations/`. `WorkoutDao.saveWorkoutTransaction()` is a `@Transaction` DAO method with upsert semantics (update if exists, insert if not).
 

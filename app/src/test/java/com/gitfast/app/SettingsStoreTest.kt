@@ -237,4 +237,27 @@ class SettingsStoreTest {
         settingsStore.healthConnectLastSync = 1_700_000_000_000L
         assertEquals(1_700_000_000_000L, settingsStore.healthConnectLastSync)
     }
+
+    // =========================================================================
+    // screenshotOverlayEnabled
+    // =========================================================================
+
+    @Test
+    fun `screenshotOverlayEnabled defaults to false`() {
+        assertFalse(settingsStore.screenshotOverlayEnabled)
+    }
+
+    @Test
+    fun `screenshotOverlayEnabled can be set to true and read back`() {
+        settingsStore.screenshotOverlayEnabled = true
+        assertTrue(settingsStore.screenshotOverlayEnabled)
+    }
+
+    @Test
+    fun `screenshotOverlayEnabled persists across instances`() {
+        settingsStore.screenshotOverlayEnabled = true
+
+        val newStore = SettingsStore(context)
+        assertTrue(newStore.screenshotOverlayEnabled)
+    }
 }

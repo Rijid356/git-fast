@@ -65,6 +65,7 @@ class SettingsViewModelTest {
         every { mockSettingsStore.autoLapEnabled } returns false
         every { mockSettingsStore.homeArrivalEnabled } returns false
         every { mockSettingsStore.hasHomeLocation } returns false
+        every { mockSettingsStore.screenshotOverlayEnabled } returns false
         every { mockGoogleAuthManager.currentUser } returns currentUserFlow
         every { mockSyncStatusStore.syncStatus } returns syncStatusFlow
         every { mockSyncStatusStore.lastSyncedAt } returns 0L
@@ -363,6 +364,34 @@ class SettingsViewModelTest {
         vm.clearAllLapStartPoints()
 
         coVerify { mockLapStartPointDao.deleteAll() }
+    }
+
+    // =========================================================================
+    // Screenshot overlay
+    // =========================================================================
+
+    @Test
+    fun `initial state has screenshotOverlayEnabled false`() {
+        val vm = createViewModel()
+        assertFalse(vm.uiState.value.screenshotOverlayEnabled)
+    }
+
+    @Test
+    fun `setScreenshotOverlayEnabled persists and updates state`() {
+        val vm = createViewModel()
+
+        vm.setScreenshotOverlayEnabled(true)
+
+        verify { mockSettingsStore.screenshotOverlayEnabled = true }
+        assertTrue(vm.uiState.value.screenshotOverlayEnabled)
+    }
+
+    @Test
+    fun `initial state reflects screenshotOverlayEnabled when true`() {
+        every { mockSettingsStore.screenshotOverlayEnabled } returns true
+
+        val vm = createViewModel()
+        assertTrue(vm.uiState.value.screenshotOverlayEnabled)
     }
 
     @Test
