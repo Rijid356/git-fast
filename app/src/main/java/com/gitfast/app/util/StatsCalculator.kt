@@ -115,6 +115,20 @@ object StatsCalculator {
         )
     }
 
+    fun foragingBreakdown(totalEventCount: Int, effectiveScore: Int): StatBreakdown {
+        val details = listOf(
+            "Total events" to "$totalEventCount",
+            "Effective score" to "$effectiveScore",
+        )
+
+        return StatBreakdown(
+            description = "Based on total dog walk events logged",
+            details = details,
+            brackets = "5\u219210 | 20\u219225 | 50\u219250 | 100\u219275 | 200\u219299",
+            decayNote = "Cumulative \u2014 never decays. Every walk event counts!",
+        )
+    }
+
     fun strengthBreakdown(setsWithReps: List<Pair<Int, Boolean>>, effectiveScore: Int): StatBreakdown {
         val totalSets = setsWithReps.size
         val totalReps = setsWithReps.sumOf { it.first }

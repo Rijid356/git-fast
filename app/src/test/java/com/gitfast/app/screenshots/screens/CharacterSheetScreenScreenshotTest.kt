@@ -5,6 +5,8 @@ import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.screenshots.FullScreenScreenshotTestBase
 import com.gitfast.app.ui.character.CharacterSheetScreen
 import com.gitfast.app.ui.character.CharacterSheetViewModel
+import com.gitfast.app.ui.character.ForagingUiState
+import com.gitfast.app.ui.character.StrengthUiState
 import com.gitfast.app.ui.character.ToughnessUiState
 import com.gitfast.app.ui.character.VitalityUiState
 import com.gitfast.app.util.StatBreakdown
@@ -144,6 +146,34 @@ class CharacterSheetScreenScreenshotTest : FullScreenScreenshotTestBase() {
                         details = listOf("Current streak" to "3 days"),
                         brackets = "3-7 day streak = 20-50",
                         decayNote = "Resets when streak breaks",
+                    ),
+                ),
+            )
+            every { foragingState } returns MutableStateFlow(
+                ForagingUiState(
+                    foragingStat = 32,
+                    breakdown = StatBreakdown(
+                        description = "Based on total dog walk events logged",
+                        details = listOf("Total events" to "18", "Effective score" to "32"),
+                        brackets = "5→10 | 20→25 | 50→50 | 100→75 | 200→99",
+                        decayNote = "Cumulative — never decays. Every walk event counts!",
+                    ),
+                ),
+            )
+            every { strengthState } returns MutableStateFlow(
+                StrengthUiState(
+                    strengthStat = 42,
+                    breakdown = StatBreakdown(
+                        description = "Based on 30-day exercise volume (reps × weight factor)",
+                        details = listOf(
+                            "Sets (30d)" to "24",
+                            "Total reps" to "186",
+                            "Weighted sets" to "18",
+                            "Volume score" to "138",
+                            "Effective score" to "42",
+                        ),
+                        brackets = "0→1 | 50→25 | 150→50 | 300→75 | 500→99",
+                        decayNote = "Actively decays — uses a 30-day rolling window. Keep training!",
                     ),
                 ),
             )

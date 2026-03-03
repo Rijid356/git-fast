@@ -51,6 +51,8 @@ import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.ui.theme.AmberAccent
 import com.gitfast.app.ui.theme.CyanAccent
 import com.gitfast.app.ui.theme.CrimsonAccent
+import com.gitfast.app.ui.theme.ForestGreen
+import com.gitfast.app.ui.theme.GoldAccent
 import com.gitfast.app.ui.theme.MagentaAccent
 import com.gitfast.app.ui.theme.NeonGreen
 import com.gitfast.app.util.StatBreakdown
@@ -86,6 +88,12 @@ fun CharacterSheetScreen(
 
     // TGH stat (user only)
     val toughnessState by viewModel.toughnessState.collectAsStateWithLifecycle()
+
+    // FOR stat (Juniper only)
+    val foragingState by viewModel.foragingState.collectAsStateWithLifecycle()
+
+    // STR stat (user only)
+    val strengthState by viewModel.strengthState.collectAsStateWithLifecycle()
 
     // VIT stat (user only)
     val vitalityState by viewModel.vitalityState.collectAsStateWithLifecycle()
@@ -155,7 +163,9 @@ fun CharacterSheetScreen(
                 StatsSection(
                     profile = activeProfile,
                     breakdowns = activeBreakdowns,
+                    foragingState = if (selectedTab == 1) foragingState else null,
                     toughnessState = if (selectedTab == 0) toughnessState else null,
+                    strengthState = if (selectedTab == 0) strengthState else null,
                     vitalityState = if (selectedTab == 0) vitalityState else null,
                 )
             }
@@ -280,7 +290,9 @@ private fun XpProgressSection(profile: CharacterProfile) {
 private fun StatsSection(
     profile: CharacterProfile,
     breakdowns: Map<String, StatBreakdown>,
+    foragingState: ForagingUiState?,
     toughnessState: ToughnessUiState?,
+    strengthState: StrengthUiState?,
     vitalityState: VitalityUiState?,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -297,6 +309,17 @@ private fun StatsSection(
         Spacer(modifier = Modifier.height(8.dp))
         StatBar(label = "CON", value = profile.consistencyStat, color = NeonGreen, breakdown = breakdowns["CON"])
 
+        // FOR stat — only shown on Juniper tab
+        if (foragingState != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            StatBar(
+                label = "FOR",
+                value = foragingState.foragingStat,
+                color = ForestGreen,
+                breakdown = foragingState.breakdown,
+            )
+        }
+
         // TGH stat — only shown on ME tab
         if (toughnessState != null) {
             Spacer(modifier = Modifier.height(8.dp))
@@ -305,6 +328,17 @@ private fun StatsSection(
                 value = toughnessState.toughnessStat,
                 color = CrimsonAccent,
                 breakdown = toughnessState.breakdown,
+            )
+        }
+
+        // STR stat — only shown on ME tab
+        if (strengthState != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            StatBar(
+                label = "STR",
+                value = strengthState.strengthStat,
+                color = GoldAccent,
+                breakdown = strengthState.breakdown,
             )
         }
 

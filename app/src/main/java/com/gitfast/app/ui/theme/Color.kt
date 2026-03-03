@@ -33,5 +33,11 @@ val MagentaAccent = Color(0xFFBB86FC)
 // Toughness – Warm Red/Crimson (recovery / soreness accent)
 val CrimsonAccent = Color(0xFFFF6B6B)
 
+// Foraging – Earthy Green (dog walk events / Juniper-only)
+val ForestGreen = Color(0xFF4CAF50)
+
+// Strength – Gold (exercise volume / ME-only)
+val GoldAccent = Color(0xFFFFD700)
+
 // High-contrast text for outdoor/sunlight readability
 val HighContrastText = Color.White

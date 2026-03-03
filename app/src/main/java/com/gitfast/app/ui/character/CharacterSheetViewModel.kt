@@ -6,6 +6,7 @@ import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.XpTransaction
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
+import com.gitfast.app.data.repository.ExerciseRepository
 import com.gitfast.app.data.repository.SorenessRepository
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.healthconnect.HealthConnectManager
@@ -36,6 +37,16 @@ data class ToughnessUiState(
     val breakdown: StatBreakdown? = null,
 )
 
+data class ForagingUiState(
+    val foragingStat: Int = 1,
+    val breakdown: StatBreakdown? = null,
+)
+
+data class StrengthUiState(
+    val strengthStat: Int = 1,
+    val breakdown: StatBreakdown? = null,
+)
+
 data class VitalityUiState(
     val healthConnectConnected: Boolean = false,
     val weighInCount30d: Int = 0,
@@ -47,9 +58,10 @@ data class VitalityUiState(
 @HiltViewModel
 class CharacterSheetViewModel @Inject constructor(
     private val characterRepository: CharacterRepository,
-    workoutRepository: WorkoutRepository,
+    private val workoutRepository: WorkoutRepository,
     private val bodyCompRepository: BodyCompRepository,
     private val sorenessRepository: SorenessRepository,
+    private val exerciseRepository: ExerciseRepository,
     private val healthConnectManager: HealthConnectManager,
 ) : ViewModel() {
 
@@ -123,12 +135,22 @@ class CharacterSheetViewModel @Inject constructor(
     private val _toughnessState = MutableStateFlow(ToughnessUiState())
     val toughnessState: StateFlow<ToughnessUiState> = _toughnessState.asStateFlow()
 
+    // FOR stat state — only for Juniper profile (Juniper tab)
+    private val _foragingState = MutableStateFlow(ForagingUiState())
+    val foragingState: StateFlow<ForagingUiState> = _foragingState.asStateFlow()
+
+    // STR stat state — only for user profile (ME tab)
+    private val _strengthState = MutableStateFlow(StrengthUiState())
+    val strengthState: StateFlow<StrengthUiState> = _strengthState.asStateFlow()
+
     // VIT stat state — only for user profile (ME tab)
     private val _vitalityState = MutableStateFlow(VitalityUiState())
     val vitalityState: StateFlow<VitalityUiState> = _vitalityState.asStateFlow()
 
     init {
         loadToughnessData()
+        loadForagingData()
+        loadStrengthData()
         loadVitalityData()
     }
 
@@ -139,6 +161,28 @@ class CharacterSheetViewModel @Inject constructor(
             _toughnessState.value = ToughnessUiState(
                 toughnessStat = stat,
                 breakdown = StatsCalculator.toughnessBreakdown(recentLogs, stat),
+            )
+        }
+    }
+
+    private fun loadForagingData() {
+        viewModelScope.launch {
+            val totalEventCount = workoutRepository.getTotalDogWalkEventCount()
+            val stat = StatsCalculator.calculateForaging(totalEventCount)
+            _foragingState.value = ForagingUiState(
+                foragingStat = stat,
+                breakdown = StatsCalculator.foragingBreakdown(totalEventCount, stat),
+            )
+        }
+    }
+
+    private fun loadStrengthData() {
+        viewModelScope.launch {
+            val setsWithReps = exerciseRepository.getLast30DaysSetsWithReps()
+            val stat = StatsCalculator.calculateStrength(setsWithReps)
+            _strengthState.value = StrengthUiState(
+                strengthStat = stat,
+                breakdown = StatsCalculator.strengthBreakdown(setsWithReps, stat),
             )
         }
     }
