@@ -85,10 +85,11 @@
 | 2026-03-02 | Multi-park lap start points: Room table (DB v13), multi-point auto-start, auto-save on Start Laps, Firestore sync, Settings count+clear UI, old SharedPrefs migration, 2 new tests; PR #160 | 17 | 1 | +296/-102 |
 | 2026-03-03 | Test coverage: 15 BodyCompMappers tests (BMI calc, kg→lbs, null handling, round-trips) + 16 new SettingsStore tests (autoLap, homeArrival, locations, computed props, clear methods); merged PR #161 | 2 | 1 | +492/-0 |
 | 2026-03-03 | Display FOR and STR stats on Character Sheet: foragingBreakdown(), ForestGreen/GoldAccent colors, ForagingUiState/StrengthUiState in ViewModel, stat bars with tab visibility, updated tests and screenshots; merged PR #162 | 8 | 1 | +141/-5 |
+| 2026-03-03 | In-app screenshot capture: PixelCopy floating overlay button, MediaStore gallery save, Room screenshots table (DB v14), ScreenCaptureManager singleton, Settings Developer toggle, workout correlation, 9 new tests; merged PR #163 | 18 | 1 | +474/-25 |
 
 ## Totals
-- **Total Sessions:** 73
-- **Total Commits:** 121
-- **Total Files Changed:** 1010
-- **Total Lines Added:** 45304
-- **Total Lines Removed:** 3807
+- **Total Sessions:** 74
+- **Total Commits:** 122
+- **Total Files Changed:** 1028
+- **Total Lines Added:** 45778
+- **Total Lines Removed:** 3832
