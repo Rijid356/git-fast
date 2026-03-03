@@ -145,11 +145,15 @@ Google Maps with dark style JSON (`res/raw/map_style_dark.json`). `MAPS_API_KEY`
 
 ### Firebase & Auth
 
-Firebase with firebase-auth and firebase-firestore. Google Sign-In via Credential Manager and `googleid`. Auth wrappers in `com.gitfast.app.auth` package. CI requires `GOOGLE_SERVICES_JSON` secret (base64-encoded `google-services.json`).
+Firebase with firebase-auth, firebase-firestore, and firebase-crashlytics. Google Sign-In via Credential Manager and `googleid`. Auth wrappers in `com.gitfast.app.auth` package. CI requires `GOOGLE_SERVICES_JSON` secret (base64-encoded `google-services.json`).
 
 ### Permissions & Services
 
 Manifest declares: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_BACKGROUND_LOCATION`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `POST_NOTIFICATIONS`, `ACTIVITY_RECOGNITION`. `WorkoutService` has `foregroundServiceType="location"`. `MainActivity` is locked to portrait orientation.
+
+### Screenshots
+
+`docs/screenshots/` maintains device screenshots: `current/` holds the latest per-screen PNGs, `history/` holds numbered archive images tracked in `PROJECT_TIMELINE.md`. `stitch.py` and `README.md` document the workflow.
 
 ### Screenshot Composites
 
@@ -157,7 +161,7 @@ Manifest declares: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_BAC
 
 ## watch/ — T-Watch S3 Firmware
 
-PlatformIO project (`watch/platformio.ini`): ESP32-S3, Arduino framework. Dependencies: XPowersLib (AXP2101 PMU), LovyanGFX (ST7789 display). Currently a working splash-screen stub. See root-level memory notes for flash pipeline details.
+See `watch/CLAUDE.md` for firmware details (pin map, flash pipeline, safety rules). Currently a splash-screen stub; future BLE integration with the Android app.
 
 ## Checkpoint Specs
 

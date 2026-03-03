@@ -171,6 +171,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `Migration_8_9.kt` | v8→v9: Create dog_walk_events table; add foragingStat to character_profiles |
 | `Migration_9_10.kt` | v9→v10: Create soreness_logs table; add toughnessStat to character_profiles |
 | `Migration_10_11.kt` | v10→v11: Create exercise_sessions/exercise_sets tables; add strengthStat to character_profiles |
+| `Migration_11_12.kt` | v11→v12: Add narrativeDescription column to workouts table |
 | `Migration_12_13.kt` | v12→v13: Create lap_start_points table for multi-park auto-start |
 | `Migration_13_14.kt` | v13→v14: Create screenshots table for in-app capture tracking |
 
