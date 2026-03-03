@@ -154,6 +154,18 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // --- Developer section ---
+            SectionHeader(text = "Developer")
+
+            SwitchSettingItem(
+                title = "Screenshot Overlay",
+                subtitle = "Show floating capture button on all screens",
+                checked = uiState.screenshotOverlayEnabled,
+                onCheckedChange = { viewModel.setScreenshotOverlayEnabled(it) },
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // --- About section ---
             SectionHeader(text = "About")
 

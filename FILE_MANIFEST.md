@@ -67,6 +67,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `AchievementChecker.kt` | Evaluates achievement unlock conditions for user and Juniper profiles |
 | `PermissionManager.kt` | Checks location, notification, activity recognition permissions |
 | `DogWalkNarrativeGenerator.kt` | Template-based narrative from dog walk events with special combos |
+| `ScreenCaptureManager.kt` | PixelCopy screen capture + MediaStore gallery save + Room screenshot tracking |
 
 ## navigation/
 
@@ -114,7 +115,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 
 | File | Purpose |
 |------|---------|
-| `GitFastDatabase.kt` | Room database v13: 14 entity tables, DAOs, migration chain, schema export |
+| `GitFastDatabase.kt` | Room database v14: 15 entity tables, DAOs, migration chain, schema export |
 | `ExerciseDao.kt` | DAO for exercise sessions/sets: insert, query by date, counts, @Transaction save |
 | `SorenessDao.kt` | DAO for soreness logs: insert, update, observe by date, count queries |
 | `WorkoutDao.kt` | DAO for workouts, phases, laps, GPS points, route tags; `@Transaction` upsert |
@@ -122,7 +123,8 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `BodyCompDao.kt` | DAO for body composition entries (weight, fat%, BMR, height) |
 | `Converters.kt` | Room type converters for Instant and enums (stored as TEXT) |
 | `LapStartPointDao.kt` | DAO for saved lap start GPS points: insert, getAll, deleteAll, observeCount |
-| `SettingsStore.kt` | SharedPrefs wrapper for app settings (auto-pause, units, goals, home location) |
+| `ScreenshotDao.kt` | DAO for screenshots: insert, getAll, getByWorkoutId, getRecent, deleteById |
+| `SettingsStore.kt` | SharedPrefs wrapper for app settings (auto-pause, units, goals, home location, screenshot overlay) |
 | `WorkoutStateStore.kt` | SharedPrefs for crash recovery — persists active workout ID |
 
 ## data/local/entity/
@@ -143,6 +145,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `SorenessLogEntity.kt` | Room entity: soreness log with comma-separated muscle groups, intensity, date index |
 | `ExerciseSessionEntity.kt` | Room entity: exercise session with start/end time, notes, XP awarded |
 | `ExerciseSetEntity.kt` | Room entity: exercise set with FK to session, reps, weight, warmup flag, cascade delete |
+| `ScreenshotEntity.kt` | Room entity: screenshot metadata (timestamp, filename, galleryUri, workoutId, screenRoute) |
 
 ## data/local/mappers/
 
@@ -169,6 +172,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `Migration_9_10.kt` | v9→v10: Create soreness_logs table; add toughnessStat to character_profiles |
 | `Migration_10_11.kt` | v10→v11: Create exercise_sessions/exercise_sets tables; add strengthStat to character_profiles |
 | `Migration_12_13.kt` | v12→v13: Create lap_start_points table for multi-park auto-start |
+| `Migration_13_14.kt` | v13→v14: Create screenshots table for in-app capture tracking |
 
 ## data/repository/
 
@@ -212,6 +216,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `ActivityTypeChips.kt` | Filter chips for activity type selection (All, Runs, Dog Walks) |
 | `SectionHeader.kt` | Reusable styled section header text composable |
 | `KeepScreenOn.kt` | Composable side-effect to keep screen awake during workouts |
+| `ScreenshotOverlay.kt` | Draggable floating camera button for in-app screenshot capture |
 
 ## ui/home/
 

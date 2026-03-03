@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-03-02
+- **Last Active:** 2026-03-03
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 - **Test Coverage:** 68.1% line / 51.5% branch
@@ -83,10 +83,12 @@
 | 2026-02-28 | Remove Activity Goals settings page: delete GoalsSettingsScreen/ViewModel, hardcode defaults (22 min/1.5 mi/5 days) in HomeViewModel, make ActivityRings non-clickable, remove goals from Settings, clean up SettingsStore/tests/screenshots; merged PR #141 | 15 | 1 | +35/-484 |
 | 2026-03-02 | Simplify audit: fix O(n^2) GPS allocation, N+1 batch queries, triple-load elimination, PaceCalculator path fix, extract PauseStopRow/sendServiceAction/GitFastTopAppBar; PR #156 | 25 | 1 | +321/-679 |
 | 2026-03-02 | Multi-park lap start points: Room table (DB v13), multi-point auto-start, auto-save on Start Laps, Firestore sync, Settings count+clear UI, old SharedPrefs migration, 2 new tests; PR #160 | 17 | 1 | +296/-102 |
+| 2026-03-03 | Test coverage: 15 BodyCompMappers tests (BMI calc, kg→lbs, null handling, round-trips) + 16 new SettingsStore tests (autoLap, homeArrival, locations, computed props, clear methods); merged PR #161 | 2 | 1 | +492/-0 |
+| 2026-03-03 | Display FOR and STR stats on Character Sheet: foragingBreakdown(), ForestGreen/GoldAccent colors, ForagingUiState/StrengthUiState in ViewModel, stat bars with tab visibility, updated tests and screenshots; merged PR #162 | 8 | 1 | +141/-5 |
 
 ## Totals
-- **Total Sessions:** 71
-- **Total Commits:** 119
-- **Total Files Changed:** 1000
-- **Total Lines Added:** 44671
-- **Total Lines Removed:** 3802
+- **Total Sessions:** 73
+- **Total Commits:** 121
+- **Total Files Changed:** 1010
+- **Total Lines Added:** 45304
+- **Total Lines Removed:** 3807
