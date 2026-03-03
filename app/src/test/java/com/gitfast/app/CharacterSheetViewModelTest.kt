@@ -8,6 +8,7 @@ import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.repository.BodyCompRepository
 import com.gitfast.app.data.repository.CharacterRepository
+import com.gitfast.app.data.repository.ExerciseRepository
 import com.gitfast.app.data.repository.SorenessRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.ui.character.CharacterSheetViewModel
@@ -43,6 +44,7 @@ class CharacterSheetViewModelTest {
 
     private val bodyCompRepo = mockk<BodyCompRepository>()
     private val sorenessRepo = mockk<SorenessRepository>()
+    private val exerciseRepo = mockk<ExerciseRepository>()
     private val healthConnectManager = mockk<HealthConnectManager>()
 
     private fun mockRepos(
@@ -68,13 +70,19 @@ class CharacterSheetViewModelTest {
         // Default: no soreness logs
         coEvery { sorenessRepo.getLast30DaysLogs() } returns emptyList()
 
+        // Default: no dog walk events
+        coEvery { workoutRepo.getTotalDogWalkEventCount() } returns 0
+
+        // Default: no exercise sets
+        coEvery { exerciseRepo.getLast30DaysSetsWithReps() } returns emptyList()
+
         return repo to workoutRepo
     }
 
     @Test
     fun `profile emits default when repository returns default`() = runTest {
         val (repo, workoutRepo) = mockRepos()
-        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, healthConnectManager)
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.profile.collect {}
@@ -87,7 +95,7 @@ class CharacterSheetViewModelTest {
     fun `profile emits data from repository`() = runTest {
         val profile = CharacterProfile(level = 5, totalXp = 450, xpProgress = 0.5f)
         val (repo, workoutRepo) = mockRepos(profile = profile)
-        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, healthConnectManager)
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.profile.collect {}
@@ -104,7 +112,7 @@ class CharacterSheetViewModelTest {
             XpTransaction("2", "w2", 30, "Dog walk completed", Instant.ofEpochMilli(2000)),
         )
         val (repo, workoutRepo) = mockRepos(transactions = transactions)
-        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, healthConnectManager)
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentXpTransactions.collect {}
@@ -117,7 +125,7 @@ class CharacterSheetViewModelTest {
     @Test
     fun `recentXpTransactions emits empty list when no transactions`() = runTest {
         val (repo, workoutRepo) = mockRepos()
-        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, healthConnectManager)
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
 
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.recentXpTransactions.collect {}
