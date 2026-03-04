@@ -1,6 +1,7 @@
 package com.gitfast.app.util
 
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.MuscleGroup
 import com.gitfast.app.data.model.SorenessIntensity
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WeatherCondition
@@ -156,10 +157,14 @@ object XpCalculator {
 
     /**
      * Calculate XP earned from a daily soreness check-in.
-     * Base: +5 XP + intensity bonus (MILD:0, MODERATE:3, SEVERE:5).
+     * Base: +5 XP + intensity bonus based on max intensity (MILD:0, MODERATE:3, SEVERE:5).
      * Streak multiplier applied same as workouts.
      */
-    fun calculateSorenessXp(intensity: SorenessIntensity, streakDays: Int = 0): XpResult {
+    fun calculateSorenessXp(
+        muscleIntensities: Map<MuscleGroup, SorenessIntensity>,
+        streakDays: Int = 0,
+    ): XpResult {
+        val intensity = muscleIntensities.values.maxByOrNull { it.ordinal } ?: SorenessIntensity.MILD
         val breakdown = mutableListOf<String>()
         var rawXp = XP_PER_SORENESS_LOG
         breakdown.add("+$XP_PER_SORENESS_LOG XP: soreness check-in")

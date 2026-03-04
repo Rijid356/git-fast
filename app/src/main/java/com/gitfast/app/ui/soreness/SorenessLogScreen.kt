@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -31,9 +32,9 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gitfast.app.data.model.MuscleGroup
 import com.gitfast.app.data.model.SorenessIntensity
 import com.gitfast.app.ui.theme.AmberAccent
-import com.gitfast.app.ui.theme.ErrorRed
 import com.gitfast.app.ui.theme.NeonGreen
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -44,7 +45,7 @@ fun SorenessLogScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val hasLoggedToday = state.todayLog != null && !state.isEditing
-    val canSave = state.selectedMuscles.isNotEmpty() && state.selectedIntensity != null && !state.isSaving
+    val canSave = state.muscleIntensities.isNotEmpty() && !state.isSaving
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -64,8 +65,8 @@ fun SorenessLogScreen(
             } else {
                 SorenessForm(
                     state = state,
-                    onToggleMuscle = viewModel::toggleMuscle,
-                    onSelectIntensity = viewModel::selectIntensity,
+                    onCycleMuscle = viewModel::cycleMuscleIntensity,
+                    onToggleFrontBack = viewModel::toggleFrontBack,
                     onUpdateNotes = viewModel::updateNotes,
                     onSave = viewModel::saveSoreness,
                     onCancel = if (state.isEditing) viewModel::cancelEditing else null,
@@ -121,14 +122,6 @@ private fun TodaySummary(
     Spacer(modifier = Modifier.height(12.dp))
 
     Text(
-        text = "Intensity: ${log.intensity.displayName}",
-        style = MaterialTheme.typography.bodyLarge,
-        color = intensityColor(log.intensity),
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
         text = "Sore muscles:",
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -140,21 +133,21 @@ private fun TodaySummary(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        log.muscleGroups.forEach { group ->
+        log.muscleIntensities.forEach { (group, intensity) ->
             FilterChip(
                 selected = true,
                 onClick = {},
                 enabled = false,
                 label = {
                     Text(
-                        text = group.displayName,
+                        text = "${group.displayName}: ${intensity.displayName}",
                         style = MaterialTheme.typography.labelMedium,
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = NeonGreen.copy(alpha = 0.2f),
-                    selectedLabelColor = NeonGreen,
-                    disabledSelectedContainerColor = NeonGreen.copy(alpha = 0.15f),
+                    selectedContainerColor = intensityColor(intensity).copy(alpha = 0.2f),
+                    selectedLabelColor = intensityColor(intensity),
+                    disabledSelectedContainerColor = intensityColor(intensity).copy(alpha = 0.15f),
                 ),
             )
         }
@@ -195,8 +188,8 @@ private fun TodaySummary(
 @Composable
 private fun SorenessForm(
     state: SorenessLogUiState,
-    onToggleMuscle: (com.gitfast.app.data.model.MuscleGroup) -> Unit,
-    onSelectIntensity: (SorenessIntensity) -> Unit,
+    onCycleMuscle: (MuscleGroup) -> Unit,
+    onToggleFrontBack: () -> Unit,
     onUpdateNotes: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: (() -> Unit)?,
@@ -204,54 +197,87 @@ private fun SorenessForm(
 ) {
     Spacer(modifier = Modifier.height(16.dp))
 
-    Text(
-        text = "What's sore?",
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    MuscleGroupSelector(
-        selected = state.selectedMuscles,
-        onToggle = onToggleMuscle,
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-
-    Text(
-        text = "How sore?",
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    FlowRow(
+    // Front/Back toggle
+    Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        SorenessIntensity.entries.forEach { intensity ->
-            val isSelected = state.selectedIntensity == intensity
-            FilterChip(
-                selected = isSelected,
-                onClick = { onSelectIntensity(intensity) },
-                label = {
-                    Text(
-                        text = intensity.displayName,
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = intensityColor(intensity).copy(alpha = 0.2f),
-                    selectedLabelColor = intensityColor(intensity),
-                    labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-            )
-        }
+        FilterChip(
+            selected = state.showingFront,
+            onClick = { if (!state.showingFront) onToggleFrontBack() },
+            label = {
+                Text(text = "FRONT", style = MaterialTheme.typography.labelMedium)
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = NeonGreen.copy(alpha = 0.2f),
+                selectedLabelColor = NeonGreen,
+                labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        )
+        FilterChip(
+            selected = !state.showingFront,
+            onClick = { if (state.showingFront) onToggleFrontBack() },
+            label = {
+                Text(text = "BACK", style = MaterialTheme.typography.labelMedium)
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = NeonGreen.copy(alpha = 0.2f),
+                selectedLabelColor = NeonGreen,
+                labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        )
     }
 
-    Spacer(modifier = Modifier.height(24.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
+    // Body map canvas
+    BodyMapCanvas(
+        muscleIntensities = state.muscleIntensities,
+        showingFront = state.showingFront,
+        onZoneTap = onCycleMuscle,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(350.dp),
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    // Combobox filter
+    MuscleCombobox(
+        muscleIntensities = state.muscleIntensities,
+        onZoneTap = onCycleMuscle,
+        modifier = Modifier.fillMaxWidth(),
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    // Selected summary chips
+    if (state.muscleIntensities.isNotEmpty()) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            state.muscleIntensities.forEach { (group, intensity) ->
+                FilterChip(
+                    selected = true,
+                    onClick = { onCycleMuscle(group) },
+                    label = {
+                        Text(
+                            text = "${group.displayName}: ${intensity.displayName}",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = intensityColor(intensity).copy(alpha = 0.2f),
+                        selectedLabelColor = intensityColor(intensity),
+                    ),
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    // Notes
     Text(
         text = "Notes (optional)",
         style = MaterialTheme.typography.titleMedium,
@@ -310,14 +336,5 @@ private fun SorenessForm(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-    }
-}
-
-@Composable
-private fun intensityColor(intensity: SorenessIntensity): androidx.compose.ui.graphics.Color {
-    return when (intensity) {
-        SorenessIntensity.MILD -> NeonGreen
-        SorenessIntensity.MODERATE -> AmberAccent
-        SorenessIntensity.SEVERE -> ErrorRed
     }
 }
