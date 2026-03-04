@@ -14,8 +14,12 @@ import android.view.PixelCopy
 import android.widget.Toast
 import com.gitfast.app.data.local.ScreenshotDao
 import com.gitfast.app.data.local.entity.ScreenshotEntity
+import com.gitfast.app.data.sync.FirestoreSync
 import com.gitfast.app.service.WorkoutStateManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,6 +33,7 @@ class ScreenCaptureManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val screenshotDao: ScreenshotDao,
     private val workoutStateManager: WorkoutStateManager,
+    private val firestoreSync: FirestoreSync,
 ) {
 
     suspend fun captureScreen(activity: Activity): Bitmap? {
@@ -112,6 +117,11 @@ class ScreenCaptureManager @Inject constructor(
             screenRoute = screenRoute,
         )
         screenshotDao.insert(entity)
+
+        // Fire-and-forget upload to Firebase Storage
+        CoroutineScope(Dispatchers.IO).launch {
+            firestoreSync.pushScreenshot(entity)
+        }
 
         @Suppress("DEPRECATION")
         val vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator

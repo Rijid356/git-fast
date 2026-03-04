@@ -1,15 +1,21 @@
 package com.gitfast.app.data.sync
 
+import android.content.Context
+import android.net.Uri
 import com.gitfast.app.data.local.CharacterDao
 import com.gitfast.app.data.local.LapStartPointDao
+import com.gitfast.app.data.local.ScreenshotDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.LapStartPointEntity
+import com.gitfast.app.data.local.entity.ScreenshotEntity
 import com.gitfast.app.util.DistanceCalculator
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
@@ -17,13 +23,16 @@ import javax.inject.Singleton
 
 @Singleton
 class FirestoreSync @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
+    private val storage: FirebaseStorage,
     private val workoutDao: WorkoutDao,
     private val characterDao: CharacterDao,
     private val settingsStore: SettingsStore,
     private val syncStatusStore: SyncStatusStore,
     private val lapStartPointDao: LapStartPointDao,
+    private val screenshotDao: ScreenshotDao,
 ) {
     private fun userDocRef() = auth.currentUser?.uid?.let {
         firestore.collection("users").document(it)
@@ -350,6 +359,7 @@ class FirestoreSync @Inject constructor(
             pushSettings()
             pushRouteTags()
             pushLapStartPoints()
+            pushAllScreenshots()
 
             // Pull remote data
             pullWorkouts()
@@ -375,6 +385,7 @@ class FirestoreSync @Inject constructor(
             pushSettings()
             pushRouteTags()
             pushLapStartPoints()
+            pushAllScreenshots()
 
             syncStatusStore.hasCompletedInitialSync = true
             syncStatusStore.setSuccess()
@@ -385,10 +396,91 @@ class FirestoreSync @Inject constructor(
         }
     }
 
+    /** Push a single screenshot to Firebase Storage + Firestore metadata. */
+    suspend fun pushScreenshot(screenshot: ScreenshotEntity) {
+        val userDoc = userDocRef() ?: return
+        val uid = auth.currentUser?.uid ?: return
+        try {
+            val bytes = context.contentResolver.openInputStream(Uri.parse(screenshot.galleryUri))
+                ?.use { it.readBytes() } ?: return
+
+            val storagePath = "users/$uid/screenshots/${screenshot.filename}"
+            val storageRef = storage.reference.child(storagePath)
+            storageRef.putBytes(bytes).await()
+            val downloadUrl = storageRef.downloadUrl.await().toString()
+
+            val metadataMap = mapOf(
+                "timestamp" to screenshot.timestamp,
+                "filename" to screenshot.filename,
+                "downloadUrl" to downloadUrl,
+                "workoutId" to screenshot.workoutId,
+                "activityType" to screenshot.activityType,
+                "screenRoute" to screenshot.screenRoute,
+                "syncedAt" to System.currentTimeMillis(),
+            )
+            userDoc.collection("screenshots")
+                .document(screenshot.id.toString())
+                .set(metadataMap)
+                .await()
+
+            Timber.d("Pushed screenshot %s", screenshot.filename)
+
+            cleanupOldScreenshots()
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to push screenshot %s", screenshot.filename)
+        }
+    }
+
+    /** Push all recent local screenshots to Firebase. */
+    suspend fun pushAllScreenshots() {
+        val screenshots = screenshotDao.getRecent(50)
+        for (screenshot in screenshots) {
+            pushScreenshot(screenshot)
+        }
+    }
+
+    /** Delete screenshots older than 7 days from Firebase Storage + Firestore. */
+    private suspend fun cleanupOldScreenshots() {
+        val userDoc = userDocRef() ?: return
+        val uid = auth.currentUser?.uid ?: return
+        try {
+            val cutoff = System.currentTimeMillis() - SCREENSHOT_RETENTION_MS
+            val expiredDocs = userDoc.collection("screenshots")
+                .whereLessThan("timestamp", cutoff)
+                .get()
+                .await()
+
+            for (doc in expiredDocs.documents) {
+                val filename = doc.getString("filename")
+                if (filename != null) {
+                    try {
+                        storage.reference
+                            .child("users/$uid/screenshots/$filename")
+                            .delete()
+                            .await()
+                    } catch (e: Exception) {
+                        Timber.w(e, "Failed to delete storage file %s", filename)
+                    }
+                }
+                doc.reference.delete().await()
+            }
+
+            if (expiredDocs.size() > 0) {
+                Timber.d("Cleaned up %d expired screenshots", expiredDocs.size())
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to cleanup old screenshots")
+        }
+    }
+
     private suspend fun pushAllWorkouts() {
         val workouts = workoutDao.getAllCompletedWorkoutsOnce()
         for (workout in workouts) {
             pushWorkout(workout.id)
         }
+    }
+
+    companion object {
+        private const val SCREENSHOT_RETENTION_MS = 7L * 24 * 60 * 60 * 1000 // 7 days
     }
 }
