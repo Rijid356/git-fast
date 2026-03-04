@@ -153,7 +153,7 @@ Manifest declares: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_BAC
 
 ### Screenshots
 
-`docs/screenshots/` maintains device screenshots: `current/` holds the latest per-screen PNGs, `history/` holds numbered archive images tracked in `PROJECT_TIMELINE.md`. `stitch.py` and `README.md` document the workflow.
+`docs/screenshots/` maintains device screenshots: `current/<category>/` holds the latest per-screen PNGs organized by category (analytics, character, detail, history, home, settings, summary, workout), `history/` holds numbered archive images tracked in `PROJECT_TIMELINE.md`. `stitch.py` includes a `sync-current` command to copy goldens into the categorized structure. `README.md` documents the workflow.
 
 ### Screenshot Composites
 

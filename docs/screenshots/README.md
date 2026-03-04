@@ -6,42 +6,89 @@ Visual chronicle of the git-fast app.
 
 ```
 docs/screenshots/
-├── current/        # What the app looks like right now (overwritten on updates)
-├── history/        # Numbered chronicle of the app's visual evolution
-├── stitch.py       # Image stitching utility
-└── README.md       # This file
+├── current/              # What the app looks like right now (categorized)
+│   ├── analytics/        #   Analytics hub, trends, body comp, PRs, routes
+│   ├── character/        #   Character sheets (user + Juniper)
+│   ├── detail/           #   Workout detail screens
+│   ├── history/          #   History list
+│   ├── home/             #   Home screen
+│   ├── settings/         #   Settings
+│   ├── summary/          #   Post-workout summaries
+│   └── workout/          #   Active workout screens + dialogs
+├── comparisons/          # Before/after stitched comparisons (date/category/)
+├── history/              # Numbered chronicle of the app's visual evolution
+├── stitch.py             # Image stitching + sync utility
+└── README.md             # This file
 ```
 
 ## Current Screenshots
 
 Always-up-to-date reference of every major screen. Source: Roborazzi golden screenshots.
 
+### Home
+
 | File | Screen |
 |------|--------|
-| `home.png` | Home screen |
-| `active-run.png` | Active run workout |
-| `active-run-laps.png` | Active run in lap mode |
-| `active-run-paused.png` | Active run paused |
-| `active-dog-walk.png` | Active dog walk |
-| `active-dog-walk-event-wheel.png` | Dog walk with event wheel expanded |
-| `active-dog-run.png` | Active dog run |
-| `active-dog-run-sprinting.png` | Dog run sprinting mode |
-| `dialog-stop.png` | Stop confirmation dialog |
-| `dialog-back.png` | Back/navigate-away dialog |
-| `run-summary.png` | Run workout summary |
-| `dog-walk-summary.png` | Dog walk summary |
-| `run-detail.png` | Run detail with phases/laps/map |
-| `dog-walk-detail.png` | Dog walk detail with events/map |
-| `history-list.png` | Workout history list |
-| `character-sheet-me.png` | Character sheet (user) |
-| `character-sheet-juniper.png` | Character sheet (Juniper) |
-| `analytics.png` | Analytics hub |
-| `trends.png` | Weekly/monthly trends |
-| `personal-records.png` | Personal records dashboard |
-| `route-overlay.png` | Route overlay comparison |
-| `route-performance.png` | Route performance table |
-| `body-comp.png` | Body composition tracking |
-| `settings.png` | Settings screen |
+| `home/home.png` | Home screen |
+
+### Workout
+
+| File | Screen |
+|------|--------|
+| `workout/active-run.png` | Active run |
+| `workout/active-run-laps.png` | Active run in lap mode |
+| `workout/active-run-paused.png` | Active run paused |
+| `workout/active-dog-walk.png` | Active dog walk |
+| `workout/active-dog-walk-event-wheel.png` | Dog walk with event wheel expanded |
+| `workout/active-dog-walk-route-ghost.png` | Dog walk with route ghost |
+| `workout/active-dog-run.png` | Active dog run |
+| `workout/active-dog-run-sprinting.png` | Dog run sprinting mode |
+| `workout/dialog-stop.png` | Stop confirmation dialog |
+| `workout/dialog-back.png` | Back/navigate-away dialog |
+
+### Summary
+
+| File | Screen |
+|------|--------|
+| `summary/run-summary.png` | Run workout summary |
+| `summary/dog-walk-summary.png` | Dog walk summary |
+
+### Detail
+
+| File | Screen |
+|------|--------|
+| `detail/run-detail.png` | Run detail with phases/laps/map |
+| `detail/dog-walk-detail.png` | Dog walk detail with events/map |
+
+### History
+
+| File | Screen |
+|------|--------|
+| `history/history-list.png` | Workout history list |
+
+### Character
+
+| File | Screen |
+|------|--------|
+| `character/character-sheet-me.png` | Character sheet (user) |
+| `character/character-sheet-juniper.png` | Character sheet (Juniper) |
+
+### Analytics
+
+| File | Screen |
+|------|--------|
+| `analytics/analytics.png` | Analytics hub |
+| `analytics/trends.png` | Weekly/monthly trends |
+| `analytics/personal-records.png` | Personal records dashboard |
+| `analytics/route-overlay.png` | Route overlay comparison |
+| `analytics/route-performance.png` | Route performance table |
+| `analytics/body-comp.png` | Body composition tracking |
+
+### Settings
+
+| File | Screen |
+|------|--------|
+| `settings/settings.png` | Settings screen |
 
 ## History Log
 
@@ -95,6 +142,15 @@ Chronological record of the app's visual evolution. Each entry captures a specif
 
 When the UI changes:
 
-1. Copy the old `current/<screen>.png` to `history/<next-number>-<description>.png`
-2. Overwrite `current/<screen>.png` with the new Roborazzi golden
+1. Copy the old `current/<category>/<screen>.png` to `history/<next-number>-<description>.png`
+2. Overwrite `current/<category>/<screen>.png` with the new Roborazzi golden
 3. Add a row to the History Log table above
+
+To sync all goldens to `current/` at once:
+
+```bash
+python docs/screenshots/stitch.py sync-current          # copy all
+python docs/screenshots/stitch.py sync-current --prune   # copy + remove orphans
+```
+
+Comparisons are stored as `comparisons/<date>/<category>/<filename>.png`.

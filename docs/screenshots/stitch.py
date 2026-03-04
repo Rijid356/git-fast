@@ -12,6 +12,10 @@ Usage:
     # Stitch with no frame
     python docs/screenshots/stitch.py stitch <before> <after> <output> --frame none
 
+    # Sync golden screenshots to current/ (categorized)
+    python docs/screenshots/stitch.py sync-current
+    python docs/screenshots/stitch.py sync-current --prune   # remove orphaned files
+
     # Archive / compare (unchanged)
     python docs/screenshots/stitch.py archive --tag "2026-03-03_pr126-dog-walk-events"
     python docs/screenshots/stitch.py compare 2026-03-01_initial 2026-03-03_events
@@ -30,8 +34,47 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 # -- Paths --
 GOLDENS_DIR = Path("app/src/test/snapshots")
+SCREENS_DIR = GOLDENS_DIR / "screens"
+CURRENT_DIR = Path("docs/screenshots/current")
 HISTORY_DIR = Path("docs/screenshots/history")
 COMPARISONS_DIR = Path("docs/screenshots/comparisons")
+
+# -- Golden PascalCase stem → kebab-case display name --
+GOLDEN_TO_CURRENT = {
+    # analytics/
+    "Screen_AnalyticsHub": "analytics",
+    "Screen_BodyComp": "body-comp",
+    "Screen_PersonalRecords": "personal-records",
+    "Screen_RouteOverlay": "route-overlay",
+    "Screen_RoutePerformance": "route-performance",
+    "Screen_Trends": "trends",
+    # character/
+    "Screen_CharacterSheet_Juniper": "character-sheet-juniper",
+    "Screen_CharacterSheet_User": "character-sheet-me",
+    # detail/
+    "Screen_Detail_DogWalk": "dog-walk-detail",
+    "Screen_Detail_Run": "run-detail",
+    # history/
+    "Screen_History": "history-list",
+    # home/
+    "Screen_Home": "home",
+    # settings/
+    "Screen_Settings": "settings",
+    # summary/
+    "Screen_DogWalkSummary": "dog-walk-summary",
+    "Screen_WorkoutSummary": "run-summary",
+    # workout/
+    "Dialog_Back_Confirmation": "dialog-back",
+    "Dialog_Stop_Confirmation": "dialog-stop",
+    "Screen_Workout_DogRun": "active-dog-run",
+    "Screen_Workout_DogRun_Sprinting": "active-dog-run-sprinting",
+    "Screen_Workout_DogWalk": "active-dog-walk",
+    "Screen_Workout_DogWalk_EventWheel_Expanded": "active-dog-walk-event-wheel",
+    "Screen_Workout_DogWalk_RouteGhost": "active-dog-walk-route-ghost",
+    "Screen_Workout_Laps": "active-run-laps",
+    "Screen_Workout_Paused": "active-run-paused",
+    "Screen_Workout_Running": "active-run",
+}
 
 # -- Theme (matches git-fast app) --
 BG_COLOR = (13, 17, 23)        # #0D1117
@@ -445,6 +488,54 @@ def compare_archives(old_tag: str, new_tag: str) -> List[str]:
     return outputs
 
 
+def golden_to_current_path(golden: Path) -> Optional[Path]:
+    """Map a golden screenshot to its current/ category/display-name.png path."""
+    stem = golden.stem
+    display_name = GOLDEN_TO_CURRENT.get(stem)
+    if display_name is None:
+        return None
+    # Category = golden's parent directory name (e.g., "workout", "analytics")
+    category = golden.parent.name
+    return CURRENT_DIR / category / f"{display_name}.png"
+
+
+def sync_current(prune: bool = False) -> None:
+    """Sync golden screenshots to current/ using the mapping."""
+    if not SCREENS_DIR.exists():
+        print(f"Error: {SCREENS_DIR} not found. Run from the project root.")
+        sys.exit(1)
+
+    copied = 0
+    mapped_targets = set()
+
+    for golden in sorted(SCREENS_DIR.rglob("*.png")):
+        target = golden_to_current_path(golden)
+        if target is None:
+            print(f"  SKIP (unmapped): {golden.relative_to(SCREENS_DIR)}")
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(golden, target)
+        mapped_targets.add(target)
+        copied += 1
+
+    print(f"Synced {copied} screenshots to {CURRENT_DIR}")
+
+    if prune:
+        removed = 0
+        for existing in sorted(CURRENT_DIR.rglob("*.png")):
+            if existing not in mapped_targets:
+                existing.unlink()
+                removed += 1
+                print(f"  PRUNED: {existing.relative_to(CURRENT_DIR)}")
+        # Remove empty category dirs
+        for d in sorted(CURRENT_DIR.iterdir(), reverse=True):
+            if d.is_dir() and not any(d.iterdir()):
+                d.rmdir()
+                print(f"  PRUNED dir: {d.relative_to(CURRENT_DIR)}")
+        if removed:
+            print(f"Pruned {removed} orphaned files")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Screenshot comparison tool")
     sub = parser.add_subparsers(dest="command")
@@ -471,6 +562,12 @@ def main():
     cmp.add_argument("old", help="Old archive tag")
     cmp.add_argument("new", help="New archive tag")
 
+    # Sync goldens to current/
+    sync = sub.add_parser("sync-current",
+                          help="Sync golden screenshots to current/ (categorized)")
+    sync.add_argument("--prune", action="store_true",
+                      help="Remove files in current/ that have no golden source")
+
     args = parser.parse_args()
 
     if args.command == "stitch":
@@ -486,6 +583,9 @@ def main():
 
     elif args.command == "compare":
         compare_archives(args.old, args.new)
+
+    elif args.command == "sync-current":
+        sync_current(prune=args.prune)
 
     else:
         parser.print_help()
