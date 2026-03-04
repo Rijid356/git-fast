@@ -11,13 +11,14 @@ import java.time.LocalDate
 class StatsCalculatorToughnessTest {
 
     private fun buildLog(
-        intensity: SorenessIntensity = SorenessIntensity.MILD,
+        muscleIntensities: Map<MuscleGroup, SorenessIntensity> = mapOf(
+            MuscleGroup.QUADS to SorenessIntensity.MILD,
+        ),
         daysAgo: Int = 0,
     ): SorenessLog = SorenessLog(
         id = java.util.UUID.randomUUID().toString(),
         date = LocalDate.now().minusDays(daysAgo.toLong()),
-        muscleGroups = setOf(MuscleGroup.QUADS),
-        intensity = intensity,
+        muscleIntensities = muscleIntensities,
     )
 
     // --- Zero state ---
@@ -27,98 +28,131 @@ class StatsCalculatorToughnessTest {
         assertEquals(1, StatsCalculator.calculateToughness(emptyList()))
     }
 
-    // --- Single log intensity weights ---
+    // --- Per-muscle weighting ---
 
     @Test
-    fun `single mild log gives low score`() {
-        // 1 MILD = 1 weighted point → between bracket 0→1 and 3→25
-        val result = StatsCalculator.calculateToughness(listOf(buildLog(SorenessIntensity.MILD)))
-        assertTrue("Expected score > 1 for 1 mild log, got $result", result > 1)
-        assertTrue("Expected score < 25 for 1 mild log, got $result", result < 25)
+    fun `single muscle mild gives low score`() {
+        // 1 muscle × MILD = 1 weighted point → between 0→1 and 8→25
+        val log = buildLog(mapOf(MuscleGroup.QUADS to SorenessIntensity.MILD))
+        val result = StatsCalculator.calculateToughness(listOf(log))
+        assertTrue("Expected score > 1 for 1 mild muscle, got $result", result > 1)
+        assertTrue("Expected score < 25 for 1 mild muscle, got $result", result < 25)
     }
 
     @Test
-    fun `single moderate log gives higher score than mild`() {
-        // 1 MODERATE = 2 weighted points
-        val mild = StatsCalculator.calculateToughness(listOf(buildLog(SorenessIntensity.MILD)))
-        val moderate = StatsCalculator.calculateToughness(listOf(buildLog(SorenessIntensity.MODERATE)))
-        assertTrue("Moderate ($moderate) should be > mild ($mild)", moderate > mild)
+    fun `multiple muscles per log accumulate points`() {
+        // 3 muscles × MILD = 3 weighted points — higher than single muscle
+        val singleMuscle = buildLog(mapOf(MuscleGroup.QUADS to SorenessIntensity.MILD))
+        val threeMuscles = buildLog(
+            mapOf(
+                MuscleGroup.QUADS to SorenessIntensity.MILD,
+                MuscleGroup.HAMSTRINGS to SorenessIntensity.MILD,
+                MuscleGroup.CALVES to SorenessIntensity.MILD,
+            ),
+        )
+        val single = StatsCalculator.calculateToughness(listOf(singleMuscle))
+        val triple = StatsCalculator.calculateToughness(listOf(threeMuscles))
+        assertTrue("3 muscles ($triple) should be > 1 muscle ($single)", triple > single)
     }
 
     @Test
-    fun `single severe log gives highest single-log score`() {
-        // 1 SEVERE = 3 weighted points → exactly at bracket 3→25
-        val result = StatsCalculator.calculateToughness(listOf(buildLog(SorenessIntensity.SEVERE)))
-        assertEquals(25, result)
+    fun `mixed intensities across muscles calculate correctly`() {
+        // 1 MILD (1) + 1 MODERATE (2) + 1 SEVERE (3) = 6 points
+        val log = buildLog(
+            mapOf(
+                MuscleGroup.CHEST to SorenessIntensity.MILD,
+                MuscleGroup.BACK to SorenessIntensity.MODERATE,
+                MuscleGroup.CORE to SorenessIntensity.SEVERE,
+            ),
+        )
+        val result = StatsCalculator.calculateToughness(listOf(log))
+        // 6 points → between 0→1 and 8→25
+        assertTrue("Expected score > 1 for 6 points, got $result", result > 1)
+        assertTrue("Expected score < 25 for 6 points, got $result", result < 25)
     }
 
-    // --- Bracket boundaries ---
+    // --- Bracket boundaries (rescaled: 0→1, 8→25, 20→50, 45→75, 80→99) ---
 
     @Test
-    fun `3 mild logs hits 25 bracket exactly`() {
-        // 3 MILD = 3 weighted points → bracket 3→25
-        val logs = (1..3).map { buildLog(SorenessIntensity.MILD) }
-        assertEquals(25, StatsCalculator.calculateToughness(logs))
+    fun `8 weighted points hits 25 bracket`() {
+        // 8 muscles × MILD = 8 points → bracket 8→25
+        val log = buildLog(
+            MuscleGroup.entries.take(8).associateWith { SorenessIntensity.MILD },
+        )
+        assertEquals(25, StatsCalculator.calculateToughness(listOf(log)))
     }
 
     @Test
-    fun `7 mild logs hits 50 bracket exactly`() {
-        // 7 MILD = 7 weighted points → bracket 7→50
-        val logs = (1..7).map { buildLog(SorenessIntensity.MILD) }
-        assertEquals(50, StatsCalculator.calculateToughness(logs))
+    fun `20 weighted points hits 50 bracket`() {
+        // 10 muscles × MODERATE(2) = 20 points → bracket 20→50
+        val log = buildLog(
+            MuscleGroup.entries.take(10).associateWith { SorenessIntensity.MODERATE },
+        )
+        assertEquals(50, StatsCalculator.calculateToughness(listOf(log)))
     }
 
     @Test
-    fun `14 mild logs hits 75 bracket exactly`() {
-        // 14 MILD = 14 weighted points → bracket 14→75
-        val logs = (1..14).map { buildLog(SorenessIntensity.MILD) }
+    fun `45 weighted points hits 75 bracket`() {
+        // 5 logs × 3 muscles × SEVERE(3) = 45 points → bracket 45→75
+        val logs = (1..5).map {
+            buildLog(
+                mapOf(
+                    MuscleGroup.QUADS to SorenessIntensity.SEVERE,
+                    MuscleGroup.HAMSTRINGS to SorenessIntensity.SEVERE,
+                    MuscleGroup.CALVES to SorenessIntensity.SEVERE,
+                ),
+            )
+        }
         assertEquals(75, StatsCalculator.calculateToughness(logs))
     }
 
     @Test
-    fun `25 mild logs hits 99 bracket`() {
-        // 25 MILD = 25 weighted points → bracket 25→99
-        val logs = (1..25).map { buildLog(SorenessIntensity.MILD) }
+    fun `80 weighted points hits 99 bracket`() {
+        // 10 logs × 8 muscles × MILD(1) = 80 points → bracket 80→99
+        val logs = (1..10).map {
+            buildLog(
+                MuscleGroup.entries.take(8).associateWith { SorenessIntensity.MILD },
+            )
+        }
         assertEquals(99, StatsCalculator.calculateToughness(logs))
     }
 
     @Test
     fun `above max bracket clamps to 99`() {
-        // 50 MILD = 50 weighted points → above max bracket, should clamp
-        val logs = (1..50).map { buildLog(SorenessIntensity.MILD) }
+        // Well above 80 points
+        val logs = (1..20).map {
+            buildLog(
+                MuscleGroup.entries.associateWith { SorenessIntensity.SEVERE },
+            )
+        }
         assertEquals(99, StatsCalculator.calculateToughness(logs))
-    }
-
-    // --- Mixed intensity ---
-
-    @Test
-    fun `mixed intensities calculate weighted total correctly`() {
-        // 2 MILD (2) + 1 MODERATE (2) + 1 SEVERE (3) = 7 → bracket 7→50
-        val logs = listOf(
-            buildLog(SorenessIntensity.MILD),
-            buildLog(SorenessIntensity.MILD),
-            buildLog(SorenessIntensity.MODERATE),
-            buildLog(SorenessIntensity.SEVERE),
-        )
-        assertEquals(50, StatsCalculator.calculateToughness(logs))
     }
 
     // --- Breakdown ---
 
     @Test
-    fun `toughnessBreakdown counts intensity categories correctly`() {
+    fun `toughnessBreakdown counts individual muscle entries`() {
         val logs = listOf(
-            buildLog(SorenessIntensity.MILD),
-            buildLog(SorenessIntensity.MILD),
-            buildLog(SorenessIntensity.MODERATE),
-            buildLog(SorenessIntensity.SEVERE),
+            buildLog(
+                mapOf(
+                    MuscleGroup.CHEST to SorenessIntensity.MILD,
+                    MuscleGroup.BACK to SorenessIntensity.MODERATE,
+                ),
+            ),
+            buildLog(
+                mapOf(
+                    MuscleGroup.CORE to SorenessIntensity.SEVERE,
+                ),
+            ),
         )
-        val breakdown = StatsCalculator.toughnessBreakdown(logs, effectiveScore = 50)
+        // 1 MILD + 1 MODERATE + 1 SEVERE = 3 entries, 6 weighted points
+        val breakdown = StatsCalculator.toughnessBreakdown(logs, effectiveScore = 10)
 
-        assertTrue(breakdown.details.any { it.first == "Logs (30d)" && it.second == "4" })
-        assertTrue(breakdown.details.any { it.first == "Mild / Mod / Sev" && it.second == "2 / 1 / 1" })
-        assertTrue(breakdown.details.any { it.first == "Weighted points" && it.second == "7" })
-        assertTrue(breakdown.details.any { it.first == "Effective score" && it.second == "50" })
+        assertTrue(breakdown.details.any { it.first == "Logs (30d)" && it.second == "2" })
+        assertTrue(breakdown.details.any { it.first == "Muscle entries" && it.second == "3" })
+        assertTrue(breakdown.details.any { it.first == "Mild / Mod / Sev" && it.second == "1 / 1 / 1" })
+        assertTrue(breakdown.details.any { it.first == "Weighted points" && it.second == "6" })
+        assertTrue(breakdown.details.any { it.first == "Effective score" && it.second == "10" })
     }
 
     @Test
@@ -126,5 +160,14 @@ class StatsCalculatorToughnessTest {
         val breakdown = StatsCalculator.toughnessBreakdown(emptyList(), effectiveScore = 1)
         assertTrue(breakdown.description.contains("30-day"))
         assertTrue(breakdown.decayNote.contains("30-day"))
+    }
+
+    @Test
+    fun `toughnessBreakdown brackets reflect rescaled values`() {
+        val breakdown = StatsCalculator.toughnessBreakdown(emptyList(), effectiveScore = 1)
+        assertTrue(breakdown.brackets.contains("8"))
+        assertTrue(breakdown.brackets.contains("20"))
+        assertTrue(breakdown.brackets.contains("45"))
+        assertTrue(breakdown.brackets.contains("80"))
     }
 }

@@ -37,8 +37,8 @@ class SorenessRepositoryTest {
     private fun buildEntity(
         id: String = "log-1",
         date: Long = todayEpoch(),
-        muscleGroups: String = "CHEST,BACK",
-        intensity: String = "MODERATE",
+        muscleGroups: String = "CHEST:MODERATE,BACK:SEVERE",
+        intensity: String = "SEVERE",
         notes: String? = "felt sore",
         xpAwarded: Int = 10,
         createdAt: Long = 1_700_000_000_000L,
@@ -74,8 +74,13 @@ class SorenessRepositoryTest {
 
         assertNotNull(result)
         assertEquals("log-1", result!!.id)
-        assertEquals(setOf(MuscleGroup.CHEST, MuscleGroup.BACK), result.muscleGroups)
-        assertEquals(SorenessIntensity.MODERATE, result.intensity)
+        assertEquals(
+            mapOf(
+                MuscleGroup.CHEST to SorenessIntensity.MODERATE,
+                MuscleGroup.BACK to SorenessIntensity.SEVERE,
+            ),
+            result.muscleIntensities,
+        )
         assertEquals("felt sore", result.notes)
         assertEquals(10, result.xpAwarded)
     }
@@ -102,7 +107,7 @@ class SorenessRepositoryTest {
 
         assertNotNull(result)
         assertEquals("log-1", result!!.id)
-        assertEquals(SorenessIntensity.MODERATE, result.intensity)
+        assertEquals(SorenessIntensity.SEVERE, result.maxIntensity)
     }
 
     @Test
@@ -123,8 +128,7 @@ class SorenessRepositoryTest {
         coEvery { mockDao.getByDate(any()) } returns null
 
         repository.logSoreness(
-            muscleGroups = setOf(MuscleGroup.QUADS),
-            intensity = SorenessIntensity.MILD,
+            muscleIntensities = mapOf(MuscleGroup.QUADS to SorenessIntensity.MILD),
             notes = null,
             xpAwarded = 5,
         )
@@ -140,8 +144,7 @@ class SorenessRepositoryTest {
         coEvery { mockDao.insert(capture(entitySlot)) } returns Unit
 
         repository.logSoreness(
-            muscleGroups = setOf(MuscleGroup.CORE),
-            intensity = SorenessIntensity.MODERATE,
+            muscleIntensities = mapOf(MuscleGroup.CORE to SorenessIntensity.MODERATE),
             notes = null,
             xpAwarded = 5,
         )
@@ -156,13 +159,33 @@ class SorenessRepositoryTest {
         coEvery { mockDao.insert(capture(entitySlot)) } returns Unit
 
         repository.logSoreness(
-            muscleGroups = setOf(MuscleGroup.GLUTES),
-            intensity = SorenessIntensity.SEVERE,
+            muscleIntensities = mapOf(MuscleGroup.GLUTES to SorenessIntensity.SEVERE),
             notes = null,
             xpAwarded = 5,
         )
 
         assertEquals(todayEpoch(), entitySlot.captured.date)
+    }
+
+    @Test
+    fun `logSoreness serializes per-muscle intensities in new format`() = runTest {
+        coEvery { mockDao.getByDate(any()) } returns null
+        val entitySlot = slot<SorenessLogEntity>()
+        coEvery { mockDao.insert(capture(entitySlot)) } returns Unit
+
+        repository.logSoreness(
+            muscleIntensities = mapOf(
+                MuscleGroup.CHEST to SorenessIntensity.MILD,
+                MuscleGroup.BACK to SorenessIntensity.SEVERE,
+            ),
+            notes = null,
+            xpAwarded = 5,
+        )
+
+        val pairs = entitySlot.captured.muscleGroups.split(",").toSet()
+        assertTrue(pairs.contains("CHEST:MILD"))
+        assertTrue(pairs.contains("BACK:SEVERE"))
+        assertEquals("SEVERE", entitySlot.captured.intensity)
     }
 
     // =========================================================================
@@ -175,8 +198,7 @@ class SorenessRepositoryTest {
         coEvery { mockDao.getByDate(any()) } returns existing
 
         repository.logSoreness(
-            muscleGroups = setOf(MuscleGroup.SHOULDERS),
-            intensity = SorenessIntensity.SEVERE,
+            muscleIntensities = mapOf(MuscleGroup.SHOULDERS to SorenessIntensity.SEVERE),
             notes = "updated",
             xpAwarded = 15,
         )
@@ -193,8 +215,7 @@ class SorenessRepositoryTest {
         coEvery { mockDao.update(capture(entitySlot)) } returns Unit
 
         repository.logSoreness(
-            muscleGroups = setOf(MuscleGroup.BICEPS),
-            intensity = SorenessIntensity.MILD,
+            muscleIntensities = mapOf(MuscleGroup.BICEPS to SorenessIntensity.MILD),
             notes = null,
             xpAwarded = 0,
         )
@@ -210,16 +231,18 @@ class SorenessRepositoryTest {
         coEvery { mockDao.update(capture(entitySlot)) } returns Unit
 
         repository.logSoreness(
-            muscleGroups = setOf(MuscleGroup.HAMSTRINGS, MuscleGroup.CALVES),
-            intensity = SorenessIntensity.SEVERE,
+            muscleIntensities = mapOf(
+                MuscleGroup.HAMSTRINGS to SorenessIntensity.SEVERE,
+                MuscleGroup.CALVES to SorenessIntensity.MODERATE,
+            ),
             notes = "leg day",
             xpAwarded = 20,
         )
 
         val captured = entitySlot.captured
         assertEquals("upd-id", captured.id)
-        assertTrue(captured.muscleGroups.contains("HAMSTRINGS"))
-        assertTrue(captured.muscleGroups.contains("CALVES"))
+        assertTrue(captured.muscleGroups.contains("HAMSTRINGS:SEVERE"))
+        assertTrue(captured.muscleGroups.contains("CALVES:MODERATE"))
         assertEquals("SEVERE", captured.intensity)
         assertEquals("leg day", captured.notes)
         assertEquals(20, captured.xpAwarded)

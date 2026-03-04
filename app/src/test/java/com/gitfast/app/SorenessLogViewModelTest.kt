@@ -10,7 +10,6 @@ import com.gitfast.app.data.repository.CharacterRepository
 import com.gitfast.app.data.repository.SorenessRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.ui.soreness.SorenessLogViewModel
-import com.gitfast.app.util.AchievementDef
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -60,37 +59,17 @@ class SorenessLogViewModelTest {
     }
 
     private fun createTestLog(
-        muscles: Set<MuscleGroup> = setOf(MuscleGroup.QUADS),
-        intensity: SorenessIntensity = SorenessIntensity.MODERATE,
+        muscleIntensities: Map<MuscleGroup, SorenessIntensity> = mapOf(
+            MuscleGroup.QUADS to SorenessIntensity.MODERATE,
+        ),
         notes: String? = "sore after run",
     ): SorenessLog {
         return SorenessLog(
             id = "log-1",
             date = LocalDate.now(),
-            muscleGroups = muscles,
-            intensity = intensity,
+            muscleIntensities = muscleIntensities,
             notes = notes,
             xpAwarded = 8,
-        )
-    }
-
-    private fun createTestWorkout(id: String): Workout {
-        return Workout(
-            id = id,
-            startTime = Instant.ofEpochMilli(1000),
-            endTime = Instant.ofEpochMilli(5000),
-            totalSteps = 0,
-            distanceMeters = 1609.34,
-            status = WorkoutStatus.COMPLETED,
-            activityType = ActivityType.RUN,
-            phases = emptyList(),
-            gpsPoints = emptyList(),
-            dogName = null,
-            notes = null,
-            weatherCondition = null,
-            weatherTemp = null,
-            energyLevel = null,
-            routeTag = null,
         )
     }
 
@@ -103,8 +82,7 @@ class SorenessLogViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals(log, state.todayLog)
-        assertEquals(log.muscleGroups, state.selectedMuscles)
-        assertEquals(log.intensity, state.selectedIntensity)
+        assertEquals(log.muscleIntensities, state.muscleIntensities)
         assertEquals("sore after run", state.notes)
     }
 
@@ -116,31 +94,71 @@ class SorenessLogViewModelTest {
 
         val state = viewModel.uiState.value
         assertNull(state.todayLog)
-        assertTrue(state.selectedMuscles.isEmpty())
-        assertNull(state.selectedIntensity)
+        assertTrue(state.muscleIntensities.isEmpty())
         assertEquals("", state.notes)
+        assertTrue(state.showingFront)
     }
 
     @Test
-    fun `toggleMuscle adds and removes muscles`() {
+    fun `cycleMuscleIntensity adds muscle as MILD when not selected`() {
         val viewModel = createViewModel()
 
-        viewModel.toggleMuscle(MuscleGroup.QUADS)
-        assertTrue(viewModel.uiState.value.selectedMuscles.contains(MuscleGroup.QUADS))
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS)
 
-        viewModel.toggleMuscle(MuscleGroup.QUADS)
-        assertFalse(viewModel.uiState.value.selectedMuscles.contains(MuscleGroup.QUADS))
+        assertEquals(
+            SorenessIntensity.MILD,
+            viewModel.uiState.value.muscleIntensities[MuscleGroup.QUADS],
+        )
     }
 
     @Test
-    fun `selectIntensity updates state`() {
+    fun `cycleMuscleIntensity cycles MILD to MODERATE`() {
         val viewModel = createViewModel()
 
-        viewModel.selectIntensity(SorenessIntensity.SEVERE)
-        assertEquals(SorenessIntensity.SEVERE, viewModel.uiState.value.selectedIntensity)
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → MILD
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → MODERATE
 
-        viewModel.selectIntensity(SorenessIntensity.MILD)
-        assertEquals(SorenessIntensity.MILD, viewModel.uiState.value.selectedIntensity)
+        assertEquals(
+            SorenessIntensity.MODERATE,
+            viewModel.uiState.value.muscleIntensities[MuscleGroup.QUADS],
+        )
+    }
+
+    @Test
+    fun `cycleMuscleIntensity cycles MODERATE to SEVERE`() {
+        val viewModel = createViewModel()
+
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → MILD
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → MODERATE
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → SEVERE
+
+        assertEquals(
+            SorenessIntensity.SEVERE,
+            viewModel.uiState.value.muscleIntensities[MuscleGroup.QUADS],
+        )
+    }
+
+    @Test
+    fun `cycleMuscleIntensity cycles SEVERE to deselected`() {
+        val viewModel = createViewModel()
+
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → MILD
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → MODERATE
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → SEVERE
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // → deselected
+
+        assertFalse(viewModel.uiState.value.muscleIntensities.containsKey(MuscleGroup.QUADS))
+    }
+
+    @Test
+    fun `toggleFrontBack toggles showingFront`() {
+        val viewModel = createViewModel()
+
+        assertTrue(viewModel.uiState.value.showingFront)
+        viewModel.toggleFrontBack()
+        assertFalse(viewModel.uiState.value.showingFront)
+        viewModel.toggleFrontBack()
+        assertTrue(viewModel.uiState.value.showingFront)
     }
 
     @Test
@@ -154,8 +172,10 @@ class SorenessLogViewModelTest {
     @Test
     fun `startEditing populates from todayLog`() = runTest {
         val log = createTestLog(
-            muscles = setOf(MuscleGroup.HAMSTRINGS, MuscleGroup.CALVES),
-            intensity = SorenessIntensity.SEVERE,
+            muscleIntensities = mapOf(
+                MuscleGroup.HAMSTRINGS to SorenessIntensity.SEVERE,
+                MuscleGroup.CALVES to SorenessIntensity.MODERATE,
+            ),
             notes = "post-run soreness",
         )
         coEvery { sorenessRepository.getTodayLog() } returns log
@@ -163,16 +183,14 @@ class SorenessLogViewModelTest {
         val viewModel = createViewModel()
 
         // Modify state away from log values first
-        viewModel.toggleMuscle(MuscleGroup.CHEST)
-        viewModel.selectIntensity(SorenessIntensity.MILD)
+        viewModel.cycleMuscleIntensity(MuscleGroup.CHEST)
         viewModel.updateNotes("different notes")
 
         viewModel.startEditing()
 
         val state = viewModel.uiState.value
         assertTrue(state.isEditing)
-        assertEquals(log.muscleGroups, state.selectedMuscles)
-        assertEquals(log.intensity, state.selectedIntensity)
+        assertEquals(log.muscleIntensities, state.muscleIntensities)
         assertEquals("post-run soreness", state.notes)
     }
 
@@ -199,13 +217,12 @@ class SorenessLogViewModelTest {
     }
 
     @Test
-    fun `saveSoreness computes XP and saves`() = runTest {
+    fun `saveSoreness computes XP and saves with new signature`() = runTest {
         val savedLog = createTestLog()
         every { workoutRepository.getCompletedWorkouts() } returns flowOf(emptyList())
         coEvery {
             sorenessRepository.logSoreness(
-                muscleGroups = any(),
-                intensity = any(),
+                muscleIntensities = any(),
                 notes = any(),
                 xpAwarded = any(),
             )
@@ -217,16 +234,15 @@ class SorenessLogViewModelTest {
         coEvery { characterRepository.awardXp(any(), any(), any(), any()) } returns 8
 
         val viewModel = createViewModel()
-        viewModel.toggleMuscle(MuscleGroup.QUADS)
-        viewModel.selectIntensity(SorenessIntensity.MODERATE)
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // MILD
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // MODERATE
         viewModel.updateNotes("test notes")
 
         viewModel.saveSoreness()
 
         coVerify {
             sorenessRepository.logSoreness(
-                muscleGroups = setOf(MuscleGroup.QUADS),
-                intensity = SorenessIntensity.MODERATE,
+                muscleIntensities = mapOf(MuscleGroup.QUADS to SorenessIntensity.MODERATE),
                 notes = "test notes",
                 xpAwarded = any(),
             )
@@ -240,25 +256,13 @@ class SorenessLogViewModelTest {
     }
 
     @Test
-    fun `saveSoreness skips when no intensity selected`() = runTest {
-        val viewModel = createViewModel()
-        viewModel.toggleMuscle(MuscleGroup.QUADS)
-        // Do not select intensity
-
-        viewModel.saveSoreness()
-
-        coVerify(exactly = 0) { sorenessRepository.logSoreness(any(), any(), any(), any()) }
-    }
-
-    @Test
     fun `saveSoreness skips when no muscles selected`() = runTest {
         val viewModel = createViewModel()
-        viewModel.selectIntensity(SorenessIntensity.MODERATE)
         // Do not select any muscles
 
         viewModel.saveSoreness()
 
-        coVerify(exactly = 0) { sorenessRepository.logSoreness(any(), any(), any(), any()) }
+        coVerify(exactly = 0) { sorenessRepository.logSoreness(any(), any(), any()) }
     }
 
     @Test
@@ -266,7 +270,7 @@ class SorenessLogViewModelTest {
         val savedLog = createTestLog()
         every { workoutRepository.getCompletedWorkouts() } returns flowOf(emptyList())
         coEvery {
-            sorenessRepository.logSoreness(any(), any(), any(), any())
+            sorenessRepository.logSoreness(any(), any(), any())
         } returns savedLog
         coEvery { sorenessRepository.getLast30DaysLogs() } returns listOf(savedLog)
         coEvery { sorenessRepository.getTotalCount() } returns 1
@@ -275,8 +279,8 @@ class SorenessLogViewModelTest {
 
         // New log (no todayLog set) — xpEarned should be non-null
         val viewModel = createViewModel()
-        viewModel.toggleMuscle(MuscleGroup.QUADS)
-        viewModel.selectIntensity(SorenessIntensity.MODERATE)
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS)
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // MODERATE
 
         viewModel.saveSoreness()
 
@@ -284,8 +288,7 @@ class SorenessLogViewModelTest {
         assertTrue("xpEarned should be set for new log, was $xpAfterNew", xpAfterNew != null && xpAfterNew > 0)
 
         // Now simulate editing an existing log (todayLog is set after first save)
-        // The state now has todayLog set from the first save
-        viewModel.selectIntensity(SorenessIntensity.SEVERE)
+        viewModel.cycleMuscleIntensity(MuscleGroup.BACK) // add another muscle
         viewModel.saveSoreness()
 
         val xpAfterUpdate = viewModel.uiState.value.xpEarned
@@ -297,26 +300,21 @@ class SorenessLogViewModelTest {
         val savedLog = createTestLog()
         every { workoutRepository.getCompletedWorkouts() } returns flowOf(emptyList())
         coEvery {
-            sorenessRepository.logSoreness(any(), any(), any(), any())
+            sorenessRepository.logSoreness(any(), any(), any())
         } returns savedLog
         coEvery { sorenessRepository.getLast30DaysLogs() } returns listOf(savedLog)
         coEvery { sorenessRepository.getTotalCount() } returns 5
         coEvery { characterRepository.getUnlockedAchievementIds(1) } returns emptySet()
         coEvery { characterRepository.getProfileLevel(1) } returns 1
-        // Return positive XP for any achievement unlock to simulate new achievements
         coEvery { characterRepository.unlockAchievement(profileId = 1, def = any()) } returns 50
 
         val viewModel = createViewModel()
-        viewModel.toggleMuscle(MuscleGroup.QUADS)
-        viewModel.selectIntensity(SorenessIntensity.MODERATE)
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS)
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // MODERATE
 
         viewModel.saveSoreness()
 
-        // If AchievementChecker returns any new achievements, their names should be in state.
-        // The exact achievements depend on AchievementChecker logic; we verify the mechanism works.
         val state = viewModel.uiState.value
-        // At minimum, verify the achievementNames list was populated if unlockAchievement returned > 0
-        // and achievements were found. If no achievements match, list is empty but no crash.
         assertFalse(state.isSaving)
     }
 
@@ -325,7 +323,7 @@ class SorenessLogViewModelTest {
         val savedLog = createTestLog()
         every { workoutRepository.getCompletedWorkouts() } returns flowOf(emptyList())
         coEvery {
-            sorenessRepository.logSoreness(any(), any(), any(), any())
+            sorenessRepository.logSoreness(any(), any(), any())
         } returns savedLog
         coEvery { sorenessRepository.getLast30DaysLogs() } returns listOf(savedLog)
         coEvery { sorenessRepository.getTotalCount() } returns 1
@@ -333,12 +331,11 @@ class SorenessLogViewModelTest {
         coEvery { characterRepository.getProfileLevel(1) } returns 1
 
         val viewModel = createViewModel()
-        viewModel.toggleMuscle(MuscleGroup.QUADS)
-        viewModel.selectIntensity(SorenessIntensity.MODERATE)
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS)
+        viewModel.cycleMuscleIntensity(MuscleGroup.QUADS) // MODERATE
 
         viewModel.saveSoreness()
 
-        // At this point xpEarned may be set (new log)
         viewModel.dismissXpToast()
 
         val state = viewModel.uiState.value

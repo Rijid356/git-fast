@@ -26,8 +26,8 @@ import javax.inject.Inject
 
 data class SorenessLogUiState(
     val todayLog: SorenessLog? = null,
-    val selectedMuscles: Set<MuscleGroup> = emptySet(),
-    val selectedIntensity: SorenessIntensity? = null,
+    val muscleIntensities: Map<MuscleGroup, SorenessIntensity> = emptyMap(),
+    val showingFront: Boolean = true,
     val notes: String = "",
     val isEditing: Boolean = false,
     val isSaving: Boolean = false,
@@ -58,23 +58,27 @@ class SorenessLogViewModel @Inject constructor(
             if (existing != null) {
                 _uiState.value = _uiState.value.copy(
                     todayLog = existing,
-                    selectedMuscles = existing.muscleGroups,
-                    selectedIntensity = existing.intensity,
+                    muscleIntensities = existing.muscleIntensities,
                     notes = existing.notes ?: "",
                 )
             }
         }
     }
 
-    fun toggleMuscle(muscle: MuscleGroup) {
-        val current = _uiState.value.selectedMuscles
-        _uiState.value = _uiState.value.copy(
-            selectedMuscles = if (muscle in current) current - muscle else current + muscle,
-        )
+    fun cycleMuscleIntensity(muscle: MuscleGroup) {
+        val current = _uiState.value.muscleIntensities
+        val currentIntensity = current[muscle]
+        val nextMap = when (currentIntensity) {
+            null -> current + (muscle to SorenessIntensity.MILD)
+            SorenessIntensity.MILD -> current + (muscle to SorenessIntensity.MODERATE)
+            SorenessIntensity.MODERATE -> current + (muscle to SorenessIntensity.SEVERE)
+            SorenessIntensity.SEVERE -> current - muscle
+        }
+        _uiState.value = _uiState.value.copy(muscleIntensities = nextMap)
     }
 
-    fun selectIntensity(intensity: SorenessIntensity) {
-        _uiState.value = _uiState.value.copy(selectedIntensity = intensity)
+    fun toggleFrontBack() {
+        _uiState.value = _uiState.value.copy(showingFront = !_uiState.value.showingFront)
     }
 
     fun updateNotes(notes: String) {
@@ -85,8 +89,7 @@ class SorenessLogViewModel @Inject constructor(
         val log = _uiState.value.todayLog ?: return
         _uiState.value = _uiState.value.copy(
             isEditing = true,
-            selectedMuscles = log.muscleGroups,
-            selectedIntensity = log.intensity,
+            muscleIntensities = log.muscleIntensities,
             notes = log.notes ?: "",
         )
     }
@@ -97,32 +100,32 @@ class SorenessLogViewModel @Inject constructor(
 
     fun saveSoreness() {
         val state = _uiState.value
-        val intensity = state.selectedIntensity ?: return
-        if (state.selectedMuscles.isEmpty()) return
+        if (state.muscleIntensities.isEmpty()) return
 
         _uiState.value = state.copy(isSaving = true)
 
         viewModelScope.launch {
             val workouts = workoutRepository.getCompletedWorkouts().first()
             val streakDays = StreakCalculator.getCurrentStreak(workouts)
-            val xpResult = XpCalculator.calculateSorenessXp(intensity, streakDays)
+            val xpResult = XpCalculator.calculateSorenessXp(state.muscleIntensities, streakDays)
 
             val dateKey = "soreness:${LocalDate.now()}"
             val isUpdate = state.todayLog != null
 
             val log = sorenessRepository.logSoreness(
-                muscleGroups = state.selectedMuscles,
-                intensity = intensity,
+                muscleIntensities = state.muscleIntensities,
                 notes = state.notes.ifBlank { null },
                 xpAwarded = xpResult.totalXp,
             )
 
             // Award XP (idempotent — won't double-award on edit)
+            val maxIntensity = state.muscleIntensities.values.maxByOrNull { it.ordinal }
+                ?: SorenessIntensity.MILD
             characterRepository.awardXp(
                 profileId = 1,
                 workoutId = dateKey,
                 xpAmount = xpResult.totalXp,
-                reason = "Soreness check-in; ${intensity.displayName}",
+                reason = "Soreness check-in; ${maxIntensity.displayName}",
             )
 
             // Update TGH stat
