@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.gitfast.app.analysis.DistanceTimeProfile
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEventType
@@ -75,6 +76,11 @@ data class WorkoutUiState(
     // Dog walk events
     val dogWalkEventCount: Int = 0,
     val dogWalkEventCounts: Map<DogWalkEventType, Int> = emptyMap(),
+    // Route ghost (dog walks)
+    val routeGhostDeltaSeconds: Int? = null,
+    val routeGhostDeltaFormatted: String? = null,
+    val routeGhostActive: Boolean = false,
+    val routeGhostExhausted: Boolean = false,
 )
 
 data class WorkoutSummaryStats(
@@ -127,10 +133,18 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val _ghostSources = MutableStateFlow<List<GhostSource>>(emptyList())
     val ghostSources: StateFlow<List<GhostSource>> = _ghostSources.asStateFlow()
 
+    // Route ghost (dog walks)
+    private val _routeTagsForGhost = MutableStateFlow<List<String>>(emptyList())
+    val routeTagsForGhost: StateFlow<List<String>> = _routeTagsForGhost.asStateFlow()
+
+    private val _selectedRouteTagForGhost = MutableStateFlow<String?>(null)
+    val selectedRouteTagForGhost: StateFlow<String?> = _selectedRouteTagForGhost.asStateFlow()
+
     fun setActivityType(type: ActivityType) {
         activityType = type
         _uiState.value = _uiState.value.copy(activityType = type)
         if (type == ActivityType.RUN) loadGhostSources()
+        if (type.isDogActivity) loadRouteTagsForGhost()
     }
 
     fun loadGhostSources() {
@@ -160,6 +174,33 @@ class ActiveWorkoutViewModel @Inject constructor(
         }
         val source = _ghostSources.value.find { it.workoutId == workoutId } ?: return
         stateManager?.setGhostLap(source.bestLapSeconds)
+    }
+
+    private fun loadRouteTagsForGhost() {
+        viewModelScope.launch {
+            val tags = workoutRepository.getAllRouteTagNames()
+            _routeTagsForGhost.value = tags
+        }
+    }
+
+    fun selectRouteTagForGhost(tag: String?) {
+        _selectedRouteTagForGhost.value = tag
+        if (tag == null) {
+            stateManager?.clearRouteGhost()
+            return
+        }
+        viewModelScope.launch {
+            val workouts = workoutRepository.getWorkoutsWithGpsForRouteTag(tag)
+            val profiles = workouts.mapNotNull { workout ->
+                if (workout.gpsPoints.size < 2) return@mapNotNull null
+                DistanceTimeProfile.fromGpsPoints(workout.gpsPoints, workout.startTime)
+            }
+            if (profiles.isNotEmpty()) {
+                stateManager?.setRouteGhostProfiles(profiles)
+            } else {
+                stateManager?.clearRouteGhost()
+            }
+        }
     }
 
     private var stateManager: WorkoutStateManager? = null
@@ -353,6 +394,13 @@ class ActiveWorkoutViewModel @Inject constructor(
                     longestSprintTimeFormatted = formatElapsedTime(state.longestSprintSeconds),
                     dogWalkEventCount = state.dogWalkEventCount,
                     dogWalkEventCounts = state.dogWalkEventCounts,
+                    routeGhostDeltaSeconds = state.routeGhostDeltaSeconds,
+                    routeGhostDeltaFormatted = state.routeGhostDeltaSeconds?.let { delta ->
+                        val prefix = if (delta >= 0) "+" else "-"
+                        "$prefix${formatElapsedTime(kotlin.math.abs(delta))}"
+                    },
+                    routeGhostActive = state.routeGhostActive,
+                    routeGhostExhausted = state.routeGhostExhausted,
                 )
             }
         }

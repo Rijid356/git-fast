@@ -1,5 +1,7 @@
 package com.gitfast.app.service
 
+import com.gitfast.app.analysis.DistanceTimeProfile
+import com.gitfast.app.analysis.RouteGhostCalculator
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.GpsPoint
@@ -73,6 +75,12 @@ class WorkoutStateManager @Inject constructor() {
     // Ghost runner
     private var externalGhostLapDuration: Int? = null
     private var useExternalGhost: Boolean = false
+
+    // Route ghost (for dog walks)
+    private var routeGhostProfiles: List<DistanceTimeProfile> = emptyList()
+    private var routeGhostActive: Boolean = false
+    private var lastRouteGhostDelta: Int? = null
+    private var routeGhostExhausted: Boolean = false
 
     // Sprint tracking (for dog activities)
     private var sprintActive: Boolean = false
@@ -164,6 +172,30 @@ class WorkoutStateManager @Inject constructor() {
         _workoutState.value = _workoutState.value.copy(
             ghostLapDurationSeconds = durationSeconds,
             ghostDeltaSeconds = null,
+        )
+    }
+
+    fun setRouteGhostProfiles(profiles: List<DistanceTimeProfile>) {
+        routeGhostProfiles = profiles
+        routeGhostActive = profiles.isNotEmpty()
+        lastRouteGhostDelta = null
+        routeGhostExhausted = false
+        _workoutState.value = _workoutState.value.copy(
+            routeGhostActive = routeGhostActive,
+            routeGhostDeltaSeconds = null,
+            routeGhostExhausted = false,
+        )
+    }
+
+    fun clearRouteGhost() {
+        routeGhostProfiles = emptyList()
+        routeGhostActive = false
+        lastRouteGhostDelta = null
+        routeGhostExhausted = false
+        _workoutState.value = _workoutState.value.copy(
+            routeGhostActive = false,
+            routeGhostDeltaSeconds = null,
+            routeGhostExhausted = false,
         )
     }
 
@@ -597,6 +629,10 @@ class WorkoutStateManager @Inject constructor() {
         completedPhases.clear()
         externalGhostLapDuration = null
         useExternalGhost = false
+        routeGhostProfiles = emptyList()
+        routeGhostActive = false
+        lastRouteGhostDelta = null
+        routeGhostExhausted = false
         stepCountAtStart = 0
         currentStepCount = 0
         lapStartStepCount = 0
@@ -725,6 +761,16 @@ class WorkoutStateManager @Inject constructor() {
             currentMax
         }
 
+        // Route ghost delta (dog walks)
+        val routeGhostUpdate = if (routeGhostActive) {
+            val result = RouteGhostCalculator.calculateDelta(
+                distanceMeters, elapsedSeconds, routeGhostProfiles,
+            )
+            if (result.deltaSeconds != null) lastRouteGhostDelta = result.deltaSeconds
+            routeGhostExhausted = result.isExhausted
+            result
+        } else null
+
         _workoutState.value = _workoutState.value.copy(
             distanceMeters = distanceMeters,
             currentPaceSecondsPerMile = PaceCalculator.currentPace(_gpsPointsList),
@@ -733,6 +779,8 @@ class WorkoutStateManager @Inject constructor() {
             ),
             currentSpeedMph = smoothedSpeedMph,
             maxSpeedMph = newMax,
+            routeGhostDeltaSeconds = routeGhostUpdate?.deltaSeconds ?: lastRouteGhostDelta,
+            routeGhostExhausted = routeGhostExhausted,
         )
 
         // Auto-start laps: trigger startLaps() when near any saved start point during WARMUP
@@ -805,11 +853,24 @@ class WorkoutStateManager @Inject constructor() {
             ((now.toEpochMilli() - sprintStartTime!!.toEpochMilli()) / 1000).toInt()
         } else 0
 
+        // Route ghost delta (recompute with latest elapsed time between GPS ticks)
+        val currentSeconds = (activeElapsed / 1000).toInt()
+        val routeGhostDelta = if (routeGhostActive && !routeGhostExhausted) {
+            val result = RouteGhostCalculator.calculateDelta(
+                _workoutState.value.distanceMeters, currentSeconds, routeGhostProfiles,
+            )
+            if (result.deltaSeconds != null) lastRouteGhostDelta = result.deltaSeconds
+            routeGhostExhausted = result.isExhausted
+            result.deltaSeconds ?: lastRouteGhostDelta
+        } else lastRouteGhostDelta
+
         _workoutState.value = _workoutState.value.copy(
-            elapsedSeconds = (activeElapsed / 1000).toInt(),
+            elapsedSeconds = currentSeconds,
             currentLapElapsedSeconds = lapElapsed,
             ghostDeltaSeconds = ghostDelta,
             currentSprintElapsedSeconds = sprintElapsed,
+            routeGhostDeltaSeconds = routeGhostDelta,
+            routeGhostExhausted = routeGhostExhausted,
         )
     }
 }
@@ -846,6 +907,10 @@ data class WorkoutTrackingState(
     // Dog walk events
     val dogWalkEventCount: Int = 0,
     val dogWalkEventCounts: Map<DogWalkEventType, Int> = emptyMap(),
+    // Route ghost (dog walks)
+    val routeGhostDeltaSeconds: Int? = null,
+    val routeGhostActive: Boolean = false,
+    val routeGhostExhausted: Boolean = false,
 )
 
 data class WorkoutSnapshot(

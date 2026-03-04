@@ -46,7 +46,9 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 
 | File | Purpose |
 |------|---------|
+| `DistanceTimeProfile.kt` | Cumulative distance-time profile from GPS points with binary search interpolation |
 | `RouteComparisonAnalyzer.kt` | Compares current dog walk to previous same-route walks with delta formatting |
+| `RouteGhostCalculator.kt` | Calculates route ghost delta by comparing current walk against historical profiles |
 
 ## util/
 
@@ -234,6 +236,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 |------|---------|
 | `ActiveWorkoutScreen.kt` | Root workout screen: service binding, permissions, back handler, navigate-away |
 | `ActiveWorkoutViewModel.kt` | Orchestrates workout state, UI formatting, ghost selection, service binding |
+| `RouteGhostRow.kt` | VS AVG row showing route ghost delta with color coding for dog walks |
 | `WorkoutContent.kt` | Phase-specific layout (warmup/laps/cooldown) with stats and controls |
 | `WorkoutControls.kt` | Activity-specific button layouts (start/pause/resume/stop/lap) |
 | `StatGrid.kt` | 2×2 grid: time, distance, pace, steps for active workout |
@@ -360,7 +363,7 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | Directory | Files | Coverage |
 |-----------|-------|----------|
 | _(root)_ | 36 | ViewModels, domain logic, entity/mapper tests, UI state mapping |
-| `analysis/` | 1 | RouteComparisonAnalyzer logic |
+| `analysis/` | 3 | RouteComparisonAnalyzer, DistanceTimeProfile, RouteGhostCalculator tests |
 | `data/healthconnect/` | 1 | HealthConnectManager mocked reads |
 | `data/model/` | 3 | DailyActivityMetrics, dog walk domain model, DogWalkEventType |
 | `data/local/mappers/` | 1 | DogWalkEventMappers round-trip and field mapping |

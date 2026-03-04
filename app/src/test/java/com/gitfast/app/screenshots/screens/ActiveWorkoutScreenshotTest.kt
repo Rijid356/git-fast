@@ -118,6 +118,48 @@ class ActiveWorkoutScreenshotTest : FullScreenScreenshotTestBase() {
     }
 
     @Test
+    fun `Screen Workout DogWalk RouteGhost`() {
+        captureScreenshot("Screen_Workout_DogWalk_RouteGhost", category = "workout") {
+            WorkoutContent(
+                uiState = WorkoutUiState(
+                    isActive = true,
+                    isPaused = false,
+                    activityType = ActivityType.DOG_WALK,
+                    phase = PhaseType.WARMUP,
+                    phaseLabel = "WALKING",
+                    elapsedTimeFormatted = "15:42",
+                    distanceFormatted = "0.78 mi",
+                    currentPaceFormatted = "20:10 /mi",
+                    averagePaceFormatted = "20:10 /mi",
+                    currentSpeedFormatted = "3.0 MPH",
+                    stepCount = 1890,
+                    routeGhostActive = true,
+                    routeGhostDeltaSeconds = -15,
+                    routeGhostDeltaFormatted = "-00:15",
+                ),
+                onStart = {},
+                onPause = {},
+                onResume = {},
+                onStop = {},
+                onDiscard = {},
+                onStartLaps = {},
+                onMarkLap = {},
+                onEndLaps = {},
+                dogWalkEventCounts = mapOf(
+                    DogWalkEventType.DEEP_SNIFF to 3,
+                    DogWalkEventType.PEE to 2,
+                    DogWalkEventType.POOP to 1,
+                    DogWalkEventType.SNACK_FOUND to 1,
+                    DogWalkEventType.WATER_BREAK to 1,
+                    DogWalkEventType.BARK_REACT to 2,
+                ),
+                onLogEvent = {},
+                onUndoEvent = {},
+            )
+        }
+    }
+
+    @Test
     fun `Screen Workout DogRun`() {
         captureScreenshot("Screen_Workout_DogRun", category = "workout") {
             WorkoutContent(

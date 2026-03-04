@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +50,9 @@ fun WorkoutContent(
     dogWalkEventCounts: Map<DogWalkEventType, Int> = emptyMap(),
     onLogEvent: (DogWalkEventType) -> Unit = {},
     onUndoEvent: (DogWalkEventType) -> Unit = {},
+    routeTagsForGhost: List<String> = emptyList(),
+    selectedRouteTagForGhost: String? = null,
+    onSelectRouteTagForGhost: (String?) -> Unit = {},
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         if (uiState.isActive) {
@@ -162,6 +169,23 @@ fun WorkoutContent(
                             SprintStatRow(
                                 sprintCount = uiState.sprintCount,
                                 totalSprintTimeFormatted = uiState.totalSprintTimeFormatted,
+                            )
+                        }
+                        if (uiState.routeGhostActive) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            RouteGhostRow(
+                                deltaSeconds = uiState.routeGhostDeltaSeconds,
+                                deltaFormatted = uiState.routeGhostDeltaFormatted,
+                                isExhausted = uiState.routeGhostExhausted,
+                            )
+                        }
+                        // Pre-walk route tag selector for ghost comparison
+                        if (!uiState.isActive && routeTagsForGhost.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            RouteGhostTagSelector(
+                                tags = routeTagsForGhost,
+                                selectedTag = selectedRouteTagForGhost,
+                                onSelectTag = onSelectRouteTagForGhost,
                             )
                         }
                     }
@@ -287,6 +311,42 @@ private fun GhostSelector(
                         onSelectGhost(source.workoutId)
                         expanded = false
                     },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RouteGhostTagSelector(
+    tags: List<String>,
+    selectedTag: String?,
+    onSelectTag: (String?) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Ghost Route",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            tags.forEach { tag ->
+                FilterChip(
+                    selected = selectedTag == tag,
+                    onClick = {
+                        onSelectTag(if (selectedTag == tag) null else tag)
+                    },
+                    label = { Text(tag) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        selectedLabelColor = MaterialTheme.colorScheme.primary,
+                    ),
                 )
             }
         }
