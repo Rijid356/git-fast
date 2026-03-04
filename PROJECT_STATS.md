@@ -3,7 +3,7 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-03-03
+- **Last Active:** 2026-03-04
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
 - **Test Coverage:** 68.1% line / 51.5% branch
@@ -87,10 +87,11 @@
 | 2026-03-03 | Display FOR and STR stats on Character Sheet: foragingBreakdown(), ForestGreen/GoldAccent colors, ForagingUiState/StrengthUiState in ViewModel, stat bars with tab visibility, updated tests and screenshots; merged PR #162 | 8 | 1 | +141/-5 |
 | 2026-03-03 | In-app screenshot capture: PixelCopy floating overlay button, MediaStore gallery save, Room screenshots table (DB v14), ScreenCaptureManager singleton, Settings Developer toggle, workout correlation, 9 new tests; merged PR #163 | 18 | 1 | +474/-25 |
 | 2026-03-03 | Screenshot directory restructure: merge historical/ + comparisons/ into history/ (29 entries), add current/ with 24 Roborazzi goldens, unified README with history log; PR #164 | 63 | 1 | +106/-47 |
+| 2026-03-04 | Field test session: fix route ghost VS AVG bug (#170, PR #173), pixelated camera icon (#171, PR #174), sync screenshots to Firebase Storage with 7-day cleanup (#172, PR #176) | 5 | 1 | +161/-1 |
 
 ## Totals
-- **Total Sessions:** 75
-- **Total Commits:** 123
-- **Total Files Changed:** 1091
-- **Total Lines Added:** 45884
-- **Total Lines Removed:** 3879
+- **Total Sessions:** 76
+- **Total Commits:** 124
+- **Total Files Changed:** 1096
+- **Total Lines Added:** 46045
+- **Total Lines Removed:** 3880

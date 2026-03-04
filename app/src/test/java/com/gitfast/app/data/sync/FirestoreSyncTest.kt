@@ -1,13 +1,16 @@
 package com.gitfast.app.data.sync
 
+import android.content.Context
 import com.gitfast.app.data.local.CharacterDao
 import com.gitfast.app.data.local.LapStartPointDao
+import com.gitfast.app.data.local.ScreenshotDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.CharacterProfileEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
+import com.gitfast.app.data.local.entity.ScreenshotEntity
 import com.gitfast.app.data.local.entity.UnlockedAchievementEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
@@ -24,6 +27,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.storage.FirebaseStorage
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -35,13 +39,16 @@ import org.junit.Test
 
 class FirestoreSyncTest {
 
+    private lateinit var context: Context
     private lateinit var firestore: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
+    private lateinit var storage: FirebaseStorage
     private lateinit var workoutDao: WorkoutDao
     private lateinit var characterDao: CharacterDao
     private lateinit var settingsStore: SettingsStore
     private lateinit var syncStatusStore: SyncStatusStore
     private lateinit var lapStartPointDao: LapStartPointDao
+    private lateinit var screenshotDao: ScreenshotDao
     private lateinit var sync: FirestoreSync
 
     private lateinit var user: FirebaseUser
@@ -50,13 +57,16 @@ class FirestoreSyncTest {
 
     @Before
     fun setUp() {
+        context = mockk(relaxed = true)
         firestore = mockk(relaxed = true)
         auth = mockk(relaxed = true)
+        storage = mockk(relaxed = true)
         workoutDao = mockk(relaxed = true)
         characterDao = mockk(relaxed = true)
         settingsStore = mockk(relaxed = true)
         syncStatusStore = mockk(relaxed = true)
         lapStartPointDao = mockk(relaxed = true)
+        screenshotDao = mockk(relaxed = true)
 
         user = mockk(relaxed = true)
         usersCollection = mockk(relaxed = true)
@@ -67,7 +77,7 @@ class FirestoreSyncTest {
         every { firestore.collection("users") } returns usersCollection
         every { usersCollection.document("test-uid") } returns userDoc
 
-        sync = FirestoreSync(firestore, auth, workoutDao, characterDao, settingsStore, syncStatusStore, lapStartPointDao)
+        sync = FirestoreSync(context, firestore, auth, storage, workoutDao, characterDao, settingsStore, syncStatusStore, lapStartPointDao, screenshotDao)
     }
 
     // --- Helpers to build completed Firebase Tasks ---
@@ -712,5 +722,45 @@ class FirestoreSyncTest {
 
         verify { syncStatusStore.setSyncing() }
         verify { syncStatusStore.setError("DB error") }
+    }
+
+    // ===== pushScreenshot =====
+
+    @Test
+    fun `pushScreenshot returns early when not authenticated`() = runTest {
+        every { auth.currentUser } returns null
+
+        val screenshot = ScreenshotEntity(
+            id = 1, timestamp = 1000L, filename = "test.png",
+            galleryUri = "content://media/test.png"
+        )
+
+        sync.pushScreenshot(screenshot)
+
+        verify(exactly = 0) { storage.reference }
+    }
+
+    @Test
+    fun `pushScreenshot catches exception without crashing`() = runTest {
+        val screenshot = ScreenshotEntity(
+            id = 1, timestamp = 1000L, filename = "test.png",
+            galleryUri = "content://media/test.png"
+        )
+
+        every { context.contentResolver } throws RuntimeException("Content resolver error")
+
+        sync.pushScreenshot(screenshot)
+    }
+
+    // ===== pushAllScreenshots =====
+
+    @Test
+    fun `pushAllScreenshots queries recent screenshots`() = runTest {
+        every { auth.currentUser } returns null
+        coEvery { screenshotDao.getRecent(50) } returns emptyList()
+
+        sync.pushAllScreenshots()
+
+        coVerify { screenshotDao.getRecent(50) }
     }
 }
