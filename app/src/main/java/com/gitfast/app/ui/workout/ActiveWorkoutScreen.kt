@@ -35,7 +35,7 @@ import com.gitfast.app.ui.components.KeepScreenOn
 @Composable
 fun ActiveWorkoutScreen(
     activityType: ActivityType = ActivityType.RUN,
-    onWorkoutComplete: (stats: WorkoutSummaryStats, workoutId: String?) -> Unit,
+    onWorkoutComplete: (stats: WorkoutSummaryStats, workoutId: String?, routeTag: String?) -> Unit,
     onWorkoutDiscarded: () -> Unit,
     onNavigateHome: () -> Unit,
     viewModel: ActiveWorkoutViewModel = hiltViewModel(),
@@ -43,6 +43,8 @@ fun ActiveWorkoutScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionState by viewModel.permissionState.collectAsStateWithLifecycle()
     val ghostSources by viewModel.ghostSources.collectAsStateWithLifecycle()
+    val routeTagsForGhost by viewModel.routeTagsForGhost.collectAsStateWithLifecycle()
+    val selectedRouteTagForGhost by viewModel.selectedRouteTagForGhost.collectAsStateWithLifecycle()
 
     var showBackConfirmation by remember { mutableStateOf(false) }
 
@@ -62,7 +64,7 @@ fun ActiveWorkoutScreen(
     // Detect workout completion
     LaunchedEffect(uiState.isWorkoutComplete) {
         if (uiState.isWorkoutComplete) {
-            onWorkoutComplete(viewModel.lastSummaryStats, viewModel.lastWorkoutId)
+            onWorkoutComplete(viewModel.lastSummaryStats, viewModel.lastWorkoutId, selectedRouteTagForGhost)
         }
     }
 
@@ -108,6 +110,9 @@ fun ActiveWorkoutScreen(
                 dogWalkEventCounts = uiState.dogWalkEventCounts,
                 onLogEvent = { viewModel.logEvent(it) },
                 onUndoEvent = { viewModel.undoEvent(it) },
+                routeTagsForGhost = routeTagsForGhost,
+                selectedRouteTagForGhost = selectedRouteTagForGhost,
+                onSelectRouteTagForGhost = { viewModel.selectRouteTagForGhost(it) },
             )
         }
     }

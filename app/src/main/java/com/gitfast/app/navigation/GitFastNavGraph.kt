@@ -45,8 +45,13 @@ sealed class Screen(val route: String) {
     data object BodyComp : Screen("body_comp")
     data object SorenessLog : Screen("soreness_log")
     data object CharacterSheet : Screen("character_sheet")
-    data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}") {
-        fun createRoute(workoutId: String): String = "dog_walk_summary/$workoutId"
+    data object DogWalkSummary : Screen("dog_walk_summary/{workoutId}?routeTag={routeTag}") {
+        fun createRoute(workoutId: String, routeTag: String? = null): String {
+            val base = "dog_walk_summary/$workoutId"
+            return if (routeTag != null) {
+                "$base?routeTag=${URLEncoder.encode(routeTag, "UTF-8")}"
+            } else base
+        }
     }
     data object WorkoutSummary : Screen("workout_summary/{time}/{distance}/{pace}/{steps}?lapCount={lapCount}&bestLapTime={bestLapTime}&bestLapNumber={bestLapNumber}&trendLabel={trendLabel}&workoutId={workoutId}&xpEarned={xpEarned}&achievements={achievements}&streakDays={streakDays}") {
         fun createRoute(
@@ -218,9 +223,9 @@ fun GitFastNavGraph(navController: NavHostController, modifier: Modifier = Modif
                         inclusive = false,
                     )
                 },
-                onWorkoutComplete = { stats, workoutId ->
+                onWorkoutComplete = { stats, workoutId, routeTag ->
                     if (activityType.isDogActivity && workoutId != null) {
-                        navController.navigate(Screen.DogWalkSummary.createRoute(workoutId)) {
+                        navController.navigate(Screen.DogWalkSummary.createRoute(workoutId, routeTag)) {
                             popUpTo(Screen.Home.route) { inclusive = false }
                         }
                     } else {
@@ -319,6 +324,7 @@ fun GitFastNavGraph(navController: NavHostController, modifier: Modifier = Modif
             route = Screen.DogWalkSummary.route,
             arguments = listOf(
                 navArgument("workoutId") { type = NavType.StringType },
+                navArgument("routeTag") { type = NavType.StringType; defaultValue = "" },
             ),
         ) {
             DogWalkSummaryScreen(

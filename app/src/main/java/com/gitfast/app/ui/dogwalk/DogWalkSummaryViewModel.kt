@@ -60,6 +60,7 @@ class DogWalkSummaryViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
 
     val workoutId: String = checkNotNull(savedStateHandle["workoutId"])
+    private val preSelectedRouteTag: String? = savedStateHandle.get<String>("routeTag")?.ifEmpty { null }
 
     private val _uiState = MutableStateFlow(DogWalkSummaryUiState())
     val uiState: StateFlow<DogWalkSummaryUiState> = _uiState.asStateFlow()
@@ -73,7 +74,10 @@ class DogWalkSummaryViewModel @Inject constructor(
         viewModelScope.launch {
             val dbTags = workoutRepository.getAllRouteTags().map { it.name }
             val merged = DEFAULT_ROUTE_TAGS + dbTags.filter { it !in DEFAULT_ROUTE_TAGS }
-            _uiState.value = _uiState.value.copy(routeTags = merged)
+            _uiState.value = _uiState.value.copy(
+                routeTags = merged,
+                selectedRouteTag = preSelectedRouteTag,
+            )
         }
 
         // Load workout stats from DB
