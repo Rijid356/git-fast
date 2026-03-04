@@ -408,6 +408,7 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | `raw/map_style_dark.json` | Google Maps dark theme styling |
 | `font/press_start_2p_regular.ttf` | Primary pixel art font |
 | `font/jetbrains_mono_*.ttf` | Monospace fallback fonts |
+| `drawable/ic_camera_pixel.xml` | Pixel-art camera icon for screenshot overlay |
 | `drawable/ic_notification.xml` | Workout notification icon |
 | `drawable/ic_pause.xml`, `ic_play.xml`, `ic_stop.xml` | Notification action icons |
 | `values/strings.xml` | UI strings |
