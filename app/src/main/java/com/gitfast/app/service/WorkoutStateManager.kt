@@ -268,7 +268,8 @@ class WorkoutStateManager @Inject constructor() {
             currentLapNumber = 0,
             currentLapElapsedSeconds = 0,
             lastLapDeltaSeconds = null,
-            lastLapDurationFormatted = null
+            lastLapDurationFormatted = null,
+            routeGhostActive = routeGhostActive,
         )
         return id
     }

@@ -1,5 +1,28 @@
 # Field Notes
 
+## 2026-03-04 — Dog Walk (Park route)
+
+**Workout ID:** _(not pulled — Firebase CLI lacks Firestore read commands)_
+**Conditions:** Park route with route ghost enabled
+
+### Observations
+- Route ghost was selected before starting the walk (park route tag)
+- "VS AVG" time difference row never appeared during the walk
+- User took an in-app screenshot during the walk but it's only saved to device gallery, not synced to Firebase
+
+### Bugs / Issues
+- [ ] **Route ghost "VS AVG" row never shows during dog walk** — Root cause found: `WorkoutStateManager.startWorkout()` (line 257) creates a brand new `WorkoutTrackingState` that doesn't include `routeGhostActive`, so it resets to `false`. The backing field stays `true` (so delta calculations still run), but the state flow field stays `false`, and `WorkoutContent.kt:174` checks `uiState.routeGhostActive` to decide whether to render `RouteGhostRow`. Fix: add `routeGhostActive = routeGhostActive` to the `WorkoutTrackingState` constructor in `startWorkout()`.
+
+### Feature Ideas
+- [ ] **Pixelated camera icon for screenshot overlay** — Current icon is a camera emoji (📷). Replace with a pixel-art camera drawable to match the Press Start 2P pixel aesthetic.
+- [ ] **Sync screenshots to Firebase** — In-app screenshots currently save to device gallery (MediaStore) and Room DB only. Need to upload to Firebase Storage/R2 and store download URL in Firestore so screenshots can be accessed remotely (e.g., for field test sessions).
+
+### Data Notes
+- Firebase CLI doesn't support `firestore:get` — need alternative approach for field test data pulls
+- Route ghost profiles were loaded (backing field confirmed active), delta calculation was running, but UI was hidden
+
+---
+
 ## 2026-03-02 — Dog Walk (field observation)
 
 **Workout ID:** _(not pulled — Firebase token refresh issue)_

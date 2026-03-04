@@ -82,6 +82,17 @@ class RouteGhostStateTest {
     }
 
     @Test
+    fun `route ghost stays active after startWorkout when profiles were set`() {
+        stateManager.setRouteGhostProfiles(listOf(linearProfile(1000.0, 600)))
+        assertTrue(stateManager.workoutState.value.routeGhostActive)
+
+        stateManager.startWorkout(ActivityType.DOG_WALK)
+
+        val state = stateManager.workoutState.value
+        assertTrue("routeGhostActive should survive startWorkout", state.routeGhostActive)
+    }
+
+    @Test
     fun `route ghost delta computed on GPS update`() {
         stateManager.startWorkout(ActivityType.DOG_WALK)
         stateManager.setRouteGhostProfiles(listOf(linearProfile(1000.0, 600)))
