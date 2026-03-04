@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -20,13 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.gitfast.app.R
 import kotlin.math.roundToInt
 
 @Composable
@@ -71,10 +72,11 @@ fun BoxScope.ScreenshotOverlay(
             },
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = "\uD83D\uDCF7",
-            fontSize = 18.sp,
-            textAlign = TextAlign.Center,
+        Icon(
+            painter = painterResource(R.drawable.ic_camera_pixel),
+            contentDescription = "Screenshot",
+            tint = Color.Black,
+            modifier = Modifier.size(20.dp),
         )
     }
 }
