@@ -117,7 +117,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 
 | File | Purpose |
 |------|---------|
-| `GitFastDatabase.kt` | Room database v14: 15 entity tables, DAOs, migration chain, schema export |
+| `GitFastDatabase.kt` | Room database v15: 15 entity tables, DAOs, migration chain, schema export |
 | `ExerciseDao.kt` | DAO for exercise sessions/sets: insert, query by date, counts, @Transaction save |
 | `SorenessDao.kt` | DAO for soreness logs: insert, update, observe by date, count queries |
 | `WorkoutDao.kt` | DAO for workouts, phases, laps, GPS points, route tags; `@Transaction` upsert |
@@ -176,6 +176,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 | `Migration_11_12.kt` | v11→v12: Add narrativeDescription column to workouts table |
 | `Migration_12_13.kt` | v12→v13: Create lap_start_points table for multi-park auto-start |
 | `Migration_13_14.kt` | v13→v14: Create screenshots table for in-app capture tracking |
+| `Migration_14_15.kt` | v14→v15: Transform soreness_logs to per-muscle intensity format (CHEST:MODERATE) |
 
 ## data/repository/
 

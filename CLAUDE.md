@@ -93,12 +93,13 @@ Enums (`WorkoutStatus`, `PhaseType`, `ActivityType`, etc.) are shared by both la
 ### DI Structure (Hilt)
 
 - `DatabaseModule` — Room database, DAOs, repositories, WorkoutSaveManager, WorkoutStateStore (all `@Singleton`)
-- `ServiceModule` — GpsTracker, WorkoutStateManager, PermissionManager, AutoPauseDetector, SettingsStore (all `@Singleton`)
+- `ServiceModule` — GpsTracker, StepTracker, WorkoutStateManager, PermissionManager, AutoPauseDetector, AutoSprintDetector, SettingsStore (all `@Singleton`)
+- `FirebaseModule` — Firebase Auth, Firestore (persistence disabled), Storage (all `@Singleton`)
 - `AppModule` — currently empty
 
 ### Database Schema
 
-Current version and entities are in `GitFastDatabase.kt`. Tables: `workouts` → `workout_phases` → `laps`, `workouts` → `gps_points`, `route_tags`, `character_profiles`, `xp_transactions`, `unlocked_achievements`, `body_comp_entries`, `dog_walk_events`, `lap_start_points`, `screenshots`. Cascade deletes on workout relationships. `exportSchema = true` (schemas in `app/schemas/`).
+Room database v15 with 15 entity tables. Tables: `workouts` → `workout_phases` → `laps`, `workouts` → `gps_points`, `route_tags`, `character_profiles`, `xp_transactions`, `unlocked_achievements`, `body_comp_entries`, `dog_walk_events`, `soreness_logs`, `exercise_sessions` → `exercise_sets`, `lap_start_points`, `screenshots`. Cascade deletes on workout relationships. `exportSchema = true` (schemas in `app/schemas/`).
 
 Migrations live in `data/local/migrations/`. `WorkoutDao.saveWorkoutTransaction()` is a `@Transaction` DAO method with upsert semantics (update if exists, insert if not).
 
@@ -123,6 +124,18 @@ Dual character profiles: id=1 (user/Ryan) and id=2 (Juniper, the dog). Both earn
 - `AchievementDef` enum has a `profileId` field — most default to 1, Juniper-specific ones are profileId=2.
 - Streak multiplier: Day 1 = 1.0x, +0.1x/day, capped at 1.5x (Day 5+). Streak counts today OR yesterday (1-day grace).
 
+### Soreness Tracking
+
+`SorenessLogScreen` with anatomical body map for per-muscle intensity check-ins. 11 muscle groups (`MuscleGroup` enum) with 3 intensity levels (`SorenessIntensity`: Mild/Moderate/Severe). Logs stored in `soreness_logs` table via `SorenessRepository`. Awards XP on check-in; feeds TGH (toughness) stat on character profile.
+
+### Exercise System
+
+`ExerciseCatalog` contains ~80 exercises across 3 equipment types (bodyweight, pull-up bar, dumbbell) and 6 categories (Push, Pull, Legs, Core, Full Body, Cardio). Sessions tracked as `exercise_sessions` → `exercise_sets` in Room. `ExerciseRepository` handles CRUD; 30-day volume feeds STR stat calculation.
+
+### Auto-Sprint Detection
+
+`AutoSprintDetector` analyzes GPS speed to detect sprints: start threshold 2.5 m/s (3s sustained), end threshold 2.0 m/s (5s sustained), 2-minute max cap. Null-speed timeout at 10 seconds.
+
 ### Ghost Runner
 
 In-memory only (fields on `WorkoutStateManager`). Auto-ghost = best lap so far; external ghost = selected from previous workout. Ghost delta positive = behind, negative = ahead. All state wiped after workout stop.
@@ -145,7 +158,7 @@ Google Maps with dark style JSON (`res/raw/map_style_dark.json`). `MAPS_API_KEY`
 
 ### Firebase & Auth
 
-Firebase with firebase-auth, firebase-firestore, and firebase-crashlytics. Google Sign-In via Credential Manager and `googleid`. Auth wrappers in `com.gitfast.app.auth` package. CI requires `GOOGLE_SERVICES_JSON` secret (base64-encoded `google-services.json`).
+Firebase with firebase-auth, firebase-firestore, firebase-crashlytics, and firebase-storage. Google Sign-In via Credential Manager and `googleid`. Auth wrappers in `com.gitfast.app.auth` package. CI requires `GOOGLE_SERVICES_JSON` secret (base64-encoded `google-services.json`).
 
 ### Permissions & Services
 
