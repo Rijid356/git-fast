@@ -430,3 +430,4 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 |------|---------|
 | `platformio.ini` | ESP32-S3 config (espressif32@6.10.0, Arduino framework) |
 | `src/main.cpp` | Splash-screen stub (AXP2101 PMU + ST7789 display init) |
+
