@@ -92,10 +92,12 @@
 | 2026-03-05 | Increase test coverage 68.7%→76.4% line, 51.2%→54.9% branch: 35 new tests — ActiveWorkoutBanner (5), ActivityRings (5), PermissionRequestContent (3), RouteOverlay (4), DetailScreen (5), ActiveWorkoutViewModel (13); 26 new golden screenshots; PR #183 | 38 | 2 | +620/-3 |
 
 | 2026-03-05 | Auto-detect ghost route (#184): RouteAutoDetector with 3-phase GPS trajectory matching, remove manual RouteGhostTagSelector, auto-tag route at save, bearing utility, 17 new tests, field notes from today's walk | 15 | 1 | +420/-75 |
+| 2026-03-05 | Agent factory specialists: create 4 domain agents (room, gps, rpg, compose-ui) with project-specific context, patterns, and quality checklists; track .claude/agents/ in git | 5 | 1 | +672/-1 |
+| 2026-03-05 | Generate-agents: add testing-specialist and firebase-specialist agents via /generate-agents skill | 2 | 1 | +398/-0 |
 
 ## Totals
-- **Total Sessions:** 79
-- **Total Commits:** 128
-- **Total Files Changed:** 1151
-- **Total Lines Added:** 47103
-- **Total Lines Removed:** 3962
+- **Total Sessions:** 81
+- **Total Commits:** 130
+- **Total Files Changed:** 1158
+- **Total Lines Added:** 48173
+- **Total Lines Removed:** 3963
