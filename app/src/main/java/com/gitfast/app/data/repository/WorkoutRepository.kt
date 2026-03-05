@@ -10,6 +10,7 @@ import com.gitfast.app.data.local.mappers.toDomain
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEvent
 import com.gitfast.app.data.model.Workout
+import com.gitfast.app.analysis.RouteAutoDetector
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -167,6 +168,18 @@ class WorkoutRepository @Inject constructor(
 
     suspend fun getTotalDurationMillis(): Long {
         return workoutDao.getTotalDurationMillis()
+    }
+
+    suspend fun getRouteCandidatesForAutoDetect(): List<RouteAutoDetector.RouteCandidate> {
+        val routeWorkouts = workoutDao.getMostRecentWorkoutIdPerRouteTag()
+        return routeWorkouts.mapNotNull { (workoutId, routeTag) ->
+            val gpsPoints = workoutDao.getFirstGpsPointsForWorkout(workoutId, 20)
+            if (gpsPoints.size < 2) return@mapNotNull null
+            RouteAutoDetector.RouteCandidate(
+                routeTag = routeTag,
+                referencePoints = gpsPoints.map { it.toDomain() },
+            )
+        }
     }
 
     suspend fun getWorkoutsWithGpsForRouteTag(routeTag: String): List<Workout> {

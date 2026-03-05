@@ -48,6 +48,7 @@ All paths relative to `app/src/main/java/com/gitfast/app/` unless noted otherwis
 |------|---------|
 | `DistanceTimeProfile.kt` | Cumulative distance-time profile from GPS points with binary search interpolation |
 | `RouteComparisonAnalyzer.kt` | Compares current dog walk to previous same-route walks with delta formatting |
+| `RouteAutoDetector.kt` | Auto-detects which saved route the user is walking from GPS trajectory (start proximity + nearest-point matching) |
 | `RouteGhostCalculator.kt` | Calculates route ghost delta by comparing current walk against historical profiles |
 
 ## util/
@@ -364,7 +365,7 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | Directory | Files | Coverage |
 |-----------|-------|----------|
 | _(root)_ | 36 | ViewModels, domain logic, entity/mapper tests, UI state mapping |
-| `analysis/` | 3 | RouteComparisonAnalyzer, DistanceTimeProfile, RouteGhostCalculator tests |
+| `analysis/` | 4 | RouteAutoDetector, RouteComparisonAnalyzer, DistanceTimeProfile, RouteGhostCalculator tests |
 | `data/healthconnect/` | 1 | HealthConnectManager mocked reads |
 | `data/model/` | 3 | DailyActivityMetrics, dog walk domain model, DogWalkEventType |
 | `data/local/mappers/` | 1 | DogWalkEventMappers round-trip and field mapping |
@@ -429,3 +430,4 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 |------|---------|
 | `platformio.ini` | ESP32-S3 config (espressif32@6.10.0, Arduino framework) |
 | `src/main.cpp` | Splash-screen stub (AXP2101 PMU + ST7789 display init) |
+

@@ -9,6 +9,7 @@ import android.os.IBinder
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.analysis.DistanceTimeProfile
+import com.gitfast.app.analysis.RouteAutoDetector
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEventType
@@ -133,18 +134,18 @@ class ActiveWorkoutViewModel @Inject constructor(
     private val _ghostSources = MutableStateFlow<List<GhostSource>>(emptyList())
     val ghostSources: StateFlow<List<GhostSource>> = _ghostSources.asStateFlow()
 
-    // Route ghost (dog walks)
-    private val _routeTagsForGhost = MutableStateFlow<List<String>>(emptyList())
-    val routeTagsForGhost: StateFlow<List<String>> = _routeTagsForGhost.asStateFlow()
+    // Route ghost auto-detection (dog walks)
+    private val _autoDetectedRouteTag = MutableStateFlow<String?>(null)
+    val autoDetectedRouteTag: StateFlow<String?> = _autoDetectedRouteTag.asStateFlow()
 
-    private val _selectedRouteTagForGhost = MutableStateFlow<String?>(null)
-    val selectedRouteTagForGhost: StateFlow<String?> = _selectedRouteTagForGhost.asStateFlow()
+    private var routeCandidates: List<RouteAutoDetector.RouteCandidate> = emptyList()
+    private var autoDetectAttempted = false
 
     fun setActivityType(type: ActivityType) {
         activityType = type
         _uiState.value = _uiState.value.copy(activityType = type)
         if (type == ActivityType.RUN) loadGhostSources()
-        if (type.isDogActivity) loadRouteTagsForGhost()
+        if (type.isDogActivity) preloadRouteCandidates()
     }
 
     fun loadGhostSources() {
@@ -176,19 +177,14 @@ class ActiveWorkoutViewModel @Inject constructor(
         stateManager?.setGhostLap(source.bestLapSeconds)
     }
 
-    private fun loadRouteTagsForGhost() {
+    private fun preloadRouteCandidates() {
         viewModelScope.launch {
-            val tags = workoutRepository.getAllRouteTagNames()
-            _routeTagsForGhost.value = tags
+            routeCandidates = workoutRepository.getRouteCandidatesForAutoDetect()
         }
     }
 
-    fun selectRouteTagForGhost(tag: String?) {
-        _selectedRouteTagForGhost.value = tag
-        if (tag == null) {
-            stateManager?.clearRouteGhost()
-            return
-        }
+    private fun activateRouteGhost(tag: String) {
+        _autoDetectedRouteTag.value = tag
         viewModelScope.launch {
             val workouts = workoutRepository.getWorkoutsWithGpsForRouteTag(tag)
             val profiles = workouts.mapNotNull { workout ->
@@ -197,9 +193,18 @@ class ActiveWorkoutViewModel @Inject constructor(
             }
             if (profiles.isNotEmpty()) {
                 stateManager?.setRouteGhostProfiles(profiles)
-            } else {
-                stateManager?.clearRouteGhost()
             }
+        }
+    }
+
+    private fun attemptRouteAutoDetect(gpsPoints: List<com.gitfast.app.data.model.GpsPoint>) {
+        if (autoDetectAttempted || routeCandidates.isEmpty()) return
+        if (gpsPoints.size < RouteAutoDetector.MIN_POINTS_FOR_DETECTION) return
+
+        autoDetectAttempted = true
+        val result = RouteAutoDetector.detect(gpsPoints, routeCandidates)
+        if (result.routeTag != null) {
+            activateRouteGhost(result.routeTag)
         }
     }
 
@@ -405,5 +410,13 @@ class ActiveWorkoutViewModel @Inject constructor(
             }
         }
 
+        // Observe GPS points for route auto-detection (dog walks only)
+        viewModelScope.launch {
+            manager.gpsPoints.collect { points ->
+                if (activityType.isDogActivity && !autoDetectAttempted) {
+                    attemptRouteAutoDetect(points)
+                }
+            }
+        }
     }
 }
