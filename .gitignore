@@ -55,4 +55,5 @@ firebase-debug.log
 firestore-debug.log
 
 # Claude Code
-.claude/
+.claude/*
+!.claude/agents/
