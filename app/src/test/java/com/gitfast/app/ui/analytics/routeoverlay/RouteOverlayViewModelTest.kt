@@ -337,6 +337,9 @@ class RouteOverlayViewModelTest {
         override suspend fun getLapsForPhases(phaseIds: List<String>): List<LapEntity> = phaseIds.flatMap { getLapsForPhase(it) }
         override suspend fun getGpsPointsForWorkout(workoutId: String): List<GpsPointEntity> =
             gpsPointsByWorkout[workoutId] ?: emptyList()
+        override suspend fun getFirstGpsPointsForWorkout(workoutId: String, maxIndex: Int): List<GpsPointEntity> =
+            (gpsPointsByWorkout[workoutId] ?: emptyList()).filter { it.sortIndex <= maxIndex }
+        override suspend fun getMostRecentWorkoutIdPerRouteTag(): List<WorkoutDao.RouteTagWorkoutId> = emptyList()
         override fun getAllCompletedWorkouts(): Flow<List<WorkoutEntity>> = flowOf(emptyList())
         override suspend fun getAllCompletedWorkoutsOnce(): List<WorkoutEntity> = emptyList()
         override suspend fun getRecentCompletedRuns(limit: Int): List<WorkoutEntity> = emptyList()

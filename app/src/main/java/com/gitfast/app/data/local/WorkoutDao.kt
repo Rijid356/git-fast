@@ -71,6 +71,9 @@ interface WorkoutDao {
     @Query("SELECT * FROM gps_points WHERE workoutId = :workoutId ORDER BY sortIndex ASC")
     suspend fun getGpsPointsForWorkout(workoutId: String): List<GpsPointEntity>
 
+    @Query("SELECT * FROM gps_points WHERE workoutId = :workoutId AND sortIndex <= :maxIndex ORDER BY sortIndex ASC")
+    suspend fun getFirstGpsPointsForWorkout(workoutId: String, maxIndex: Int): List<GpsPointEntity>
+
     // --- Queries: Workout history ---
 
     @Query("SELECT * FROM workouts WHERE status = 'COMPLETED' ORDER BY startTime DESC")
@@ -160,6 +163,22 @@ interface WorkoutDao {
 
     @Query("UPDATE route_tags SET lastUsed = :timestamp WHERE name = :name")
     suspend fun updateRouteTagLastUsed(name: String, timestamp: Long)
+
+    @Query("""
+        SELECT id, routeTag FROM workouts
+        WHERE status = 'COMPLETED'
+          AND activityType IN ('DOG_WALK', 'DOG_RUN')
+          AND routeTag IS NOT NULL AND routeTag != ''
+        GROUP BY routeTag
+        HAVING startTime = MAX(startTime)
+        ORDER BY routeTag ASC
+    """)
+    suspend fun getMostRecentWorkoutIdPerRouteTag(): List<RouteTagWorkoutId>
+
+    data class RouteTagWorkoutId(
+        val id: String,
+        val routeTag: String,
+    )
 
     // --- Transactions ---
 

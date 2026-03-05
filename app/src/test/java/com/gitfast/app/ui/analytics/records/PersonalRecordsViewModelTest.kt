@@ -137,6 +137,8 @@ class PersonalRecordsViewModelTest {
         override suspend fun getPhasesForWorkouts(workoutIds: List<String>): List<WorkoutPhaseEntity> = workoutIds.flatMap { getPhasesForWorkout(it) }
         override suspend fun getLapsForPhases(phaseIds: List<String>): List<LapEntity> = phaseIds.flatMap { getLapsForPhase(it) }
         override suspend fun getGpsPointsForWorkout(workoutId: String): List<GpsPointEntity> = emptyList()
+        override suspend fun getFirstGpsPointsForWorkout(workoutId: String, maxIndex: Int): List<GpsPointEntity> = emptyList()
+        override suspend fun getMostRecentWorkoutIdPerRouteTag(): List<WorkoutDao.RouteTagWorkoutId> = emptyList()
         override fun getAllCompletedWorkouts(): Flow<List<WorkoutEntity>> = flowOf(allWorkouts)
         override suspend fun getAllCompletedWorkoutsOnce(): List<WorkoutEntity> = allWorkouts
         override suspend fun getRecentCompletedRuns(limit: Int): List<WorkoutEntity> = emptyList()

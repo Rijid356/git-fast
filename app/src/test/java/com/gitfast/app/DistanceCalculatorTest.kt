@@ -106,4 +106,43 @@ class DistanceCalculatorTest {
         val miles = DistanceCalculator.metersToMiles(0.0)
         assertEquals(0.0, miles, 0.001)
     }
+
+    // --- initialBearing tests ---
+
+    @Test
+    fun `initialBearing due north returns 0`() {
+        val bearing = DistanceCalculator.initialBearing(38.0, -94.0, 39.0, -94.0)
+        assertEquals(0.0, bearing, 0.5)
+    }
+
+    @Test
+    fun `initialBearing due east returns 90`() {
+        val bearing = DistanceCalculator.initialBearing(38.0, -94.0, 38.0, -93.0)
+        assertEquals(90.0, bearing, 1.0)
+    }
+
+    @Test
+    fun `initialBearing due south returns 180`() {
+        val bearing = DistanceCalculator.initialBearing(39.0, -94.0, 38.0, -94.0)
+        assertEquals(180.0, bearing, 0.5)
+    }
+
+    @Test
+    fun `initialBearing due west returns 270`() {
+        val bearing = DistanceCalculator.initialBearing(38.0, -93.0, 38.0, -94.0)
+        assertEquals(270.0, bearing, 1.0)
+    }
+
+    @Test
+    fun `initialBearing northeast returns bearing between 0 and 90`() {
+        val bearing = DistanceCalculator.initialBearing(38.0, -94.0, 39.0, -93.0)
+        // At lat 38, lon degrees are shorter than lat degrees, so bearing < 45
+        assert(bearing > 0.0 && bearing < 90.0) { "Expected NE bearing, got $bearing" }
+    }
+
+    @Test
+    fun `initialBearing same point returns 0`() {
+        val bearing = DistanceCalculator.initialBearing(38.0, -94.0, 38.0, -94.0)
+        assertEquals(0.0, bearing, 0.001)
+    }
 }

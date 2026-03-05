@@ -62,4 +62,25 @@ object DistanceCalculator {
      * Convert meters to kilometers.
      */
     fun metersToKm(meters: Double): Double = meters / 1000.0
+
+    /**
+     * Calculate the initial bearing (forward azimuth) from point 1 to point 2.
+     *
+     * @return Bearing in degrees (0-360), where 0 = North, 90 = East, 180 = South, 270 = West.
+     *         Returns 0.0 if both points are identical.
+     */
+    fun initialBearing(
+        lat1: Double, lon1: Double,
+        lat2: Double, lon2: Double
+    ): Double {
+        val rLat1 = Math.toRadians(lat1)
+        val rLat2 = Math.toRadians(lat2)
+        val dLon = Math.toRadians(lon2 - lon1)
+
+        val x = sin(dLon) * cos(rLat2)
+        val y = cos(rLat1) * sin(rLat2) - sin(rLat1) * cos(rLat2) * cos(dLon)
+
+        val bearing = Math.toDegrees(atan2(x, y))
+        return (bearing + 360) % 360
+    }
 }
