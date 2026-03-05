@@ -32,13 +32,20 @@ import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.screenshots.FullScreenScreenshotTestBase
+import com.gitfast.app.ui.detail.DetailScreen
+import com.gitfast.app.ui.detail.DetailUiState
+import com.gitfast.app.ui.detail.DetailViewModel
 import com.gitfast.app.ui.detail.LapAnalysis
 import com.gitfast.app.ui.detail.LapChartPoint
 import com.gitfast.app.ui.detail.LapDisplayItem
 import com.gitfast.app.ui.detail.LapTrend
+import com.gitfast.app.ui.detail.SpeedChartPoint
 import com.gitfast.app.ui.detail.WorkoutDetailItem
 import com.gitfast.app.ui.theme.NeonGreen
 import com.gitfast.app.util.PhaseAnalyzer
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -68,6 +75,148 @@ class DetailScreenScreenshotTest : FullScreenScreenshotTestBase() {
                 lapAnalysis = null,
                 routePoints = dogWalkRoutePoints,
             )
+        }
+    }
+
+    @Test
+    fun `Screen Detail Loading`() {
+        val viewModel = mockk<DetailViewModel>(relaxed = true) {
+            every { uiState } returns MutableStateFlow(DetailUiState.Loading)
+        }
+        captureScreenshot("Screen_Detail_Loading", category = "detail") {
+            DetailScreen(onBackClick = {}, viewModel = viewModel)
+        }
+    }
+
+    @Test
+    fun `Screen Detail NotFound`() {
+        val viewModel = mockk<DetailViewModel>(relaxed = true) {
+            every { uiState } returns MutableStateFlow(DetailUiState.NotFound)
+        }
+        captureScreenshot("Screen_Detail_NotFound", category = "detail") {
+            DetailScreen(onBackClick = {}, viewModel = viewModel)
+        }
+    }
+
+    @Test
+    fun `Screen Detail Run with phases and laps`() {
+        val viewModel = mockk<DetailViewModel>(relaxed = true) {
+            every { uiState } returns MutableStateFlow(
+                DetailUiState.Loaded(
+                    detail = sampleRunDetail,
+                    phases = sampleRunPhases,
+                    lapAnalysis = sampleLapAnalysis,
+                    speedChartPoints = listOf(
+                        SpeedChartPoint(0f, 5.2f),
+                        SpeedChartPoint(5f, 6.8f),
+                        SpeedChartPoint(10f, 7.1f),
+                        SpeedChartPoint(15f, 6.5f),
+                        SpeedChartPoint(20f, 7.3f),
+                        SpeedChartPoint(25f, 6.9f),
+                    ),
+                    averageSpeedMph = 6.7f,
+                    maxSpeedMph = 7.3f,
+                ),
+            )
+        }
+        captureScreenshot("Screen_Detail_RunWithPhasesLaps", category = "detail") {
+            DetailScreen(onBackClick = {}, viewModel = viewModel)
+        }
+    }
+
+    @Test
+    fun `Screen Detail DogWalk with events and sprints`() {
+        val baseTime = java.time.Instant.parse("2026-02-24T12:00:00Z")
+        val viewModel = mockk<DetailViewModel>(relaxed = true) {
+            every { uiState } returns MutableStateFlow(
+                DetailUiState.Loaded(
+                    detail = sampleDogWalkDetail.copy(
+                        dogName = "Juniper",
+                        narrativeDescription = "A lovely walk through the park. Juniper found 3 interesting smells and chased 2 squirrels!",
+                        startTimeMillis = baseTime.toEpochMilli(),
+                    ),
+                    phases = emptyList(),
+                    lapAnalysis = null,
+                    sprintLaps = listOf(
+                        com.gitfast.app.data.model.Lap(
+                            id = "s1", lapNumber = 1,
+                            startTime = baseTime.plusSeconds(180),
+                            endTime = baseTime.plusSeconds(195),
+                            distanceMeters = 45.0, steps = 30,
+                        ),
+                        com.gitfast.app.data.model.Lap(
+                            id = "s2", lapNumber = 2,
+                            startTime = baseTime.plusSeconds(600),
+                            endTime = baseTime.plusSeconds(620),
+                            distanceMeters = 62.0, steps = 40,
+                        ),
+                    ),
+                    dogWalkEvents = listOf(
+                        com.gitfast.app.data.model.DogWalkEvent(
+                            id = "e1", workoutId = "walk-001",
+                            eventType = com.gitfast.app.data.model.DogWalkEventType.PEE,
+                            timestamp = baseTime.plusSeconds(120),
+                            latitude = null, longitude = null,
+                        ),
+                        com.gitfast.app.data.model.DogWalkEvent(
+                            id = "e2", workoutId = "walk-001",
+                            eventType = com.gitfast.app.data.model.DogWalkEventType.POOP,
+                            timestamp = baseTime.plusSeconds(300),
+                            latitude = null, longitude = null,
+                        ),
+                        com.gitfast.app.data.model.DogWalkEvent(
+                            id = "e3", workoutId = "walk-001",
+                            eventType = com.gitfast.app.data.model.DogWalkEventType.DEEP_SNIFF,
+                            timestamp = baseTime.plusSeconds(500),
+                            latitude = null, longitude = null,
+                        ),
+                    ),
+                    routeComparison = listOf(
+                        com.gitfast.app.analysis.RouteComparisonAnalyzer.RouteComparisonItem(
+                            workoutId = "walk-001",
+                            dateFormatted = "Feb 24",
+                            durationFormatted = "22:45",
+                            distanceFormatted = "1.05 mi",
+                            deltaFormatted = null,
+                            deltaMillis = null,
+                            isCurrentWalk = true,
+                        ),
+                        com.gitfast.app.analysis.RouteComparisonAnalyzer.RouteComparisonItem(
+                            workoutId = "walk-prev",
+                            dateFormatted = "Feb 22",
+                            durationFormatted = "24:10",
+                            distanceFormatted = "1.02 mi",
+                            deltaFormatted = "-1:25",
+                            deltaMillis = -85000L,
+                            isCurrentWalk = false,
+                        ),
+                    ),
+                ),
+            )
+        }
+        captureScreenshot("Screen_Detail_DogWalkEventsAndSprints", category = "detail") {
+            DetailScreen(onBackClick = {}, viewModel = viewModel)
+        }
+    }
+
+    @Test
+    fun `Screen Detail Run no route data`() {
+        val viewModel = mockk<DetailViewModel>(relaxed = true) {
+            every { uiState } returns MutableStateFlow(
+                DetailUiState.Loaded(
+                    detail = sampleRunDetail.copy(
+                        routePoints = emptyList(),
+                        routeBounds = null,
+                        gpsPointCount = 0,
+                        avgGpsAccuracy = null,
+                    ),
+                    phases = emptyList(),
+                    lapAnalysis = null,
+                ),
+            )
+        }
+        captureScreenshot("Screen_Detail_RunNoRoute", category = "detail") {
+            DetailScreen(onBackClick = {}, viewModel = viewModel)
         }
     }
 }

@@ -370,15 +370,15 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | `data/local/mappers/` | 1 | DogWalkEventMappers round-trip and field mapping |
 | `data/repository/` | 4 | BodyCompRepository, CharacterRepository, SorenessRepository, ExerciseRepository |
 | `data/sync/` | 3 | FirestoreMappers, FirestoreSync, SyncStatusStore |
-| `screenshots/` | 7 | Component screenshots (StatGrid, PaceDisplay, LapTable, etc.) + base classes |
-| `screenshots/screens/` | 15 | Full-screen Roborazzi golden tests for every major screen |
+| `screenshots/` | 9 | Component screenshots (StatGrid, PaceDisplay, LapTable, ActiveWorkoutBanner, ActivityRings) + base classes |
+| `screenshots/screens/` | 17 | Full-screen Roborazzi golden tests for every major screen (Detail, RouteOverlay, Permission, etc.) |
 | `service/` | 6 | AutoPauseDetector, home arrival, WorkoutStateManager edge cases, events, auto-start laps |
 | `ui/analytics/` | 5 | BodyComp, Records, RouteOverlay, RoutePerformance, Trends ViewModels |
 | `ui/home/` | 1 | HomeViewModel goals integration |
 | `ui/settings/` | 1 | SettingsViewModel |
 | `util/` | 17 | Achievement checking, stats calc, streak, XP, lap analysis, trends, narrative, foraging |
 
-**Total: ~100 unit test files**
+**Total: ~104 unit test files**
 
 ### Instrumented Tests (`app/src/androidTest/`)
 

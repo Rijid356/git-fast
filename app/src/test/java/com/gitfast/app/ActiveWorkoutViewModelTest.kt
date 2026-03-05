@@ -193,4 +193,116 @@ class ActiveWorkoutViewModelTest {
     fun `lastWorkoutId is null initially`() {
         assertNull(viewModel.lastWorkoutId)
     }
+
+    @Test
+    fun `startWorkout does not send intent when service is already running`() {
+        WorkoutService.isRunning = true
+        viewModel.startWorkout()
+
+        val shadow = shadowOf(application)
+        val intent = shadow.nextStartedService
+        assertNull(intent)
+    }
+
+    @Test
+    fun `setActivityType to DOG_WALK updates ui state`() {
+        viewModel.setActivityType(ActivityType.DOG_WALK)
+        assertEquals(ActivityType.DOG_WALK, viewModel.uiState.value.activityType)
+    }
+
+    @Test
+    fun `setActivityType to DOG_RUN updates ui state`() {
+        viewModel.setActivityType(ActivityType.DOG_RUN)
+        assertEquals(ActivityType.DOG_RUN, viewModel.uiState.value.activityType)
+    }
+
+    @Test
+    fun `logEvent sends ACTION_LOG_EVENT with event type`() {
+        viewModel.logEvent(com.gitfast.app.data.model.DogWalkEventType.POOP)
+
+        val shadow = shadowOf(application)
+        val intent = shadow.nextStartedService
+        assertNotNull(intent)
+        assertEquals(WorkoutService.ACTION_LOG_EVENT, intent.action)
+        assertEquals("POOP", intent.getStringExtra(WorkoutService.EXTRA_EVENT_TYPE))
+    }
+
+    @Test
+    fun `undoEvent sends ACTION_UNDO_EVENT with event type`() {
+        viewModel.undoEvent(com.gitfast.app.data.model.DogWalkEventType.PEE)
+
+        val shadow = shadowOf(application)
+        val intent = shadow.nextStartedService
+        assertNotNull(intent)
+        assertEquals(WorkoutService.ACTION_UNDO_EVENT, intent.action)
+        assertEquals("PEE", intent.getStringExtra(WorkoutService.EXTRA_EVENT_TYPE))
+    }
+
+    @Test
+    fun `ghostSources is empty initially`() {
+        assertTrue(viewModel.ghostSources.value.isEmpty())
+    }
+
+    @Test
+    fun `selectGhost with null clears ghost`() {
+        viewModel.selectGhost(null)
+        // Should not throw — stateManager is null, so this is a no-op
+    }
+
+    @Test
+    fun `selectGhost with unknown workoutId is no-op`() {
+        viewModel.selectGhost("nonexistent")
+        // Should not throw
+    }
+
+    @Test
+    fun `routeTagsForGhost is empty initially`() {
+        assertTrue(viewModel.routeTagsForGhost.value.isEmpty())
+    }
+
+    @Test
+    fun `selectedRouteTagForGhost is null initially`() {
+        assertNull(viewModel.selectedRouteTagForGhost.value)
+    }
+
+    @Test
+    fun `selectRouteTagForGhost with null clears selection`() {
+        viewModel.selectRouteTagForGhost(null)
+        assertNull(viewModel.selectedRouteTagForGhost.value)
+    }
+
+    @Test
+    fun `unbindService when not bound is no-op`() {
+        viewModel.unbindService()
+        // Should not throw — isBound is false
+    }
+
+    @Test
+    fun `refreshPermissions with all granted`() {
+        every { permissionManager.checkPermissions() } returns PermissionManager.PermissionState(
+            fineLocation = true,
+            backgroundLocation = true,
+            notifications = true,
+            activityRecognition = true,
+        )
+        viewModel.refreshPermissions()
+        assertTrue(viewModel.permissionState.value.canTrackWorkout)
+    }
+
+    @Test
+    fun `refreshPermissions with partial grants`() {
+        every { permissionManager.checkPermissions() } returns PermissionManager.PermissionState(
+            fineLocation = true,
+            backgroundLocation = false,
+            notifications = true,
+            activityRecognition = false,
+        )
+        viewModel.refreshPermissions()
+        val state = viewModel.permissionState.value
+        assertTrue(state.fineLocation)
+        assertFalse(state.backgroundLocation)
+        assertTrue(state.notifications)
+        assertFalse(state.activityRecognition)
+        assertFalse(state.canTrackWorkout)
+    }
 }
