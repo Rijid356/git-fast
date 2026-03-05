@@ -6,9 +6,11 @@ import java.time.LocalDate
 data class SorenessLog(
     val id: String,
     val date: LocalDate,
-    val muscleGroups: Set<MuscleGroup>,
-    val intensity: SorenessIntensity,
+    val muscleIntensities: Map<MuscleGroup, SorenessIntensity>,
     val notes: String? = null,
     val xpAwarded: Int = 0,
     val createdAt: Instant = Instant.now(),
-)
+) {
+    val muscleGroups: Set<MuscleGroup> get() = muscleIntensities.keys
+    val maxIntensity: SorenessIntensity? get() = muscleIntensities.values.maxByOrNull { it.ordinal }
+}

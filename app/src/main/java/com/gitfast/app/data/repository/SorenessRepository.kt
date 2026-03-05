@@ -27,16 +27,14 @@ class SorenessRepository @Inject constructor(
     }
 
     suspend fun logSoreness(
-        muscleGroups: Set<MuscleGroup>,
-        intensity: SorenessIntensity,
+        muscleIntensities: Map<MuscleGroup, SorenessIntensity>,
         notes: String?,
         xpAwarded: Int,
     ): SorenessLog {
         val existing = sorenessDao.getByDate(todayEpoch())
         val log = if (existing != null) {
             existing.toDomain().copy(
-                muscleGroups = muscleGroups,
-                intensity = intensity,
+                muscleIntensities = muscleIntensities,
                 notes = notes,
                 xpAwarded = xpAwarded,
             )
@@ -44,8 +42,7 @@ class SorenessRepository @Inject constructor(
             SorenessLog(
                 id = UUID.randomUUID().toString(),
                 date = LocalDate.now(),
-                muscleGroups = muscleGroups,
-                intensity = intensity,
+                muscleIntensities = muscleIntensities,
                 notes = notes,
                 xpAwarded = xpAwarded,
             )

@@ -64,26 +64,29 @@ object StatsCalculator {
 
     /**
      * Calculate TGH (Toughness) stat based on 30-day soreness logging.
-     * Weighted points: MILD=1, MODERATE=2, SEVERE=3.
-     * Brackets: 0→1, 3→25, 7→50, 14→75, 25→99.
+     * Per-muscle weighted points: MILD=1, MODERATE=2, SEVERE=3 per muscle entry.
+     * Brackets rescaled for per-muscle granularity:
+     * 0→1, 8→25, 20→50, 45→75, 80→99.
      */
     fun calculateToughness(recentLogs: List<SorenessLog>): Int {
         if (recentLogs.isEmpty()) return MIN_STAT
-        val weightedPoints = recentLogs.sumOf { log: SorenessLog ->
-            when (log.intensity) {
-                SorenessIntensity.MILD -> 1
-                SorenessIntensity.MODERATE -> 2
-                SorenessIntensity.SEVERE -> 3
-            } as Int
+        val weightedPoints = recentLogs.sumOf { log ->
+            log.muscleIntensities.values.sumOf { intensity: SorenessIntensity ->
+                when (intensity) {
+                    SorenessIntensity.MILD -> 1L
+                    SorenessIntensity.MODERATE -> 2L
+                    SorenessIntensity.SEVERE -> 3L
+                }
+            }.toInt()
         }
         return interpolateBrackets(
             value = weightedPoints.toDouble(),
             brackets = listOf(
                 0.0 to 1,
-                3.0 to 25,
-                7.0 to 50,
-                14.0 to 75,
-                25.0 to 99,
+                8.0 to 25,
+                20.0 to 50,
+                45.0 to 75,
+                80.0 to 99,
             ),
             inverted = false,
         )
@@ -154,22 +157,24 @@ object StatsCalculator {
     }
 
     fun toughnessBreakdown(recentLogs: List<SorenessLog>, effectiveScore: Int): StatBreakdown {
-        val mildCount = recentLogs.count { it.intensity == SorenessIntensity.MILD }
-        val moderateCount = recentLogs.count { it.intensity == SorenessIntensity.MODERATE }
-        val severeCount = recentLogs.count { it.intensity == SorenessIntensity.SEVERE }
+        val allEntries = recentLogs.flatMap { it.muscleIntensities.values }
+        val mildCount = allEntries.count { it == SorenessIntensity.MILD }
+        val moderateCount = allEntries.count { it == SorenessIntensity.MODERATE }
+        val severeCount = allEntries.count { it == SorenessIntensity.SEVERE }
         val weightedPoints = mildCount + moderateCount * 2 + severeCount * 3
 
         val details = listOf(
             "Logs (30d)" to "${recentLogs.size}",
+            "Muscle entries" to "${allEntries.size}",
             "Mild / Mod / Sev" to "$mildCount / $moderateCount / $severeCount",
             "Weighted points" to "$weightedPoints",
             "Effective score" to "$effectiveScore",
         )
 
         return StatBreakdown(
-            description = "Based on 30-day soreness logs (weighted by intensity)",
+            description = "Based on 30-day soreness logs (weighted per-muscle intensity)",
             details = details,
-            brackets = "0\u21921 | 3\u219225 | 7\u219250 | 14\u219275 | 25\u219299",
+            brackets = "0\u21921 | 8\u219225 | 20\u219250 | 45\u219275 | 80\u219299",
             decayNote = "Actively decays \u2014 uses a 30-day rolling window. Log soreness daily!",
         )
     }

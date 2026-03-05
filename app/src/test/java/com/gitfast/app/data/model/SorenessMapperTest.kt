@@ -14,7 +14,7 @@ import java.time.ZoneId
 class SorenessMapperTest {
 
     @Test
-    fun `entity to domain maps all fields`() {
+    fun `new format entity to domain maps per-muscle intensities`() {
         val today = LocalDate.now()
         val dateEpoch = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val createdAt = Instant.now().toEpochMilli()
@@ -22,8 +22,8 @@ class SorenessMapperTest {
         val entity = SorenessLogEntity(
             id = "log1",
             date = dateEpoch,
-            muscleGroups = "QUADS,HAMSTRINGS,CALVES",
-            intensity = "MODERATE",
+            muscleGroups = "QUADS:MODERATE,HAMSTRINGS:SEVERE,CALVES:MILD",
+            intensity = "SEVERE",
             notes = "Leg day aftermath",
             xpAwarded = 8,
             createdAt = createdAt,
@@ -33,23 +33,60 @@ class SorenessMapperTest {
 
         assertEquals("log1", domain.id)
         assertEquals(today, domain.date)
-        assertEquals(setOf(MuscleGroup.QUADS, MuscleGroup.HAMSTRINGS, MuscleGroup.CALVES), domain.muscleGroups)
-        assertEquals(SorenessIntensity.MODERATE, domain.intensity)
+        assertEquals(
+            mapOf(
+                MuscleGroup.QUADS to SorenessIntensity.MODERATE,
+                MuscleGroup.HAMSTRINGS to SorenessIntensity.SEVERE,
+                MuscleGroup.CALVES to SorenessIntensity.MILD,
+            ),
+            domain.muscleIntensities,
+        )
+        assertEquals(
+            setOf(MuscleGroup.QUADS, MuscleGroup.HAMSTRINGS, MuscleGroup.CALVES),
+            domain.muscleGroups,
+        )
+        assertEquals(SorenessIntensity.SEVERE, domain.maxIntensity)
         assertEquals("Leg day aftermath", domain.notes)
         assertEquals(8, domain.xpAwarded)
         assertEquals(Instant.ofEpochMilli(createdAt), domain.createdAt)
     }
 
     @Test
-    fun `domain to entity maps all fields`() {
+    fun `legacy format entity to domain uses global intensity for all muscles`() {
+        val today = LocalDate.now()
+        val dateEpoch = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+        val entity = SorenessLogEntity(
+            id = "legacy-1",
+            date = dateEpoch,
+            muscleGroups = "CHEST,BACK",
+            intensity = "MODERATE",
+        )
+
+        val domain = entity.toDomain()
+
+        assertEquals(
+            mapOf(
+                MuscleGroup.CHEST to SorenessIntensity.MODERATE,
+                MuscleGroup.BACK to SorenessIntensity.MODERATE,
+            ),
+            domain.muscleIntensities,
+        )
+        assertEquals(SorenessIntensity.MODERATE, domain.maxIntensity)
+    }
+
+    @Test
+    fun `domain to entity serializes new format`() {
         val today = LocalDate.now()
         val createdAt = Instant.now()
 
         val domain = SorenessLog(
             id = "log2",
             date = today,
-            muscleGroups = setOf(MuscleGroup.CHEST, MuscleGroup.BACK),
-            intensity = SorenessIntensity.SEVERE,
+            muscleIntensities = mapOf(
+                MuscleGroup.CHEST to SorenessIntensity.SEVERE,
+                MuscleGroup.BACK to SorenessIntensity.MODERATE,
+            ),
             notes = "Push day",
             xpAwarded = 10,
             createdAt = createdAt,
@@ -62,9 +99,11 @@ class SorenessMapperTest {
             today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
             entity.date,
         )
-        // Muscle groups stored as comma-separated names (order may vary in a set)
-        val groups = entity.muscleGroups.split(",").toSet()
-        assertEquals(setOf("CHEST", "BACK"), groups)
+        // Muscle groups stored as KEY:VALUE pairs
+        val pairs = entity.muscleGroups.split(",").toSet()
+        assertTrue(pairs.contains("CHEST:SEVERE"))
+        assertTrue(pairs.contains("BACK:MODERATE"))
+        // Intensity column holds max intensity for backward compat
         assertEquals("SEVERE", entity.intensity)
         assertEquals("Push day", entity.notes)
         assertEquals(10, entity.xpAwarded)
@@ -77,8 +116,10 @@ class SorenessMapperTest {
         val original = SorenessLog(
             id = "log3",
             date = today,
-            muscleGroups = setOf(MuscleGroup.CORE, MuscleGroup.GLUTES),
-            intensity = SorenessIntensity.MILD,
+            muscleIntensities = mapOf(
+                MuscleGroup.CORE to SorenessIntensity.MILD,
+                MuscleGroup.GLUTES to SorenessIntensity.SEVERE,
+            ),
             notes = null,
             xpAwarded = 5,
         )
@@ -87,47 +128,101 @@ class SorenessMapperTest {
 
         assertEquals(original.id, roundTripped.id)
         assertEquals(original.date, roundTripped.date)
-        assertEquals(original.muscleGroups, roundTripped.muscleGroups)
-        assertEquals(original.intensity, roundTripped.intensity)
+        assertEquals(original.muscleIntensities, roundTripped.muscleIntensities)
         assertNull(roundTripped.notes)
         assertEquals(original.xpAwarded, roundTripped.xpAwarded)
     }
 
     @Test
-    fun `single muscle group round trips correctly`() {
+    fun `single muscle round trips correctly`() {
         val log = SorenessLog(
             id = "log4",
             date = LocalDate.now(),
-            muscleGroups = setOf(MuscleGroup.SHOULDERS),
-            intensity = SorenessIntensity.MILD,
+            muscleIntensities = mapOf(MuscleGroup.SHOULDERS to SorenessIntensity.MILD),
         )
         val roundTripped = log.toEntity().toDomain()
-        assertEquals(setOf(MuscleGroup.SHOULDERS), roundTripped.muscleGroups)
+        assertEquals(
+            mapOf(MuscleGroup.SHOULDERS to SorenessIntensity.MILD),
+            roundTripped.muscleIntensities,
+        )
     }
 
     @Test
-    fun `all muscle groups round trip correctly`() {
-        val allGroups = MuscleGroup.entries.toSet()
+    fun `all muscle groups with different intensities round trip correctly`() {
+        val intensities = MuscleGroup.entries.associateWith { group ->
+            SorenessIntensity.entries[group.ordinal % SorenessIntensity.entries.size]
+        }
         val log = SorenessLog(
             id = "log5",
             date = LocalDate.now(),
-            muscleGroups = allGroups,
-            intensity = SorenessIntensity.MODERATE,
+            muscleIntensities = intensities,
         )
         val roundTripped = log.toEntity().toDomain()
-        assertEquals(allGroups, roundTripped.muscleGroups)
+        assertEquals(intensities, roundTripped.muscleIntensities)
     }
 
     @Test
-    fun `all intensity values map correctly`() {
+    fun `all intensity values map correctly in new format`() {
         for (intensity in SorenessIntensity.entries) {
             val entity = SorenessLogEntity(
                 id = "test-${intensity.name}",
                 date = 0L,
-                muscleGroups = "CORE",
+                muscleGroups = "CORE:${intensity.name}",
                 intensity = intensity.name,
             )
-            assertEquals(intensity, entity.toDomain().intensity)
+            val domain = entity.toDomain()
+            assertEquals(
+                mapOf(MuscleGroup.CORE to intensity),
+                domain.muscleIntensities,
+            )
         }
+    }
+
+    @Test
+    fun `maxIntensity returns highest ordinal intensity`() {
+        val log = SorenessLog(
+            id = "max-test",
+            date = LocalDate.now(),
+            muscleIntensities = mapOf(
+                MuscleGroup.CHEST to SorenessIntensity.MILD,
+                MuscleGroup.BACK to SorenessIntensity.SEVERE,
+                MuscleGroup.CORE to SorenessIntensity.MODERATE,
+            ),
+        )
+        assertEquals(SorenessIntensity.SEVERE, log.maxIntensity)
+    }
+
+    @Test
+    fun `maxIntensity returns null for empty map`() {
+        val log = SorenessLog(
+            id = "empty",
+            date = LocalDate.now(),
+            muscleIntensities = emptyMap(),
+        )
+        assertNull(log.maxIntensity)
+    }
+
+    @Test
+    fun `empty muscle groups entity produces empty map`() {
+        val entity = SorenessLogEntity(
+            id = "empty-legacy",
+            date = 0L,
+            muscleGroups = "",
+            intensity = "MILD",
+        )
+        val domain = entity.toDomain()
+        assertTrue(domain.muscleIntensities.isEmpty())
+    }
+
+    @Test
+    fun `toEntity sets intensity to MILD when map is empty`() {
+        val log = SorenessLog(
+            id = "empty-entity",
+            date = LocalDate.now(),
+            muscleIntensities = emptyMap(),
+        )
+        val entity = log.toEntity()
+        assertEquals("MILD", entity.intensity)
+        assertEquals("", entity.muscleGroups)
     }
 }

@@ -334,7 +334,7 @@ private fun SorenessCard(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "${todayLog.intensity.displayName} - ${todayLog.muscleGroups.joinToString { it.displayName }}",
+                    text = "${todayLog.maxIntensity?.displayName ?: "Logged"} - ${todayLog.muscleGroups.joinToString { it.displayName }}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
