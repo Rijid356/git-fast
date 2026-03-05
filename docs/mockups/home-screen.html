@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=412, initial-scale=1.0">
+<title>git-fast Home Screen Mockup</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  body {
+    width: 412px;
+    position: relative;
+  }
+
+  /* Top-left level badge */
+  .level-badge {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    background: var(--surface-variant);
+    padding: 6px 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    z-index: 10;
+  }
+  .level-badge .lv-label {
+    font-size: 10px;
+    color: rgba(230, 237, 243, 0.8);
+  }
+  .level-badge .lv-num {
+    font-size: 13px;
+    color: var(--primary);
+  }
+  .level-badge .streak {
+    font-size: 10px;
+    color: var(--amber);
+    margin-left: 4px;
+  }
+
+  /* Top-right settings */
+  .settings-btn {
+    position: fixed;
+    top: 8px;
+    right: 8px;
+    color: var(--text-dim);
+    font-size: 20px;
+    z-index: 10;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+
+  /* Main content */
+  .content {
+    padding: 56px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Title */
+  .title {
+    font-size: 32px;
+    color: var(--primary);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* Ready line */
+  .ready-line {
+    font-size: 13px;
+    color: rgba(230, 237, 243, 0.7);
+    margin-bottom: 24px;
+  }
+  .ready-line .cursor {
+    color: var(--primary);
+    animation: blink 1.06s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  /* Activity Rings */
+  .rings-container {
+    width: 160px;
+    height: 160px;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .rings-container svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-track { stroke-linecap: butt; fill: none; }
+  .ring-fill { stroke-linecap: butt; fill: none; }
+
+  /* Ring legend */
+  .ring-legend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    width: 100%;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .legend-value {
+    font-size: 9px;
+    color: var(--text);
+  }
+  .legend-label {
+    font-size: 9px;
+    color: var(--text-dimmer);
+  }
+
+  /* Weight quick stat */
+  .weight-stat {
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  /* Soreness card */
+  .soreness-card {
+    width: 100%;
+    background: rgba(33, 38, 45, 0.4);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .soreness-card .label {
+    font-size: 10px;
+    color: var(--amber);
+    margin-bottom: 4px;
+  }
+  .soreness-card .sublabel {
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .soreness-card .chevron {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* Weekly summary card */
+  .weekly-card {
+    width: 100%;
+    background: var(--surface-variant);
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .weekly-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .weekly-header .week-title {
+    font-size: 12px;
+    color: var(--primary);
+  }
+  .weekly-header .date-range {
+    font-size: 9px;
+    color: var(--text-dimmer);
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .stat-row .stat-label {
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .stat-row .stat-value {
+    font-size: 10px;
+    color: var(--text);
+  }
+  .stat-row .delta-positive {
+    font-size: 9px;
+    color: var(--primary);
+    margin-left: 6px;
+  }
+  .stat-row .delta-negative {
+    font-size: 9px;
+    color: var(--error);
+    margin-left: 6px;
+  }
+
+  /* Active days progress bar */
+  .progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background: var(--outline);
+    margin-top: 4px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--amber);
+  }
+
+  /* Action buttons */
+  .buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  /* btn base + variants inherited from theme.css */
+
+  /* Recent workouts section */
+  .recent-section {
+    width: 100%;
+    margin-top: 24px;
+  }
+  .section-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--outline);
+    margin-bottom: 12px;
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .section-header .section-title {
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .section-header .see-all {
+    font-size: 10px;
+    color: var(--primary);
+    cursor: pointer;
+  }
+
+  /* Workout card */
+  .workout-card {
+    background: var(--surface);
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .workout-row1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .workout-date {
+    font-size: 10px;
+    color: var(--text);
+    flex: 1;
+  }
+  .workout-distance {
+    font-size: 13px;
+    color: var(--primary);
+    text-align: right;
+    margin-right: 12px;
+  }
+  .workout-duration {
+    font-size: 13px;
+    color: var(--text);
+    text-align: right;
+  }
+  .workout-row2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .workout-pace {
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .workout-xp {
+    font-size: 9px;
+    color: var(--amber);
+  }
+
+  /* Empty section message */
+  .empty-msg {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Fixed overlays -->
+<div class="level-badge">
+  <span class="lv-label">LV</span>
+  <span class="lv-num">12</span>
+  <span class="streak">*3</span>
+</div>
+<button class="settings-btn">&#9881;</button>
+
+<!-- Main content -->
+<div class="content">
+  <div class="title">git-fast</div>
+  <div class="ready-line">&gt; ready<span class="cursor">_</span></div>
+
+  <!-- Activity Rings -->
+  <div class="rings-container">
+    <svg viewBox="0 0 160 160">
+      <!-- Outer ring (green) - 18/22 = 81.8% -->
+      <circle cx="80" cy="80" r="68" class="ring-track" stroke="rgba(57,255,20,0.12)" stroke-width="12"/>
+      <circle cx="80" cy="80" r="68" class="ring-fill" stroke="#39FF14" stroke-width="12"
+        stroke-dasharray="427.3" stroke-dashoffset="77.7"/>
+      <!-- Middle ring (cyan) - 1.2/1.5 = 80% -->
+      <circle cx="80" cy="80" r="54" class="ring-track" stroke="rgba(88,166,255,0.12)" stroke-width="12"/>
+      <circle cx="80" cy="80" r="54" class="ring-fill" stroke="#58A6FF" stroke-width="12"
+        stroke-dasharray="339.3" stroke-dashoffset="67.9"/>
+      <!-- Inner ring (amber) - 3/5 = 60% -->
+      <circle cx="80" cy="80" r="40" class="ring-track" stroke="rgba(240,136,62,0.12)" stroke-width="12"/>
+      <circle cx="80" cy="80" r="40" class="ring-fill" stroke="#F0883E" stroke-width="12"
+        stroke-dasharray="251.3" stroke-dashoffset="100.5"/>
+    </svg>
+  </div>
+
+  <!-- Ring legend -->
+  <div class="ring-legend">
+    <div class="legend-item">
+      <span class="legend-dot" style="background:#39FF14"></span>
+      <span class="legend-value">18/22</span>
+      <span class="legend-label">MIN</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:#58A6FF"></span>
+      <span class="legend-value">1.2/1.5</span>
+      <span class="legend-label">MI</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background:#F0883E"></span>
+      <span class="legend-value">3/5</span>
+      <span class="legend-label">DAYS</span>
+    </div>
+  </div>
+
+  <!-- Weight -->
+  <div class="weight-stat">175.0 lbs &middot; Feb 24</div>
+
+  <!-- Soreness card -->
+  <div class="soreness-card">
+    <div>
+      <div class="label">Feeling sore?</div>
+      <div class="sublabel">Log your soreness for XP</div>
+    </div>
+    <div class="chevron">&gt;</div>
+  </div>
+
+  <!-- Weekly summary -->
+  <div class="weekly-card">
+    <div class="weekly-header">
+      <span class="week-title">THIS WEEK</span>
+      <span class="date-range">Feb 23 - Mar 1</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">ACTIVE MIN</span>
+      <span><span class="stat-value">94</span><span class="delta-positive">+26</span></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">DISTANCE</span>
+      <span><span class="stat-value">7.82 MI</span><span class="delta-positive">+1.3</span></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">WORKOUTS</span>
+      <span><span class="stat-value">4</span><span class="delta-positive">+1</span></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">ACTIVE DAYS</span>
+      <span class="stat-value" style="color:var(--text)">3/5 DAYS</span>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" style="width:60%"></div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="buttons">
+    <button class="btn btn-primary">START RUN</button>
+    <button class="btn btn-secondary">DOG WALK</button>
+    <button class="btn btn-amber">DOG RUN</button>
+    <button class="btn btn-surface">View History</button>
+    <button class="btn btn-surface">Analytics</button>
+  </div>
+
+  <!-- Recent Runs -->
+  <div class="recent-section">
+    <div class="section-divider"></div>
+    <div class="section-header">
+      <span class="section-title">RECENT RUNS</span>
+      <span class="see-all">ALL &#9654;</span>
+    </div>
+    <div class="workout-card">
+      <div class="workout-row1">
+        <span class="workout-date">Today</span>
+        <span class="workout-distance">3.12 mi</span>
+        <span class="workout-duration">25:30</span>
+      </div>
+      <div class="workout-row2">
+        <span class="workout-pace">Avg pace: 8:11 /mi</span>
+        <span class="workout-xp">+150 XP</span>
+      </div>
+    </div>
+    <div class="workout-card">
+      <div class="workout-row1">
+        <span class="workout-date">2 days ago</span>
+        <span class="workout-distance">2.45 mi</span>
+        <span class="workout-duration">21:15</span>
+      </div>
+      <div class="workout-row2">
+        <span class="workout-pace">Avg pace: 8:40 /mi</span>
+        <span class="workout-xp">+120 XP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Dog Walks -->
+  <div class="recent-section">
+    <div class="section-divider"></div>
+    <div class="section-header">
+      <span class="section-title">RECENT DOG WALKS</span>
+      <span class="see-all">ALL &#9654;</span>
+    </div>
+    <div class="workout-card">
+      <div class="workout-row1">
+        <span class="workout-date">Yesterday</span>
+        <span class="workout-distance">1.08 mi</span>
+        <span class="workout-duration">22:45</span>
+      </div>
+      <div class="workout-row2">
+        <span class="workout-pace">Avg pace: 21:04 /mi</span>
+        <span class="workout-xp">+80 XP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Dog Runs (empty) -->
+  <div class="recent-section" style="margin-bottom:24px">
+    <div class="empty-msg">No dog runs yet. Hit DOG RUN to get moving.</div>
+  </div>
+</div>
+
+</body>
+</html>

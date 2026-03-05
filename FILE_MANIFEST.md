@@ -424,6 +424,14 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | `package.json` | Playwright dependencies |
 | `journeys/*.html` | 8 HTML journey files (home, run, dog-walk, history, analytics, settings, rpg) |
 
+## UI Mockups (`docs/mockups/`)
+
+| File | Purpose |
+|------|---------|
+| `theme.css` | Shared CSS design tokens mirroring Color.kt + Type.kt for HTML mockups |
+| `home-screen.html` | Home screen HTML mockup template |
+| `.gitignore` | Ignores generated PNGs and comparisons/ |
+
 ## Watch Firmware (`watch/`)
 
 | File | Purpose |
