@@ -3,10 +3,10 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-03-04
+- **Last Active:** 2026-03-05
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
-- **Test Coverage:** 68.1% line / 51.5% branch
+- **Test Coverage:** 76.4% line / 54.9% branch
 
 ## Activity Log
 
@@ -88,10 +88,14 @@
 | 2026-03-03 | In-app screenshot capture: PixelCopy floating overlay button, MediaStore gallery save, Room screenshots table (DB v14), ScreenCaptureManager singleton, Settings Developer toggle, workout correlation, 9 new tests; merged PR #163 | 18 | 1 | +474/-25 |
 | 2026-03-03 | Screenshot directory restructure: merge historical/ + comparisons/ into history/ (29 entries), add current/ with 24 Roborazzi goldens, unified README with history log; PR #164 | 63 | 1 | +106/-47 |
 | 2026-03-04 | Field test session: fix route ghost VS AVG bug (#170, PR #173), pixelated camera icon (#171, PR #174), sync screenshots to Firebase Storage with 7-day cleanup (#172, PR #176) | 5 | 1 | +161/-1 |
+| 2026-03-04 | Update CLAUDE.md with missing architecture docs: soreness tracking, exercise system, auto-sprint detection, FirebaseModule DI, DB v15 entities, firebase-storage; add Migration_14_15 to FILE_MANIFEST; merged PR #181 | 2 | 1 | +18/-4 |
+| 2026-03-05 | Increase test coverage 68.7%→76.4% line, 51.2%→54.9% branch: 35 new tests — ActiveWorkoutBanner (5), ActivityRings (5), PermissionRequestContent (3), RouteOverlay (4), DetailScreen (5), ActiveWorkoutViewModel (13); 26 new golden screenshots; PR #183 | 38 | 2 | +620/-3 |
+
+| 2026-03-05 | Auto-detect ghost route (#184): RouteAutoDetector with 3-phase GPS trajectory matching, remove manual RouteGhostTagSelector, auto-tag route at save, bearing utility, 17 new tests, field notes from today's walk | 15 | 1 | +420/-75 |
 
 ## Totals
-- **Total Sessions:** 76
-- **Total Commits:** 124
-- **Total Files Changed:** 1096
-- **Total Lines Added:** 46045
-- **Total Lines Removed:** 3880
+- **Total Sessions:** 79
+- **Total Commits:** 128
+- **Total Files Changed:** 1151
+- **Total Lines Added:** 47103
+- **Total Lines Removed:** 3962
