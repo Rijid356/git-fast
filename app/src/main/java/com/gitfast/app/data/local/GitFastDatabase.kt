@@ -37,7 +37,7 @@ import com.gitfast.app.data.local.entity.XpTransactionEntity
         LapStartPointEntity::class,
         ScreenshotEntity::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
