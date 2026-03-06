@@ -272,7 +272,11 @@ class WorkoutSaveManager @Inject constructor(
         weatherTemp: WeatherTemp?,
         energyLevel: EnergyLevel?,
         notes: String?,
-        narrativeDescription: String? = null
+        narrativeDescription: String? = null,
+        weatherTempF: Int? = null,
+        weatherWindMph: Int? = null,
+        weatherHumidity: Int? = null,
+        weatherDescription: String? = null,
     ) {
         val existing = workoutDao.getWorkoutById(workoutId) ?: return
         workoutDao.updateWorkout(
@@ -283,7 +287,11 @@ class WorkoutSaveManager @Inject constructor(
                 weatherTemp = weatherTemp,
                 energyLevel = energyLevel,
                 notes = notes,
-                narrativeDescription = narrativeDescription
+                narrativeDescription = narrativeDescription,
+                weatherTempF = weatherTempF,
+                weatherWindMph = weatherWindMph,
+                weatherHumidity = weatherHumidity,
+                weatherDescription = weatherDescription,
             )
         )
 
