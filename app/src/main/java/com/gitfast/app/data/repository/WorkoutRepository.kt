@@ -4,6 +4,7 @@ import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
+import com.gitfast.app.data.local.entity.WalkPhotoEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.local.mappers.toDomain
@@ -310,5 +311,23 @@ class WorkoutRepository @Inject constructor(
 
     suspend fun getTotalEventCountByType(eventType: String): Int {
         return workoutDao.getTotalEventCountByType(eventType)
+    }
+
+    // --- Walk Photos ---
+
+    suspend fun insertWalkPhoto(photo: WalkPhotoEntity) {
+        workoutDao.insertWalkPhoto(photo)
+    }
+
+    suspend fun getPhotosForWorkout(workoutId: String): List<WalkPhotoEntity> {
+        return workoutDao.getPhotosForWorkout(workoutId)
+    }
+
+    suspend fun deleteWalkPhoto(id: String) {
+        workoutDao.deleteWalkPhoto(id)
+    }
+
+    suspend fun deletePhotosForWorkout(workoutId: String) {
+        workoutDao.deletePhotosForWorkout(workoutId)
     }
 }

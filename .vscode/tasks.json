@@ -1,0 +1,84 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Agent 1: Route Dropdown",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--permission-mode", "acceptEdits",
+        "You are executing Step 1 of Plan #193 (Revamp Dog Walk Summary). Read .claude/plans/193-revamp-dog-walk-summary.md first for full context. Also read .claude/agents/compose-ui-specialist.md for domain-specific conventions and patterns.\n\nYour task: ROUTE DROPDOWN REFACTOR\n\nRewrite RouteTagSelector from FlowRow FilterChips to ExposedDropdownMenuBox.\n\nFiles in scope:\n- ui/dogwalk/RouteTagSelector.kt - Rewrite to dropdown\n- ui/dogwalk/DogWalkSummaryScreen.kt - Update RouteTagSelector usage\n- ui/dogwalk/DogWalkSummaryViewModel.kt - Simplify route tag state\n\nRequirements:\n- Dropdown shows all route tags sorted by lastUsed DESC\n- Auto-detected route is pre-selected (already wired via preSelectedRouteTag)\n- Placeholder text: 'No route detected' when null\n- Bottom item: '+ New Route' triggers inline text field or dialog to add a new tag\n- Small 'auto-detected' hint text below the Route label when preSelectedRouteTag is non-null\n- Remove isCreatingNewTag/newTagName from screen props, simplify the API\n- Keep confirmNewTag logic for the + New Route dialog\n\nOnly work on these files. Do NOT modify files outside your scope. When done, commit your changes with a descriptive message."
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/.claude/worktrees/193-agent-1"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "plan-agents"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Agent 2: Weather API + Data Layer",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--permission-mode", "acceptEdits",
+        "You are executing Steps 2 and 3 of Plan #193 (Revamp Dog Walk Summary). Read .claude/plans/193-revamp-dog-walk-summary.md first for full context. Also read .claude/agents/room-specialist.md for Room/database conventions.\n\nYour task: WEATHER API INFRASTRUCTURE + DATA LAYER EXTENSION\n\nPart A - Weather API (Step 2):\n- app/build.gradle.kts - Add Retrofit 2.9.0, OkHttp 4.12.0, Moshi 1.15.0 dependencies\n- data/remote/WeatherApiService.kt - New Retrofit interface for OpenWeatherMap Current Weather API\n- data/remote/WeatherResponse.kt - New data class mapping OpenWeatherMap JSON response\n- data/model/WeatherData.kt - New domain model: tempF (Int), condition (String), iconCode (String), windSpeedMph (Int), humidity (Int), plus mapping functions to WeatherCondition and WeatherTemp enums\n- di/NetworkModule.kt - New Hilt @Module providing OkHttp client, Moshi, Retrofit, WeatherApiService\n- data/repository/WeatherRepository.kt - New repo: fetchWeather(lat, lon) -> Result<WeatherData>\n- API key: Read from BuildConfig.OPENWEATHER_API_KEY (add buildConfigField in build.gradle.kts reading from local.properties)\n- Endpoint: api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&units=imperial&appid={key}\n\nPart B - Data Layer Extension (Step 3):\n- data/local/entity/WorkoutEntity.kt - Add nullable fields: weatherTempF (Int?), weatherWindMph (Int?), weatherHumidity (Int?), weatherDescription (String?)\n- data/local/AppDatabase.kt - Bump version, add Room migration adding 4 nullable columns\n- data/repository/WorkoutSaveManager.kt - Extend updateDogWalkMetadata() to accept and persist new weather fields\n- data/sync/FirestoreSync.kt - Include new fields in Firestore push (backwards compatible, nullable)\n\nKey decisions:\n- Map condition string to WeatherCondition enum: Clear/Sunny -> SUNNY, Clouds -> CLOUDY, Rain/Drizzle/Thunderstorm -> RAINY, Snow -> SNOWY, Wind conditions -> WINDY\n- Map temp to WeatherTemp: >85 HOT, >70 WARM, >55 MILD, >40 COOL, <=40 COLD\n- Keep existing enum columns for backwards compatibility\n\nOnly work on these files. Do NOT modify UI files. When done, commit your changes with a descriptive message."
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/.claude/worktrees/193-agent-2"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "plan-agents"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Agent 3: Photo Attachments",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--permission-mode", "acceptEdits",
+        "You are executing Step 5 of Plan #193 (Revamp Dog Walk Summary). Read .claude/plans/193-revamp-dog-walk-summary.md first for full context. Also read .claude/agents/compose-ui-specialist.md and .claude/agents/room-specialist.md for domain conventions.\n\nYour task: PHOTO ATTACHMENT FEATURE\n\nData layer:\n- data/local/entity/WalkPhotoEntity.kt - New Room entity: id (String, PK), workoutId (String), filePath (String), createdAt (Long). Add index on workoutId.\n- data/local/WorkoutDao.kt - Add methods: insertWalkPhoto, getPhotosForWorkout(workoutId), deleteWalkPhoto(id), deletePhotosForWorkout(workoutId)\n- data/local/AppDatabase.kt - Add WalkPhotoEntity to entities list (coordinate migration version with Agent 2 if needed - use version bump + additive migration)\n- data/repository/WorkoutRepository.kt - Add photo CRUD wrapper methods\n\nUI layer:\n- ui/dogwalk/PhotoGrid.kt - New composable: horizontal FlowRow of 80x80dp photo thumbnails with rounded corners. Last item is a dashed-border '+ ADD' button. Use AsyncImage (Coil) for thumbnails. Accept list of photo URIs and onAddPhoto/onRemovePhoto callbacks.\n- ui/dogwalk/DogWalkSummaryViewModel.kt - Add photo state: photos list, addPhoto(uri) copies to internal storage filesDir/walk_photos/<workoutId>/, removePhoto(id), persist on save\n- ui/dogwalk/DogWalkSummaryScreen.kt - Add PhotoGrid section between Energy Level and Notes. Use rememberLauncherForActivityResult with PickVisualMedia for the photo picker.\n\nKey details:\n- Use Android PickVisualMedia (Photo Picker API) - ActivityResultContracts.PickVisualMedia()\n- Copy selected images to app internal storage (context.filesDir/walk_photos/<workoutId>/)\n- Generate UUID for each photo filename\n- Photos stored locally only (no Firebase upload in this PR)\n- Check if Coil is already in dependencies; if not, add coil-compose dependency\n\nOnly work on files in your scope. Do NOT modify weather-related files. When done, commit your changes with a descriptive message."
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/.claude/worktrees/193-agent-3"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "plan-agents"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Plan Batch 1: Parallel Features",
+      "dependsOn": [
+        "Agent 1: Route Dropdown",
+        "Agent 2: Weather API + Data Layer",
+        "Agent 3: Photo Attachments"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "Plan: Execute All",
+      "dependsOn": [
+        "Plan Batch 1: Parallel Features"
+      ],
+      "dependsOrder": "parallel",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
