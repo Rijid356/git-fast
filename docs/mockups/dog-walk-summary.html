@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dog Walk Summary</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  .screen {
+    padding: 56px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .header {
+    font-size: var(--headline-medium);
+    color: var(--secondary);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  /* Stats card */
+  .stats-card {
+    width: 100%;
+    background: var(--surface);
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .stat-row:last-child { margin-bottom: 0; }
+  .stat-label {
+    font-size: var(--label-small);
+    color: var(--text-dim);
+  }
+  .stat-value {
+    font-size: var(--title-medium);
+    color: var(--primary);
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: var(--label-medium);
+    color: var(--text-dim);
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  /* Tag grid (route, weather, energy) */
+  .tag-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  .tag {
+    font-family: var(--font);
+    font-size: var(--label-small);
+    color: var(--text);
+    background: var(--surface-variant);
+    border: 1px solid var(--outline);
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  .tag.selected {
+    background: var(--primary);
+    color: var(--bg);
+    border-color: var(--primary);
+  }
+
+  /* Weather condition tags */
+  .weather-conditions { margin-bottom: 8px; }
+
+  /* Notes */
+  .notes-field {
+    width: 100%;
+    height: 100px;
+    background: var(--bg);
+    border: 1px solid var(--surface-variant);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: var(--body-medium);
+    padding: 12px;
+    resize: none;
+    margin-bottom: 24px;
+  }
+  .notes-field:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  /* Buttons */
+  .save-btn {
+    width: 100%;
+    padding: 16px;
+    font-family: var(--font);
+    font-size: var(--label-large);
+    background: var(--secondary);
+    color: var(--bg);
+    border: none;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  .discard-btn {
+    width: 100%;
+    padding: 12px;
+    font-family: var(--font);
+    font-size: var(--label-large);
+    background: transparent;
+    color: var(--error);
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="header">DOG WALK COMPLETE</div>
+
+  <!-- Stats -->
+  <div class="stats-card">
+    <div class="stat-row">
+      <span class="stat-label">TIME</span>
+      <span class="stat-value">22:45</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">DISTANCE</span>
+      <span class="stat-value">1.05 mi</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">AVG PACE</span>
+      <span class="stat-value">21:40 /mi</span>
+    </div>
+  </div>
+
+  <!-- Route -->
+  <div class="section-label">Route</div>
+  <div class="tag-grid">
+    <span class="tag selected">Park Loop</span>
+    <span class="tag">Neighborhood</span>
+    <span class="tag">River Trail</span>
+    <span class="tag">+ New</span>
+  </div>
+
+  <!-- Weather -->
+  <div class="section-label">Weather</div>
+  <div class="tag-grid weather-conditions">
+    <span class="tag">&#9728;&#65039; Sunny</span>
+    <span class="tag">&#9729;&#65039; Cloudy</span>
+    <span class="tag">&#127783;&#65039; Rainy</span>
+    <span class="tag">&#10052;&#65039; Snowy</span>
+    <span class="tag">&#128168; Windy</span>
+  </div>
+  <div class="tag-grid">
+    <span class="tag">Hot</span>
+    <span class="tag">Warm</span>
+    <span class="tag">Mild</span>
+    <span class="tag">Cool</span>
+    <span class="tag">Cold</span>
+  </div>
+
+  <!-- Energy -->
+  <div class="section-label">Energy Level</div>
+  <div class="tag-grid">
+    <span class="tag">Low</span>
+    <span class="tag">Normal</span>
+    <span class="tag">Hyper</span>
+  </div>
+
+  <!-- Notes -->
+  <div class="section-label">Notes</div>
+  <textarea class="notes-field" placeholder=""></textarea>
+
+  <!-- Actions -->
+  <button class="save-btn">SAVE DOG WALK</button>
+  <button class="discard-btn">DISCARD</button>
+
+</div>
+</body>
+</html>

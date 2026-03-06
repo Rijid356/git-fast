@@ -34,6 +34,10 @@ fun WorkoutEntity.toFirestoreMap(): Map<String, Any?> = mapOf(
     "energyLevel" to energyLevel?.name,
     "routeTag" to routeTag,
     "narrativeDescription" to narrativeDescription,
+    "weatherTempF" to weatherTempF,
+    "weatherWindMph" to weatherWindMph,
+    "weatherHumidity" to weatherHumidity,
+    "weatherDescription" to weatherDescription,
 )
 
 fun Map<String, Any?>.toWorkoutEntity(): WorkoutEntity = WorkoutEntity(
@@ -51,6 +55,10 @@ fun Map<String, Any?>.toWorkoutEntity(): WorkoutEntity = WorkoutEntity(
     energyLevel = (this["energyLevel"] as? String)?.let { EnergyLevel.valueOf(it) },
     routeTag = this["routeTag"] as? String,
     narrativeDescription = this["narrativeDescription"] as? String,
+    weatherTempF = (this["weatherTempF"] as? Number)?.toInt(),
+    weatherWindMph = (this["weatherWindMph"] as? Number)?.toInt(),
+    weatherHumidity = (this["weatherHumidity"] as? Number)?.toInt(),
+    weatherDescription = this["weatherDescription"] as? String,
 )
 
 // --- WorkoutPhaseEntity ---

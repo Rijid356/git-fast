@@ -15,6 +15,7 @@ import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.model.WorkoutPhase
 import com.gitfast.app.data.model.WorkoutStatus
+import com.gitfast.app.data.repository.WeatherRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.ui.dogwalk.DogWalkSummaryViewModel
@@ -44,6 +45,7 @@ class DogWalkSummaryViewModelTest {
     private lateinit var application: Application
     private lateinit var workoutRepository: WorkoutRepository
     private lateinit var workoutSaveManager: WorkoutSaveManager
+    private val weatherRepository = mockk<WeatherRepository>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -63,16 +65,18 @@ class DogWalkSummaryViewModelTest {
 
     private fun createViewModel(workoutId: String = "w1"): DogWalkSummaryViewModel {
         val savedStateHandle = SavedStateHandle(mapOf("workoutId" to workoutId))
-        return DogWalkSummaryViewModel(application, savedStateHandle, workoutRepository, workoutSaveManager)
+        return DogWalkSummaryViewModel(application, savedStateHandle, workoutRepository, workoutSaveManager, weatherRepository)
     }
 
     @Test
-    fun `init seeds default route tags`() {
+    fun `init loads route tags from database`() {
+        coEvery { workoutRepository.getAllRouteTags() } returns listOf(
+            RouteTagEntity(name = "Park", createdAt = 0, lastUsed = 200),
+            RouteTagEntity(name = "River Trail", createdAt = 0, lastUsed = 100),
+        )
         val vm = createViewModel()
         val tags = vm.uiState.value.routeTags
-        assertTrue(tags.contains("Park"))
-        assertTrue(tags.contains("Neighborhood"))
-        assertTrue(tags.contains("City"))
+        assertEquals(listOf("Park", "River Trail"), tags)
     }
 
     @Test
@@ -82,14 +86,11 @@ class DogWalkSummaryViewModelTest {
     }
 
     @Test
-    fun `selectRouteTag updates selected tag and clears creating state`() {
+    fun `selectRouteTag updates selected tag`() {
         val vm = createViewModel()
-        vm.startCreatingNewTag()
-        assertTrue(vm.uiState.value.isCreatingNewTag)
-
         vm.selectRouteTag("Park Loop")
         assertEquals("Park Loop", vm.uiState.value.selectedRouteTag)
-        assertFalse(vm.uiState.value.isCreatingNewTag)
+        assertFalse(vm.uiState.value.isRouteAutoDetected)
     }
 
     @Test
@@ -101,42 +102,25 @@ class DogWalkSummaryViewModelTest {
     }
 
     @Test
-    fun `startCreatingNewTag enables creation mode with empty name`() {
-        val vm = createViewModel()
-        vm.startCreatingNewTag()
-        assertTrue(vm.uiState.value.isCreatingNewTag)
-        assertEquals("", vm.uiState.value.newTagName)
-    }
-
-    @Test
-    fun `updateNewTagName updates tag name`() {
-        val vm = createViewModel()
-        vm.startCreatingNewTag()
-        vm.updateNewTagName("River Trail")
-        assertEquals("River Trail", vm.uiState.value.newTagName)
-    }
-
-    @Test
     fun `confirmNewTag adds tag and selects it`() {
         val vm = createViewModel()
-        vm.startCreatingNewTag()
-        vm.updateNewTagName("River Trail")
-        vm.confirmNewTag()
+        vm.confirmNewTag("River Trail")
 
         assertEquals("River Trail", vm.uiState.value.selectedRouteTag)
-        assertFalse(vm.uiState.value.isCreatingNewTag)
         assertTrue(vm.uiState.value.routeTags.contains("River Trail"))
+        assertFalse(vm.uiState.value.isRouteAutoDetected)
     }
 
     @Test
-    fun `confirmNewTag with blank name does nothing`() {
+    fun `confirmNewTag does not duplicate existing tag`() {
+        coEvery { workoutRepository.getAllRouteTags() } returns listOf(
+            RouteTagEntity(name = "Park", createdAt = 0, lastUsed = 100),
+        )
         val vm = createViewModel()
-        vm.startCreatingNewTag()
-        vm.updateNewTagName("   ")
-        vm.confirmNewTag()
+        vm.confirmNewTag("Park")
 
-        assertNull(vm.uiState.value.selectedRouteTag)
-        assertTrue(vm.uiState.value.isCreatingNewTag)
+        assertEquals("Park", vm.uiState.value.selectedRouteTag)
+        assertEquals(1, vm.uiState.value.routeTags.count { it == "Park" })
     }
 
     @Test
@@ -259,21 +243,29 @@ class DogWalkSummaryViewModelTest {
     }
 
     @Test
-    fun `init loads route tags merged with defaults`() {
+    fun `init preserves lastUsed DESC order from database`() {
         coEvery { workoutRepository.getAllRouteTags() } returns listOf(
-            RouteTagEntity(name = "River Trail", createdAt = 0, lastUsed = 0),
-            RouteTagEntity(name = "Park", createdAt = 0, lastUsed = 0), // duplicate of default
+            RouteTagEntity(name = "River Trail", createdAt = 0, lastUsed = 300),
+            RouteTagEntity(name = "Park", createdAt = 0, lastUsed = 200),
+            RouteTagEntity(name = "Neighborhood", createdAt = 0, lastUsed = 100),
         )
 
         val vm = createViewModel()
         val tags = vm.uiState.value.routeTags
 
-        assertTrue(tags.contains("Park"))
-        assertTrue(tags.contains("Neighborhood"))
-        assertTrue(tags.contains("City"))
-        assertTrue(tags.contains("River Trail"))
-        // "Park" should not be duplicated
-        assertEquals(1, tags.count { it == "Park" })
+        assertEquals(listOf("River Trail", "Park", "Neighborhood"), tags)
+    }
+
+    @Test
+    fun `init sets isRouteAutoDetected when preSelectedRouteTag is present`() {
+        coEvery { workoutRepository.getAllRouteTags() } returns listOf(
+            RouteTagEntity(name = "Park", createdAt = 0, lastUsed = 100),
+        )
+        val savedStateHandle = SavedStateHandle(mapOf("workoutId" to "w1", "routeTag" to "Park"))
+        val vm = DogWalkSummaryViewModel(application, savedStateHandle, workoutRepository, workoutSaveManager, weatherRepository)
+
+        assertEquals("Park", vm.uiState.value.selectedRouteTag)
+        assertTrue(vm.uiState.value.isRouteAutoDetected)
     }
 
     @Test

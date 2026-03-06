@@ -17,6 +17,7 @@ import com.gitfast.app.data.local.entity.ExerciseSetEntity
 import com.gitfast.app.data.local.entity.LapStartPointEntity
 import com.gitfast.app.data.local.entity.ScreenshotEntity
 import com.gitfast.app.data.local.entity.UnlockedAchievementEntity
+import com.gitfast.app.data.local.entity.WalkPhotoEntity
 import com.gitfast.app.data.local.entity.XpTransactionEntity
 
 @Database(
@@ -36,8 +37,9 @@ import com.gitfast.app.data.local.entity.XpTransactionEntity
         ExerciseSetEntity::class,
         LapStartPointEntity::class,
         ScreenshotEntity::class,
+        WalkPhotoEntity::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

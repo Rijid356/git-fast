@@ -1,16 +1,20 @@
 package com.gitfast.app.ui.dogwalk
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.local.entity.RouteTagEntity
+import com.gitfast.app.data.local.entity.WalkPhotoEntity
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEvent
 import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
+import com.gitfast.app.data.model.WeatherData
+import com.gitfast.app.data.repository.WeatherRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.util.DogWalkNarrativeGenerator
@@ -22,6 +26,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 data class DogWalkSummaryUiState(
@@ -30,8 +36,7 @@ data class DogWalkSummaryUiState(
     val isDiscarded: Boolean = false,
     val routeTags: List<String> = emptyList(),
     val selectedRouteTag: String? = null,
-    val isCreatingNewTag: Boolean = false,
-    val newTagName: String = "",
+    val isRouteAutoDetected: Boolean = false,
     val weatherCondition: WeatherCondition? = null,
     val weatherTemp: WeatherTemp? = null,
     val energyLevel: EnergyLevel? = null,
@@ -49,6 +54,11 @@ data class DogWalkSummaryUiState(
     val narrative: String? = null,
     val walkStartTimeMillis: Long = 0L,
     val gpsPoints: List<GpsPoint> = emptyList(),
+    // Photos
+    val photos: List<WalkPhoto> = emptyList(),
+    // Weather API data
+    val weatherData: WeatherData? = null,
+    val isWeatherEditing: Boolean = false,
 )
 
 @HiltViewModel
@@ -57,6 +67,7 @@ class DogWalkSummaryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val workoutRepository: WorkoutRepository,
     private val workoutSaveManager: WorkoutSaveManager,
+    private val weatherRepository: WeatherRepository,
 ) : AndroidViewModel(application) {
 
     val workoutId: String = checkNotNull(savedStateHandle["workoutId"])
@@ -65,18 +76,14 @@ class DogWalkSummaryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DogWalkSummaryUiState())
     val uiState: StateFlow<DogWalkSummaryUiState> = _uiState.asStateFlow()
 
-    companion object {
-        private val DEFAULT_ROUTE_TAGS = listOf("Park", "Neighborhood", "City")
-    }
-
     init {
-        // Load route tags, merging with defaults
+        // Load route tags sorted by lastUsed DESC
         viewModelScope.launch {
             val dbTags = workoutRepository.getAllRouteTags().map { it.name }
-            val merged = DEFAULT_ROUTE_TAGS + dbTags.filter { it !in DEFAULT_ROUTE_TAGS }
             _uiState.value = _uiState.value.copy(
-                routeTags = merged,
+                routeTags = dbTags,
                 selectedRouteTag = preSelectedRouteTag,
+                isRouteAutoDetected = preSelectedRouteTag != null,
             )
         }
 
@@ -110,34 +117,52 @@ class DogWalkSummaryViewModel @Inject constructor(
                     walkStartTimeMillis = it.startTime.toEpochMilli(),
                     gpsPoints = it.gpsPoints,
                 )
+
+                // Fetch weather using last GPS point
+                val lastPoint = it.gpsPoints.lastOrNull()
+                if (lastPoint != null) {
+                    fetchWeather(lastPoint.latitude, lastPoint.longitude)
+                }
             }
+        }
+    }
+
+    private fun fetchWeather(lat: Double, lon: Double) {
+        viewModelScope.launch {
+            weatherRepository.fetchWeather(lat, lon)
+                .onSuccess { data ->
+                    _uiState.value = _uiState.value.copy(
+                        weatherData = data,
+                        weatherCondition = data.toWeatherCondition(),
+                        weatherTemp = data.toWeatherTemp(),
+                    )
+                }
         }
     }
 
     fun selectRouteTag(tag: String?) {
         _uiState.value = _uiState.value.copy(
             selectedRouteTag = tag,
-            isCreatingNewTag = false
+            isRouteAutoDetected = false,
         )
     }
 
-    fun startCreatingNewTag() {
-        _uiState.value = _uiState.value.copy(isCreatingNewTag = true, newTagName = "")
+    fun confirmNewTag(name: String) {
+        _uiState.value = _uiState.value.copy(
+            selectedRouteTag = name,
+            isRouteAutoDetected = false,
+            routeTags = if (name in _uiState.value.routeTags) {
+                _uiState.value.routeTags
+            } else {
+                listOf(name) + _uiState.value.routeTags
+            },
+        )
     }
 
-    fun updateNewTagName(name: String) {
-        _uiState.value = _uiState.value.copy(newTagName = name)
-    }
-
-    fun confirmNewTag() {
-        val name = _uiState.value.newTagName.trim()
-        if (name.isNotEmpty()) {
-            _uiState.value = _uiState.value.copy(
-                selectedRouteTag = name,
-                isCreatingNewTag = false,
-                routeTags = _uiState.value.routeTags + name
-            )
-        }
+    fun toggleWeatherEdit() {
+        _uiState.value = _uiState.value.copy(
+            isWeatherEditing = !_uiState.value.isWeatherEditing
+        )
     }
 
     fun selectWeatherCondition(condition: WeatherCondition?) {
@@ -190,15 +215,68 @@ class DogWalkSummaryViewModel @Inject constructor(
                 weatherTemp = state.weatherTemp,
                 energyLevel = state.energyLevel,
                 notes = state.notes.ifEmpty { null },
-                narrativeDescription = state.narrative
+                narrativeDescription = state.narrative,
+                weatherTempF = state.weatherData?.tempF,
+                weatherWindMph = state.weatherData?.windSpeedMph,
+                weatherHumidity = state.weatherData?.humidity,
+                weatherDescription = state.weatherData?.condition,
             )
 
             _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)
         }
     }
 
+    fun addPhoto(uri: Uri) {
+        viewModelScope.launch {
+            val photoDir = File(getApplication<Application>().filesDir, "walk_photos/$workoutId")
+            photoDir.mkdirs()
+            val photoId = UUID.randomUUID().toString()
+            val destFile = File(photoDir, "$photoId.jpg")
+
+            try {
+                getApplication<Application>().contentResolver.openInputStream(uri)?.use { input ->
+                    destFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                val entity = WalkPhotoEntity(
+                    id = photoId,
+                    workoutId = workoutId,
+                    filePath = destFile.absolutePath,
+                    createdAt = System.currentTimeMillis(),
+                )
+                workoutRepository.insertWalkPhoto(entity)
+
+                _uiState.value = _uiState.value.copy(
+                    photos = _uiState.value.photos + WalkPhoto(
+                        id = photoId,
+                        filePath = destFile.absolutePath,
+                    )
+                )
+            } catch (e: Exception) {
+                // If copy fails, clean up partial file
+                destFile.delete()
+            }
+        }
+    }
+
+    fun removePhoto(photoId: String) {
+        viewModelScope.launch {
+            val photo = _uiState.value.photos.find { it.id == photoId } ?: return@launch
+            File(photo.filePath).delete()
+            workoutRepository.deleteWalkPhoto(photoId)
+            _uiState.value = _uiState.value.copy(
+                photos = _uiState.value.photos.filter { it.id != photoId }
+            )
+        }
+    }
+
     fun discardWalk() {
         viewModelScope.launch {
+            // Clean up photo files
+            val photoDir = File(getApplication<Application>().filesDir, "walk_photos/$workoutId")
+            photoDir.deleteRecursively()
             workoutRepository.deleteWorkout(workoutId)
             _uiState.value = _uiState.value.copy(isDiscarded = true)
         }

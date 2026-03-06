@@ -1,5 +1,8 @@
 package com.gitfast.app.ui.dogwalk
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -42,6 +45,11 @@ fun DogWalkSummaryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDiscardDialog by remember { mutableStateOf(false) }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        uri?.let { viewModel.addPhoto(it) }
+    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) onSaved(viewModel.workoutId)
@@ -207,20 +215,20 @@ fun DogWalkSummaryScreen(
             RouteTagSelector(
                 tags = uiState.routeTags,
                 selectedTag = uiState.selectedRouteTag,
-                isCreatingNew = uiState.isCreatingNewTag,
-                newTagName = uiState.newTagName,
+                isAutoDetected = uiState.isRouteAutoDetected,
                 onSelectTag = { viewModel.selectRouteTag(it) },
-                onStartCreatingNew = { viewModel.startCreatingNewTag() },
-                onUpdateNewTagName = { viewModel.updateNewTagName(it) },
-                onConfirmNewTag = { viewModel.confirmNewTag() },
+                onConfirmNewTag = { viewModel.confirmNewTag(it) },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Weather
-            WeatherSelector(
+            WeatherCard(
+                weatherData = uiState.weatherData,
+                isEditing = uiState.isWeatherEditing,
                 selectedCondition = uiState.weatherCondition,
                 selectedTemp = uiState.weatherTemp,
+                onToggleEdit = { viewModel.toggleWeatherEdit() },
                 onConditionSelected = { viewModel.selectWeatherCondition(it) },
                 onTempSelected = { viewModel.selectWeatherTemp(it) },
             )
@@ -231,6 +239,19 @@ fun DogWalkSummaryScreen(
             EnergySelector(
                 selectedLevel = uiState.energyLevel,
                 onLevelSelected = { viewModel.selectEnergyLevel(it) },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Photos
+            PhotoGrid(
+                photos = uiState.photos,
+                onAddPhoto = {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
+                onRemovePhoto = { viewModel.removePhoto(it) },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
