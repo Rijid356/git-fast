@@ -10,6 +10,7 @@ import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
+import com.gitfast.app.data.local.entity.WalkPhotoEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import kotlinx.coroutines.flow.Flow
@@ -221,6 +222,20 @@ interface WorkoutDao {
 
     @Query("SELECT COUNT(DISTINCT eventType) FROM dog_walk_events WHERE workoutId = :workoutId")
     suspend fun getDistinctEventTypeCountForWorkout(workoutId: String): Int
+
+    // --- Walk Photos ---
+
+    @Insert
+    suspend fun insertWalkPhoto(photo: WalkPhotoEntity)
+
+    @Query("SELECT * FROM walk_photos WHERE workoutId = :workoutId ORDER BY createdAt ASC")
+    suspend fun getPhotosForWorkout(workoutId: String): List<WalkPhotoEntity>
+
+    @Query("DELETE FROM walk_photos WHERE id = :id")
+    suspend fun deleteWalkPhoto(id: String)
+
+    @Query("DELETE FROM walk_photos WHERE workoutId = :workoutId")
+    suspend fun deletePhotosForWorkout(workoutId: String)
 
     // --- Deletes ---
 

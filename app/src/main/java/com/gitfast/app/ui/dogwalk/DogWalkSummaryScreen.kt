@@ -1,5 +1,8 @@
 package com.gitfast.app.ui.dogwalk
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -42,6 +45,11 @@ fun DogWalkSummaryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDiscardDialog by remember { mutableStateOf(false) }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+    ) { uri ->
+        uri?.let { viewModel.addPhoto(it) }
+    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) onSaved(viewModel.workoutId)
@@ -231,6 +239,19 @@ fun DogWalkSummaryScreen(
             EnergySelector(
                 selectedLevel = uiState.energyLevel,
                 onLevelSelected = { viewModel.selectEnergyLevel(it) },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Photos
+            PhotoGrid(
+                photos = uiState.photos,
+                onAddPhoto = {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
+                onRemovePhoto = { viewModel.removePhoto(it) },
             )
 
             Spacer(modifier = Modifier.height(16.dp))

@@ -150,6 +150,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
 
+    // Image loading
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.5")
 

@@ -1,10 +1,12 @@
 package com.gitfast.app.ui.dogwalk
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.gitfast.app.data.local.entity.RouteTagEntity
+import com.gitfast.app.data.local.entity.WalkPhotoEntity
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DogWalkEvent
 import com.gitfast.app.data.model.EnergyLevel
@@ -22,6 +24,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
+import java.util.UUID
 import javax.inject.Inject
 
 data class DogWalkSummaryUiState(
@@ -49,6 +53,8 @@ data class DogWalkSummaryUiState(
     val narrative: String? = null,
     val walkStartTimeMillis: Long = 0L,
     val gpsPoints: List<GpsPoint> = emptyList(),
+    // Photos
+    val photos: List<WalkPhoto> = emptyList(),
 )
 
 @HiltViewModel
@@ -197,8 +203,57 @@ class DogWalkSummaryViewModel @Inject constructor(
         }
     }
 
+    fun addPhoto(uri: Uri) {
+        viewModelScope.launch {
+            val photoDir = File(getApplication<Application>().filesDir, "walk_photos/$workoutId")
+            photoDir.mkdirs()
+            val photoId = UUID.randomUUID().toString()
+            val destFile = File(photoDir, "$photoId.jpg")
+
+            try {
+                getApplication<Application>().contentResolver.openInputStream(uri)?.use { input ->
+                    destFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                val entity = WalkPhotoEntity(
+                    id = photoId,
+                    workoutId = workoutId,
+                    filePath = destFile.absolutePath,
+                    createdAt = System.currentTimeMillis(),
+                )
+                workoutRepository.insertWalkPhoto(entity)
+
+                _uiState.value = _uiState.value.copy(
+                    photos = _uiState.value.photos + WalkPhoto(
+                        id = photoId,
+                        filePath = destFile.absolutePath,
+                    )
+                )
+            } catch (e: Exception) {
+                // If copy fails, clean up partial file
+                destFile.delete()
+            }
+        }
+    }
+
+    fun removePhoto(photoId: String) {
+        viewModelScope.launch {
+            val photo = _uiState.value.photos.find { it.id == photoId } ?: return@launch
+            File(photo.filePath).delete()
+            workoutRepository.deleteWalkPhoto(photoId)
+            _uiState.value = _uiState.value.copy(
+                photos = _uiState.value.photos.filter { it.id != photoId }
+            )
+        }
+    }
+
     fun discardWalk() {
         viewModelScope.launch {
+            // Clean up photo files
+            val photoDir = File(getApplication<Application>().filesDir, "walk_photos/$workoutId")
+            photoDir.deleteRecursively()
             workoutRepository.deleteWorkout(workoutId)
             _uiState.value = _uiState.value.copy(isDiscarded = true)
         }
