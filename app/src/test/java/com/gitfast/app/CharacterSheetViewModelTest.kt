@@ -1,6 +1,7 @@
 package com.gitfast.app
 
 import com.gitfast.app.data.healthconnect.HealthConnectManager
+import com.gitfast.app.data.model.BodyCompReading
 import com.gitfast.app.data.model.CharacterProfile
 import com.gitfast.app.data.model.UnlockedAchievement
 import com.gitfast.app.data.model.XpTransaction
@@ -25,9 +26,13 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharacterSheetViewModelTest {
@@ -133,4 +138,132 @@ class CharacterSheetViewModelTest {
 
         assertEquals(emptyList<XpTransaction>(), viewModel.recentXpTransactions.value)
     }
+
+    // --- selectTab ---
+
+    @Test
+    fun `selectTab updates selectedTab state`() = runTest {
+        val (repo, workoutRepo) = mockRepos()
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
+
+        assertEquals(0, viewModel.selectedTab.value)
+        viewModel.selectTab(1)
+        assertEquals(1, viewModel.selectedTab.value)
+    }
+
+    @Test
+    fun `selectTab back to ME tab`() = runTest {
+        val (repo, workoutRepo) = mockRepos()
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
+
+        viewModel.selectTab(1)
+        viewModel.selectTab(0)
+        assertEquals(0, viewModel.selectedTab.value)
+    }
+
+    // --- vitalityState ---
+
+    @Test
+    fun `vitalityState defaults when Health Connect unavailable`() = runTest {
+        val (repo, workoutRepo) = mockRepos()
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
+
+        val state = viewModel.vitalityState.value
+        assertFalse(state.healthConnectConnected)
+        assertEquals(1, state.vitalityStat)
+        assertNull(state.breakdown)
+    }
+
+    @Test
+    fun `vitalityState loads when Health Connect connected with body fat readings`() = runTest {
+        val (repo, workoutRepo) = mockRepos()
+
+        // Override HC to connected
+        every { healthConnectManager.isAvailable() } returns true
+        coEvery { healthConnectManager.hasPermissions() } returns true
+
+        // Mock body comp data
+        coEvery { bodyCompRepo.getWeighInCount(30) } returns 10
+
+        val now = Instant.now()
+        val readings = listOf(
+            BodyCompReading("r1", now.minus(20, ChronoUnit.DAYS), 80.0, 176.4, 25.0, null, null, null, null, null, null, null, "hc"),
+            BodyCompReading("r2", now.minus(10, ChronoUnit.DAYS), 79.0, 174.2, 24.0, null, null, null, null, null, null, null, "hc"),
+            BodyCompReading("r3", now.minus(1, ChronoUnit.DAYS), 78.0, 171.9, 23.0, null, null, null, null, null, null, null, "hc"),
+        )
+        every { bodyCompRepo.getReadingsInRange(any(), any()) } returns flowOf(readings)
+
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
+
+        val state = viewModel.vitalityState.value
+        assertTrue(state.healthConnectConnected)
+        assertEquals(10, state.weighInCount30d)
+        // Body fat trend: 23.0 - 25.0 = -2.0
+        assertNotNull(state.bodyFatTrendPercent)
+        assertEquals(-2.0, state.bodyFatTrendPercent!!, 0.01)
+        assertTrue(state.vitalityStat > 1)
+        assertNotNull(state.breakdown)
+    }
+
+    @Test
+    fun `vitalityState handles connected but no body fat data`() = runTest {
+        val (repo, workoutRepo) = mockRepos()
+
+        every { healthConnectManager.isAvailable() } returns true
+        coEvery { healthConnectManager.hasPermissions() } returns true
+        coEvery { bodyCompRepo.getWeighInCount(30) } returns 5
+
+        // Readings without body fat
+        val now = Instant.now()
+        val readings = listOf(
+            BodyCompReading("r1", now.minus(10, ChronoUnit.DAYS), 80.0, 176.4, null, null, null, null, null, null, null, null, "hc"),
+            BodyCompReading("r2", now.minus(1, ChronoUnit.DAYS), 79.0, 174.2, null, null, null, null, null, null, null, null, "hc"),
+        )
+        every { bodyCompRepo.getReadingsInRange(any(), any()) } returns flowOf(readings)
+
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
+
+        val state = viewModel.vitalityState.value
+        assertTrue(state.healthConnectConnected)
+        assertEquals(5, state.weighInCount30d)
+        assertNull(state.bodyFatTrendPercent)
+    }
+
+    @Test
+    fun `vitalityState handles connected but single body fat reading`() = runTest {
+        val (repo, workoutRepo) = mockRepos()
+
+        every { healthConnectManager.isAvailable() } returns true
+        coEvery { healthConnectManager.hasPermissions() } returns true
+        coEvery { bodyCompRepo.getWeighInCount(30) } returns 1
+
+        val now = Instant.now()
+        val readings = listOf(
+            BodyCompReading("r1", now.minus(5, ChronoUnit.DAYS), 80.0, 176.4, 25.0, null, null, null, null, null, null, null, "hc"),
+        )
+        every { bodyCompRepo.getReadingsInRange(any(), any()) } returns flowOf(readings)
+
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
+
+        val state = viewModel.vitalityState.value
+        assertTrue(state.healthConnectConnected)
+        // Single reading — not enough for trend
+        assertNull(state.bodyFatTrendPercent)
+    }
+
+    @Test
+    fun `vitalityState when Health Connect available but no permissions`() = runTest {
+        val (repo, workoutRepo) = mockRepos()
+
+        every { healthConnectManager.isAvailable() } returns true
+        coEvery { healthConnectManager.hasPermissions() } returns false
+
+        val viewModel = CharacterSheetViewModel(repo, workoutRepo, bodyCompRepo, sorenessRepo, exerciseRepo, healthConnectManager)
+
+        val state = viewModel.vitalityState.value
+        assertFalse(state.healthConnectConnected)
+        assertEquals(1, state.vitalityStat)
+    }
+
+    private fun assertFalse(value: Boolean) = org.junit.Assert.assertFalse(value)
 }
