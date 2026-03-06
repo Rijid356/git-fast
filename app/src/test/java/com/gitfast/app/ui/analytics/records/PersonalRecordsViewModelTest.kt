@@ -5,6 +5,7 @@ import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
+import com.gitfast.app.data.local.entity.WalkPhotoEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.model.ActivityType
@@ -179,5 +180,9 @@ class PersonalRecordsViewModelTest {
         override suspend fun getTotalEventCountByType(eventType: String): Int = 0
         override suspend fun getTotalDogWalkEventCount(): Int = 0
         override suspend fun getDistinctEventTypeCountForWorkout(workoutId: String): Int = 0
+        override suspend fun insertWalkPhoto(photo: WalkPhotoEntity) {}
+        override suspend fun getPhotosForWorkout(workoutId: String): List<WalkPhotoEntity> = emptyList()
+        override suspend fun deleteWalkPhoto(id: String) {}
+        override suspend fun deletePhotosForWorkout(workoutId: String) {}
     }
 }

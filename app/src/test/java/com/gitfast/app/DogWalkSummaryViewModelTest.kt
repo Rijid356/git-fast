@@ -15,6 +15,7 @@ import com.gitfast.app.data.model.WeatherTemp
 import com.gitfast.app.data.model.Workout
 import com.gitfast.app.data.model.WorkoutPhase
 import com.gitfast.app.data.model.WorkoutStatus
+import com.gitfast.app.data.repository.WeatherRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.ui.dogwalk.DogWalkSummaryViewModel
@@ -44,6 +45,7 @@ class DogWalkSummaryViewModelTest {
     private lateinit var application: Application
     private lateinit var workoutRepository: WorkoutRepository
     private lateinit var workoutSaveManager: WorkoutSaveManager
+    private val weatherRepository = mockk<WeatherRepository>(relaxed = true)
 
     @Before
     fun setUp() {
@@ -63,7 +65,7 @@ class DogWalkSummaryViewModelTest {
 
     private fun createViewModel(workoutId: String = "w1"): DogWalkSummaryViewModel {
         val savedStateHandle = SavedStateHandle(mapOf("workoutId" to workoutId))
-        return DogWalkSummaryViewModel(application, savedStateHandle, workoutRepository, workoutSaveManager)
+        return DogWalkSummaryViewModel(application, savedStateHandle, workoutRepository, workoutSaveManager, weatherRepository)
     }
 
     @Test
@@ -260,7 +262,7 @@ class DogWalkSummaryViewModelTest {
             RouteTagEntity(name = "Park", createdAt = 0, lastUsed = 100),
         )
         val savedStateHandle = SavedStateHandle(mapOf("workoutId" to "w1", "routeTag" to "Park"))
-        val vm = DogWalkSummaryViewModel(application, savedStateHandle, workoutRepository, workoutSaveManager)
+        val vm = DogWalkSummaryViewModel(application, savedStateHandle, workoutRepository, workoutSaveManager, weatherRepository)
 
         assertEquals("Park", vm.uiState.value.selectedRouteTag)
         assertTrue(vm.uiState.value.isRouteAutoDetected)
