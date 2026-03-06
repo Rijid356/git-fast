@@ -30,8 +30,7 @@ data class DogWalkSummaryUiState(
     val isDiscarded: Boolean = false,
     val routeTags: List<String> = emptyList(),
     val selectedRouteTag: String? = null,
-    val isCreatingNewTag: Boolean = false,
-    val newTagName: String = "",
+    val isRouteAutoDetected: Boolean = false,
     val weatherCondition: WeatherCondition? = null,
     val weatherTemp: WeatherTemp? = null,
     val energyLevel: EnergyLevel? = null,
@@ -65,18 +64,14 @@ class DogWalkSummaryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DogWalkSummaryUiState())
     val uiState: StateFlow<DogWalkSummaryUiState> = _uiState.asStateFlow()
 
-    companion object {
-        private val DEFAULT_ROUTE_TAGS = listOf("Park", "Neighborhood", "City")
-    }
-
     init {
-        // Load route tags, merging with defaults
+        // Load route tags sorted by lastUsed DESC
         viewModelScope.launch {
             val dbTags = workoutRepository.getAllRouteTags().map { it.name }
-            val merged = DEFAULT_ROUTE_TAGS + dbTags.filter { it !in DEFAULT_ROUTE_TAGS }
             _uiState.value = _uiState.value.copy(
-                routeTags = merged,
+                routeTags = dbTags,
                 selectedRouteTag = preSelectedRouteTag,
+                isRouteAutoDetected = preSelectedRouteTag != null,
             )
         }
 
@@ -117,27 +112,20 @@ class DogWalkSummaryViewModel @Inject constructor(
     fun selectRouteTag(tag: String?) {
         _uiState.value = _uiState.value.copy(
             selectedRouteTag = tag,
-            isCreatingNewTag = false
+            isRouteAutoDetected = false,
         )
     }
 
-    fun startCreatingNewTag() {
-        _uiState.value = _uiState.value.copy(isCreatingNewTag = true, newTagName = "")
-    }
-
-    fun updateNewTagName(name: String) {
-        _uiState.value = _uiState.value.copy(newTagName = name)
-    }
-
-    fun confirmNewTag() {
-        val name = _uiState.value.newTagName.trim()
-        if (name.isNotEmpty()) {
-            _uiState.value = _uiState.value.copy(
-                selectedRouteTag = name,
-                isCreatingNewTag = false,
-                routeTags = _uiState.value.routeTags + name
-            )
-        }
+    fun confirmNewTag(name: String) {
+        _uiState.value = _uiState.value.copy(
+            selectedRouteTag = name,
+            isRouteAutoDetected = false,
+            routeTags = if (name in _uiState.value.routeTags) {
+                _uiState.value.routeTags
+            } else {
+                listOf(name) + _uiState.value.routeTags
+            },
+        )
     }
 
     fun selectWeatherCondition(condition: WeatherCondition?) {

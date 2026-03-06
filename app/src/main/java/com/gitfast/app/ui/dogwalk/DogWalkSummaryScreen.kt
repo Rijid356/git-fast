@@ -207,12 +207,9 @@ fun DogWalkSummaryScreen(
             RouteTagSelector(
                 tags = uiState.routeTags,
                 selectedTag = uiState.selectedRouteTag,
-                isCreatingNew = uiState.isCreatingNewTag,
-                newTagName = uiState.newTagName,
+                isAutoDetected = uiState.isRouteAutoDetected,
                 onSelectTag = { viewModel.selectRouteTag(it) },
-                onStartCreatingNew = { viewModel.startCreatingNewTag() },
-                onUpdateNewTagName = { viewModel.updateNewTagName(it) },
-                onConfirmNewTag = { viewModel.confirmNewTag() },
+                onConfirmNewTag = { viewModel.confirmNewTag(it) },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
