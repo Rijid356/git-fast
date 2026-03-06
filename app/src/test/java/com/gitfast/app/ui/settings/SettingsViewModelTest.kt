@@ -394,6 +394,62 @@ class SettingsViewModelTest {
         assertTrue(vm.uiState.value.screenshotOverlayEnabled)
     }
 
+    // =========================================================================
+    // syncHealthConnect
+    // =========================================================================
+
+    @Test
+    fun `syncHealthConnect calls repository and updates ui state`() = runTest {
+        val vm = createViewModel()
+
+        vm.syncHealthConnect()
+
+        coVerify { mockBodyCompRepository.syncFromHealthConnect() }
+        assertFalse(vm.uiState.value.healthConnectSyncing)
+        assertTrue(vm.uiState.value.healthConnectLastSync > 0)
+    }
+
+    // =========================================================================
+    // onHealthConnectPermissionResult
+    // =========================================================================
+
+    @Test
+    fun `onHealthConnectPermissionResult triggers sync when connected`() = runTest {
+        coEvery { mockHealthConnectManager.hasPermissions() } returns true
+        val vm = createViewModel()
+
+        vm.onHealthConnectPermissionResult(setOf("permission"))
+
+        assertTrue(vm.uiState.value.healthConnectConnected)
+        coVerify { mockBodyCompRepository.syncFromHealthConnect() }
+    }
+
+    @Test
+    fun `onHealthConnectPermissionResult does not sync when not connected`() = runTest {
+        coEvery { mockHealthConnectManager.hasPermissions() } returns false
+        val vm = createViewModel()
+
+        vm.onHealthConnectPermissionResult(emptySet())
+
+        assertFalse(vm.uiState.value.healthConnectConnected)
+        coVerify(exactly = 0) { mockBodyCompRepository.syncFromHealthConnect() }
+    }
+
+    // =========================================================================
+    // signIn error handling
+    // =========================================================================
+
+    @Test
+    fun `signIn failure with no message sets default error`() = runTest {
+        val mockContext = mockk<android.content.Context>(relaxed = true)
+        coEvery { mockGoogleAuthManager.signIn(any()) } returns Result.failure(RuntimeException())
+
+        val vm = createViewModel()
+        vm.signIn(mockContext)
+
+        assertEquals("Sign in failed", vm.uiState.value.signInError)
+    }
+
     @Test
     fun `signIn clears signInError on success`() = runTest {
         val mockUser = mockk<FirebaseUser>()
