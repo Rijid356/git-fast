@@ -223,9 +223,12 @@ fun DogWalkSummaryScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Weather
-            WeatherSelector(
+            WeatherCard(
+                weatherData = uiState.weatherData,
+                isEditing = uiState.isWeatherEditing,
                 selectedCondition = uiState.weatherCondition,
                 selectedTemp = uiState.weatherTemp,
+                onToggleEdit = { viewModel.toggleWeatherEdit() },
                 onConditionSelected = { viewModel.selectWeatherCondition(it) },
                 onTempSelected = { viewModel.selectWeatherTemp(it) },
             )

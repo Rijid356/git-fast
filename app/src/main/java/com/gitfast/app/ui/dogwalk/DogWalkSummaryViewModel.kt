@@ -13,6 +13,8 @@ import com.gitfast.app.data.model.EnergyLevel
 import com.gitfast.app.data.model.GpsPoint
 import com.gitfast.app.data.model.WeatherCondition
 import com.gitfast.app.data.model.WeatherTemp
+import com.gitfast.app.data.model.WeatherData
+import com.gitfast.app.data.repository.WeatherRepository
 import com.gitfast.app.data.repository.WorkoutRepository
 import com.gitfast.app.data.repository.WorkoutSaveManager
 import com.gitfast.app.util.DogWalkNarrativeGenerator
@@ -54,6 +56,9 @@ data class DogWalkSummaryUiState(
     val gpsPoints: List<GpsPoint> = emptyList(),
     // Photos
     val photos: List<WalkPhoto> = emptyList(),
+    // Weather API data
+    val weatherData: WeatherData? = null,
+    val isWeatherEditing: Boolean = false,
 )
 
 @HiltViewModel
@@ -62,6 +67,7 @@ class DogWalkSummaryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val workoutRepository: WorkoutRepository,
     private val workoutSaveManager: WorkoutSaveManager,
+    private val weatherRepository: WeatherRepository,
 ) : AndroidViewModel(application) {
 
     val workoutId: String = checkNotNull(savedStateHandle["workoutId"])
@@ -111,7 +117,26 @@ class DogWalkSummaryViewModel @Inject constructor(
                     walkStartTimeMillis = it.startTime.toEpochMilli(),
                     gpsPoints = it.gpsPoints,
                 )
+
+                // Fetch weather using last GPS point
+                val lastPoint = it.gpsPoints.lastOrNull()
+                if (lastPoint != null) {
+                    fetchWeather(lastPoint.latitude, lastPoint.longitude)
+                }
             }
+        }
+    }
+
+    private fun fetchWeather(lat: Double, lon: Double) {
+        viewModelScope.launch {
+            weatherRepository.fetchWeather(lat, lon)
+                .onSuccess { data ->
+                    _uiState.value = _uiState.value.copy(
+                        weatherData = data,
+                        weatherCondition = data.toWeatherCondition(),
+                        weatherTemp = data.toWeatherTemp(),
+                    )
+                }
         }
     }
 
@@ -131,6 +156,12 @@ class DogWalkSummaryViewModel @Inject constructor(
             } else {
                 listOf(name) + _uiState.value.routeTags
             },
+        )
+    }
+
+    fun toggleWeatherEdit() {
+        _uiState.value = _uiState.value.copy(
+            isWeatherEditing = !_uiState.value.isWeatherEditing
         )
     }
 
@@ -184,7 +215,11 @@ class DogWalkSummaryViewModel @Inject constructor(
                 weatherTemp = state.weatherTemp,
                 energyLevel = state.energyLevel,
                 notes = state.notes.ifEmpty { null },
-                narrativeDescription = state.narrative
+                narrativeDescription = state.narrative,
+                weatherTempF = state.weatherData?.tempF,
+                weatherWindMph = state.weatherData?.windSpeedMph,
+                weatherHumidity = state.weatherData?.humidity,
+                weatherDescription = state.weatherData?.condition,
             )
 
             _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)
