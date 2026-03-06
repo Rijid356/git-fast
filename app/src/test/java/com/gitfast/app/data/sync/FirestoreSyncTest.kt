@@ -7,7 +7,9 @@ import com.gitfast.app.data.local.ScreenshotDao
 import com.gitfast.app.data.local.SettingsStore
 import com.gitfast.app.data.local.WorkoutDao
 import com.gitfast.app.data.local.entity.CharacterProfileEntity
+import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
+import com.gitfast.app.data.local.entity.LapStartPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.ScreenshotEntity
@@ -17,6 +19,7 @@ import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.local.entity.XpTransactionEntity
 import com.gitfast.app.data.model.ActivityType
 import com.gitfast.app.data.model.DistanceUnit
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WorkoutStatus
 import com.google.android.gms.tasks.Task
@@ -26,14 +29,18 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
@@ -762,5 +769,459 @@ class FirestoreSyncTest {
         sync.pushAllScreenshots()
 
         coVerify { screenshotDao.getRecent(50) }
+    }
+
+    // ===== pushLapStartPoints =====
+
+    @Test
+    fun `pushLapStartPoints pushes all local points`() = runTest {
+        val points = listOf(
+            LapStartPointEntity(id = 1, latitude = 40.7128, longitude = -74.006, createdAt = 1000L),
+            LapStartPointEntity(id = 2, latitude = 38.929, longitude = -94.419, createdAt = 2000L),
+        )
+        coEvery { lapStartPointDao.getAll() } returns points
+
+        val col = mockSubCollection("lapStartPoints")
+        val doc1 = mockDocRef(col, "1")
+        val doc2 = mockDocRef(col, "2")
+        stubSetAwait(doc1)
+        stubSetAwait(doc2)
+
+        sync.pushLapStartPoints()
+
+        verify {
+            doc1.set(match<Map<String, Any?>> {
+                it["latitude"] == 40.7128 && it["longitude"] == -74.006 && it["createdAt"] == 1000L
+            })
+        }
+        verify {
+            doc2.set(match<Map<String, Any?>> {
+                it["latitude"] == 38.929 && it["longitude"] == -94.419
+            })
+        }
+    }
+
+    @Test
+    fun `pushLapStartPoints does nothing when no points`() = runTest {
+        coEvery { lapStartPointDao.getAll() } returns emptyList()
+
+        sync.pushLapStartPoints()
+
+        verify(exactly = 0) { userDoc.collection("lapStartPoints") }
+    }
+
+    @Test
+    fun `pushLapStartPoints returns early when not authenticated`() = runTest {
+        every { auth.currentUser } returns null
+
+        sync.pushLapStartPoints()
+
+        coVerify(exactly = 0) { lapStartPointDao.getAll() }
+    }
+
+    @Test
+    fun `pushLapStartPoints catches exception without crashing`() = runTest {
+        coEvery { lapStartPointDao.getAll() } throws RuntimeException("DB error")
+
+        sync.pushLapStartPoints()
+    }
+
+    // ===== pullLapStartPoints =====
+
+    @Test
+    fun `pullLapStartPoints inserts remote points not near existing`() = runTest {
+        val col = mockSubCollection("lapStartPoints")
+        val remoteDoc = mockDocSnapshot("1", mapOf(
+            "latitude" to 40.7128,
+            "longitude" to -74.006,
+            "createdAt" to 5000L,
+        ))
+        stubCollectionGet(col, listOf(remoteDoc))
+
+        // No local points — should insert
+        coEvery { lapStartPointDao.getAll() } returns emptyList()
+
+        sync.pullLapStartPoints()
+
+        coVerify {
+            lapStartPointDao.insert(match {
+                it.latitude == 40.7128 && it.longitude == -74.006 && it.createdAt == 5000L
+            })
+        }
+    }
+
+    @Test
+    fun `pullLapStartPoints skips remote point near existing local point`() = runTest {
+        val col = mockSubCollection("lapStartPoints")
+        // Remote point very close to local (within 50m cluster radius)
+        val remoteDoc = mockDocSnapshot("1", mapOf(
+            "latitude" to 40.7128,
+            "longitude" to -74.006,
+        ))
+        stubCollectionGet(col, listOf(remoteDoc))
+
+        // Local point at nearly the same location
+        coEvery { lapStartPointDao.getAll() } returns listOf(
+            LapStartPointEntity(id = 1, latitude = 40.7128, longitude = -74.006, createdAt = 1000L)
+        )
+
+        sync.pullLapStartPoints()
+
+        coVerify(exactly = 0) { lapStartPointDao.insert(any()) }
+    }
+
+    @Test
+    fun `pullLapStartPoints uses system time when createdAt missing`() = runTest {
+        val col = mockSubCollection("lapStartPoints")
+        val remoteDoc = mockDocSnapshot("1", mapOf(
+            "latitude" to 40.7128,
+            "longitude" to -74.006,
+            // no createdAt key
+        ))
+        stubCollectionGet(col, listOf(remoteDoc))
+        coEvery { lapStartPointDao.getAll() } returns emptyList()
+
+        sync.pullLapStartPoints()
+
+        coVerify {
+            lapStartPointDao.insert(match { it.latitude == 40.7128 && it.createdAt > 0 })
+        }
+    }
+
+    @Test
+    fun `pullLapStartPoints skips doc with missing latitude`() = runTest {
+        val col = mockSubCollection("lapStartPoints")
+        val remoteDoc = mockDocSnapshot("1", mapOf(
+            "longitude" to -74.006,
+        ))
+        stubCollectionGet(col, listOf(remoteDoc))
+        coEvery { lapStartPointDao.getAll() } returns emptyList()
+
+        sync.pullLapStartPoints()
+
+        coVerify(exactly = 0) { lapStartPointDao.insert(any()) }
+    }
+
+    @Test
+    fun `pullLapStartPoints skips doc with null data`() = runTest {
+        val col = mockSubCollection("lapStartPoints")
+        val remoteDoc = mockDocSnapshot("1", null)
+        stubCollectionGet(col, listOf(remoteDoc))
+        coEvery { lapStartPointDao.getAll() } returns emptyList()
+
+        sync.pullLapStartPoints()
+
+        coVerify(exactly = 0) { lapStartPointDao.insert(any()) }
+    }
+
+    @Test
+    fun `pullLapStartPoints returns early when not authenticated`() = runTest {
+        every { auth.currentUser } returns null
+
+        sync.pullLapStartPoints()
+
+        coVerify(exactly = 0) { lapStartPointDao.getAll() }
+    }
+
+    @Test
+    fun `pullLapStartPoints catches exception without crashing`() = runTest {
+        val col = mockSubCollection("lapStartPoints")
+        every { col.get() } returns failedTask(RuntimeException("Network error"))
+
+        sync.pullLapStartPoints()
+    }
+
+    // ===== pushCharacterData XP transactions and achievements =====
+
+    @Test
+    fun `pushCharacterData pushes XP transactions for both profiles`() = runTest {
+        coEvery { characterDao.getProfileOnce(any()) } returns null
+        val tx1 = sampleXpTransaction(1)
+        val tx2 = sampleXpTransaction(2).copy(id = "tx-2")
+        coEvery { characterDao.getXpTransactionsOnce(1) } returns listOf(tx1)
+        coEvery { characterDao.getXpTransactionsOnce(2) } returns listOf(tx2)
+        coEvery { characterDao.getUnlockedAchievementsOnce(any()) } returns emptyList()
+
+        val profilesCol = mockSubCollection("characterProfiles")
+        val xpCol = mockSubCollection("xpTransactions")
+        val txDocRef1 = mockDocRef(xpCol, "tx-1")
+        val txDocRef2 = mockDocRef(xpCol, "tx-2")
+        stubSetAwait(txDocRef1)
+        stubSetAwait(txDocRef2)
+        val achievementsCol = mockSubCollection("achievements")
+
+        sync.pushCharacterData()
+
+        verify { txDocRef1.set(match<Map<String, Any?>> { it["id"] == "tx-1" }) }
+        verify { txDocRef2.set(match<Map<String, Any?>> { it["id"] == "tx-2" }) }
+    }
+
+    @Test
+    fun `pushCharacterData pushes achievements for both profiles`() = runTest {
+        coEvery { characterDao.getProfileOnce(any()) } returns null
+        coEvery { characterDao.getXpTransactionsOnce(any()) } returns emptyList()
+
+        val achievement1 = UnlockedAchievementEntity("first-run", 1000L, 50, 1)
+        val achievement2 = UnlockedAchievementEntity("dog-walker", 2000L, 30, 2)
+        coEvery { characterDao.getUnlockedAchievementsOnce(1) } returns listOf(achievement1)
+        coEvery { characterDao.getUnlockedAchievementsOnce(2) } returns listOf(achievement2)
+
+        val profilesCol = mockSubCollection("characterProfiles")
+        val xpCol = mockSubCollection("xpTransactions")
+        val achievementsCol = mockSubCollection("achievements")
+        val achDocRef1 = mockDocRef(achievementsCol, "first-run_1")
+        val achDocRef2 = mockDocRef(achievementsCol, "dog-walker_2")
+        stubSetAwait(achDocRef1)
+        stubSetAwait(achDocRef2)
+
+        sync.pushCharacterData()
+
+        verify { achDocRef1.set(match<Map<String, Any?>> { it["achievementId"] == "first-run" }) }
+        verify { achDocRef2.set(match<Map<String, Any?>> { it["achievementId"] == "dog-walker" }) }
+    }
+
+    // ===== pullCharacterData XP insert + achievement union =====
+
+    @Test
+    fun `pullCharacterData inserts new XP transaction`() = runTest {
+        val profilesCol = mockSubCollection("characterProfiles")
+        val docRef1 = mockDocRef(profilesCol, "1")
+        val docRef2 = mockDocRef(profilesCol, "2")
+        stubGetAwait(docRef1, null, "1")
+        stubGetAwait(docRef2, null, "2")
+
+        val tx = sampleXpTransaction()
+        val txDoc = mockDocSnapshot("tx-1", tx.toFirestoreMap())
+        val xpCol = mockSubCollection("xpTransactions")
+        stubCollectionGet(xpCol, listOf(txDoc))
+
+        coEvery { characterDao.getXpTransactionForWorkout("w-1", 1) } returns null
+
+        val achievementsCol = mockSubCollection("achievements")
+        stubCollectionGet(achievementsCol, emptyList())
+
+        sync.pullCharacterData()
+
+        coVerify { characterDao.insertXpTransaction(match { it.id == "tx-1" }) }
+    }
+
+    @Test
+    fun `pullCharacterData inserts achievements via union`() = runTest {
+        val profilesCol = mockSubCollection("characterProfiles")
+        val docRef1 = mockDocRef(profilesCol, "1")
+        val docRef2 = mockDocRef(profilesCol, "2")
+        stubGetAwait(docRef1, null, "1")
+        stubGetAwait(docRef2, null, "2")
+
+        val xpCol = mockSubCollection("xpTransactions")
+        stubCollectionGet(xpCol, emptyList())
+
+        val achievement = UnlockedAchievementEntity("first-run", 1000L, 50, 1)
+        val achDoc = mockDocSnapshot("first-run_1", achievement.toFirestoreMap())
+        val achievementsCol = mockSubCollection("achievements")
+        stubCollectionGet(achievementsCol, listOf(achDoc))
+
+        sync.pullCharacterData()
+
+        coVerify {
+            characterDao.insertUnlockedAchievement(match { it.achievementId == "first-run" })
+        }
+    }
+
+    @Test
+    fun `pullCharacterData handles XP transaction foreign key error gracefully`() = runTest {
+        val profilesCol = mockSubCollection("characterProfiles")
+        val docRef1 = mockDocRef(profilesCol, "1")
+        val docRef2 = mockDocRef(profilesCol, "2")
+        stubGetAwait(docRef1, null, "1")
+        stubGetAwait(docRef2, null, "2")
+
+        val tx = sampleXpTransaction()
+        val txDoc = mockDocSnapshot("tx-1", tx.toFirestoreMap())
+        val xpCol = mockSubCollection("xpTransactions")
+        stubCollectionGet(xpCol, listOf(txDoc))
+
+        coEvery { characterDao.getXpTransactionForWorkout("w-1", 1) } returns null
+        coEvery { characterDao.insertXpTransaction(any()) } throws RuntimeException("FK constraint")
+
+        val achievementsCol = mockSubCollection("achievements")
+        stubCollectionGet(achievementsCol, emptyList())
+
+        // Should not crash — the exception is caught
+        sync.pullCharacterData()
+    }
+
+    // ===== pullWorkouts with dog walk events =====
+
+    @Test
+    fun `pullWorkouts inserts dog walk events from workout doc`() = runTest {
+        val dogWalkEvent = DogWalkEventEntity(
+            id = "evt-1", workoutId = "w-1", eventType = DogWalkEventType.PEE,
+            timestamp = 3000L, latitude = 40.7, longitude = -74.0
+        )
+        val workoutData = sampleWorkout().toFirestoreMap().toMutableMap()
+        workoutData["phases"] = emptyList<Map<String, Any?>>()
+        workoutData["laps"] = emptyList<Map<String, Any?>>()
+        workoutData["dogWalkEvents"] = listOf(dogWalkEvent.toFirestoreMap())
+
+        val doc = mockDocSnapshot("w-1", workoutData)
+        val workoutsCol = mockSubCollection("workouts")
+        stubCollectionGet(workoutsCol, listOf(doc))
+        coEvery { workoutDao.getWorkoutById("w-1") } returns null
+
+        val gpsCol = mockSubCollection("gpsPoints")
+        val gpsDocRef = mockDocRef(gpsCol, "w-1")
+        stubGetAwait(gpsDocRef, null, "w-1")
+
+        sync.pullWorkouts()
+
+        coVerify { workoutDao.insertDogWalkEvents(match { it.size == 1 && it[0].id == "evt-1" }) }
+    }
+
+    @Test
+    fun `pullWorkouts skips empty dog walk events`() = runTest {
+        val workoutData = sampleWorkout().toFirestoreMap().toMutableMap()
+        workoutData["phases"] = emptyList<Map<String, Any?>>()
+        workoutData["laps"] = emptyList<Map<String, Any?>>()
+        // no dogWalkEvents key
+
+        val doc = mockDocSnapshot("w-1", workoutData)
+        val workoutsCol = mockSubCollection("workouts")
+        stubCollectionGet(workoutsCol, listOf(doc))
+        coEvery { workoutDao.getWorkoutById("w-1") } returns null
+
+        val gpsCol = mockSubCollection("gpsPoints")
+        val gpsDocRef = mockDocRef(gpsCol, "w-1")
+        stubGetAwait(gpsDocRef, null, "w-1")
+
+        sync.pullWorkouts()
+
+        coVerify(exactly = 0) { workoutDao.insertDogWalkEvents(any()) }
+    }
+
+    // ===== pushWorkout edge cases =====
+
+    @Test
+    fun `pushWorkout computes zero averagePace when distance is zero`() = runTest {
+        val workout = sampleWorkout().copy(distanceMeters = 0.0)
+        coEvery { workoutDao.getWorkoutById("w-1") } returns workout
+        coEvery { workoutDao.getPhasesForWorkout("w-1") } returns emptyList()
+        coEvery { workoutDao.getGpsPointsForWorkout("w-1") } returns emptyList()
+
+        val workoutsCol = mockSubCollection("workouts")
+        val workoutDocRef = mockDocRef(workoutsCol, "w-1")
+        stubSetAwait(workoutDocRef)
+
+        sync.pushWorkout("w-1")
+
+        verify {
+            workoutDocRef.set(match<Map<String, Any?>> {
+                it["averagePaceMs"] == 0L && it["totalDistanceMeters"] == 0.0
+            })
+        }
+    }
+
+    @Test
+    fun `pushWorkout computes zero duration when endTime is null`() = runTest {
+        val workout = sampleWorkout().copy(endTime = null)
+        coEvery { workoutDao.getWorkoutById("w-1") } returns workout
+        coEvery { workoutDao.getPhasesForWorkout("w-1") } returns emptyList()
+        coEvery { workoutDao.getGpsPointsForWorkout("w-1") } returns emptyList()
+
+        val workoutsCol = mockSubCollection("workouts")
+        val workoutDocRef = mockDocRef(workoutsCol, "w-1")
+        stubSetAwait(workoutDocRef)
+
+        sync.pushWorkout("w-1")
+
+        verify {
+            workoutDocRef.set(match<Map<String, Any?>> {
+                it["activeDurationMs"] == 0L
+            })
+        }
+    }
+
+    @Test
+    fun `pushWorkout includes dog walk events in workout map`() = runTest {
+        val event = DogWalkEventEntity(
+            id = "evt-1", workoutId = "w-1", eventType = DogWalkEventType.POOP,
+            timestamp = 2000L, latitude = null, longitude = null
+        )
+        coEvery { workoutDao.getWorkoutById("w-1") } returns sampleWorkout()
+        coEvery { workoutDao.getPhasesForWorkout("w-1") } returns emptyList()
+        coEvery { workoutDao.getGpsPointsForWorkout("w-1") } returns emptyList()
+        coEvery { workoutDao.getDogWalkEventsForWorkout("w-1") } returns listOf(event)
+
+        val workoutsCol = mockSubCollection("workouts")
+        val workoutDocRef = mockDocRef(workoutsCol, "w-1")
+        stubSetAwait(workoutDocRef)
+
+        sync.pushWorkout("w-1")
+
+        verify {
+            workoutDocRef.set(match<Map<String, Any?>> {
+                @Suppress("UNCHECKED_CAST")
+                val events = it["dogWalkEvents"] as? List<Map<String, Any?>>
+                events != null && events.size == 1 && events[0]["id"] == "evt-1"
+            })
+        }
+    }
+
+    // ===== pullSettings edge cases =====
+
+    @Test
+    fun `pullSettings handles invalid distanceUnit gracefully`() = runTest {
+        val settingsMap = mapOf<String, Any?>(
+            "distanceUnit" to "INVALID_UNIT",
+        )
+        stubGetAwait(userDoc, mapOf("settings" to settingsMap), "test-uid")
+
+        sync.pullSettings()
+
+        // Should not crash — invalid enum caught by try/catch
+        verify(exactly = 0) { settingsStore.distanceUnit = any() }
+    }
+
+    @Test
+    fun `pullSettings returns early when settings key missing`() = runTest {
+        stubGetAwait(userDoc, mapOf("other" to "data"), "test-uid")
+
+        sync.pullSettings()
+
+        verify(exactly = 0) { settingsStore.autoPauseEnabled = any() }
+    }
+
+    @Test
+    fun `pullSettings catches exception without crashing`() = runTest {
+        every { userDoc.get() } returns failedTask(RuntimeException("Network error"))
+
+        sync.pullSettings()
+    }
+
+    @Test
+    fun `pullSettings returns early when not authenticated`() = runTest {
+        every { auth.currentUser } returns null
+
+        sync.pullSettings()
+
+        verify(exactly = 0) { userDoc.get() }
+    }
+
+    // ===== pushScreenshot edge cases =====
+
+    @Test
+    fun `pushScreenshot returns early when content resolver returns null`() = runTest {
+        val screenshot = ScreenshotEntity(
+            id = 1, timestamp = 1000L, filename = "test.png",
+            galleryUri = "content://media/test.png"
+        )
+
+        val contentResolver = mockk<android.content.ContentResolver>(relaxed = true)
+        every { context.contentResolver } returns contentResolver
+        every { contentResolver.openInputStream(any()) } returns null
+
+        sync.pushScreenshot(screenshot)
+
+        verify(exactly = 0) { storage.reference }
     }
 }

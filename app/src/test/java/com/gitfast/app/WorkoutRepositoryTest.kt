@@ -1,12 +1,14 @@
 package com.gitfast.app
 
 import com.gitfast.app.data.local.WorkoutDao
+import com.gitfast.app.data.local.entity.DogWalkEventEntity
 import com.gitfast.app.data.local.entity.GpsPointEntity
 import com.gitfast.app.data.local.entity.LapEntity
 import com.gitfast.app.data.local.entity.RouteTagEntity
 import com.gitfast.app.data.local.entity.WorkoutEntity
 import com.gitfast.app.data.local.entity.WorkoutPhaseEntity
 import com.gitfast.app.data.model.ActivityType
+import com.gitfast.app.data.model.DogWalkEventType
 import com.gitfast.app.data.model.PhaseType
 import com.gitfast.app.data.model.WorkoutStatus
 import com.gitfast.app.data.repository.WorkoutRepository
@@ -562,5 +564,237 @@ class WorkoutRepositoryTest {
         coEvery { mockDao.getRecentWorkoutsWithLaps(10) } returns emptyList()
 
         assertTrue(repository.getRecentWorkoutsWithLaps(10).isEmpty())
+    }
+
+    // =========================================================================
+    // getCompletedDogActivityWorkouts (Flow)
+    // =========================================================================
+
+    @Test
+    fun `getCompletedDogActivityWorkouts maps entities with phases`() = runTest {
+        val entity = buildEntity("dw-1", activityType = ActivityType.DOG_WALK)
+        every { mockDao.getCompletedDogActivityWorkouts() } returns flowOf(listOf(entity))
+        coEvery { mockDao.getPhasesForWorkouts(listOf("dw-1")) } returns emptyList()
+
+        val result = repository.getCompletedDogActivityWorkouts().first()
+
+        assertEquals(1, result.size)
+        assertEquals("dw-1", result[0].id)
+        assertEquals(ActivityType.DOG_WALK, result[0].activityType)
+    }
+
+    @Test
+    fun `getCompletedDogActivityWorkouts returns empty when no dog workouts`() = runTest {
+        every { mockDao.getCompletedDogActivityWorkouts() } returns flowOf(emptyList())
+
+        val result = repository.getCompletedDogActivityWorkouts().first()
+
+        assertTrue(result.isEmpty())
+    }
+
+    // =========================================================================
+    // getRouteCandidatesForAutoDetect
+    // =========================================================================
+
+    @Test
+    fun `getRouteCandidatesForAutoDetect returns candidates with sufficient GPS points`() = runTest {
+        val routeWorkouts = listOf(
+            WorkoutDao.RouteTagWorkoutId(id = "w-1", routeTag = "Park Loop"),
+            WorkoutDao.RouteTagWorkoutId(id = "w-2", routeTag = "Trail"),
+        )
+        coEvery { mockDao.getMostRecentWorkoutIdPerRouteTag() } returns routeWorkouts
+        coEvery { mockDao.getFirstGpsPointsForWorkout("w-1", 20) } returns listOf(
+            buildGpsEntity("w-1"),
+            buildGpsEntity("w-1"),
+        )
+        coEvery { mockDao.getFirstGpsPointsForWorkout("w-2", 20) } returns listOf(
+            buildGpsEntity("w-2"),
+            buildGpsEntity("w-2"),
+            buildGpsEntity("w-2"),
+        )
+
+        val result = repository.getRouteCandidatesForAutoDetect()
+
+        assertEquals(2, result.size)
+        assertEquals("Park Loop", result[0].routeTag)
+        assertEquals(2, result[0].referencePoints.size)
+        assertEquals("Trail", result[1].routeTag)
+        assertEquals(3, result[1].referencePoints.size)
+    }
+
+    @Test
+    fun `getRouteCandidatesForAutoDetect filters out routes with fewer than 2 GPS points`() = runTest {
+        val routeWorkouts = listOf(
+            WorkoutDao.RouteTagWorkoutId(id = "w-1", routeTag = "Short"),
+            WorkoutDao.RouteTagWorkoutId(id = "w-2", routeTag = "Valid"),
+        )
+        coEvery { mockDao.getMostRecentWorkoutIdPerRouteTag() } returns routeWorkouts
+        coEvery { mockDao.getFirstGpsPointsForWorkout("w-1", 20) } returns listOf(
+            buildGpsEntity("w-1"),  // only 1 point — should be filtered
+        )
+        coEvery { mockDao.getFirstGpsPointsForWorkout("w-2", 20) } returns listOf(
+            buildGpsEntity("w-2"),
+            buildGpsEntity("w-2"),
+        )
+
+        val result = repository.getRouteCandidatesForAutoDetect()
+
+        assertEquals(1, result.size)
+        assertEquals("Valid", result[0].routeTag)
+    }
+
+    @Test
+    fun `getRouteCandidatesForAutoDetect filters out routes with zero GPS points`() = runTest {
+        val routeWorkouts = listOf(
+            WorkoutDao.RouteTagWorkoutId(id = "w-1", routeTag = "Empty"),
+        )
+        coEvery { mockDao.getMostRecentWorkoutIdPerRouteTag() } returns routeWorkouts
+        coEvery { mockDao.getFirstGpsPointsForWorkout("w-1", 20) } returns emptyList()
+
+        val result = repository.getRouteCandidatesForAutoDetect()
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `getRouteCandidatesForAutoDetect returns empty when no route tags`() = runTest {
+        coEvery { mockDao.getMostRecentWorkoutIdPerRouteTag() } returns emptyList()
+
+        val result = repository.getRouteCandidatesForAutoDetect()
+
+        assertTrue(result.isEmpty())
+    }
+
+    // =========================================================================
+    // Daily/weekly goal flows
+    // =========================================================================
+
+    @Test
+    fun `getTodaysActiveMillis delegates to DAO with today range`() = runTest {
+        every { mockDao.getActiveMillisBetween(any(), any()) } returns flowOf(30_000L)
+
+        val result = repository.getTodaysActiveMillis().first()
+
+        assertEquals(30_000L, result)
+        coVerify { mockDao.getActiveMillisBetween(any(), any()) }
+    }
+
+    @Test
+    fun `getTodaysDistanceMeters delegates to DAO with today range`() = runTest {
+        every { mockDao.getDistanceMetersBetween(any(), any()) } returns flowOf(5000.0)
+
+        val result = repository.getTodaysDistanceMeters().first()
+
+        assertEquals(5000.0, result, 0.001)
+        coVerify { mockDao.getDistanceMetersBetween(any(), any()) }
+    }
+
+    @Test
+    fun `getWeeklyActiveDayCount delegates to DAO with week range`() = runTest {
+        every { mockDao.getActiveDayCountBetween(any(), any()) } returns flowOf(4)
+
+        val result = repository.getWeeklyActiveDayCount().first()
+
+        assertEquals(4, result)
+        coVerify { mockDao.getActiveDayCountBetween(any(), any()) }
+    }
+
+    @Test
+    fun `getWeeklyActiveMillis delegates to DAO with week range`() = runTest {
+        every { mockDao.getActiveMillisBetween(any(), any()) } returns flowOf(120_000L)
+
+        val result = repository.getWeeklyActiveMillis().first()
+
+        assertEquals(120_000L, result)
+    }
+
+    @Test
+    fun `getWeeklyDistanceMeters delegates to DAO with week range`() = runTest {
+        every { mockDao.getDistanceMetersBetween(any(), any()) } returns flowOf(15000.0)
+
+        val result = repository.getWeeklyDistanceMeters().first()
+
+        assertEquals(15000.0, result, 0.001)
+    }
+
+    @Test
+    fun `getWeeklyWorkoutCount delegates to DAO with week range`() = runTest {
+        every { mockDao.getCompletedWorkoutCountBetween(any(), any()) } returns flowOf(3)
+
+        val result = repository.getWeeklyWorkoutCount().first()
+
+        assertEquals(3, result)
+    }
+
+    @Test
+    fun `getPreviousWeekActiveMillis delegates to DAO with previous week range`() = runTest {
+        every { mockDao.getActiveMillisBetween(any(), any()) } returns flowOf(90_000L)
+
+        val result = repository.getPreviousWeekActiveMillis().first()
+
+        assertEquals(90_000L, result)
+    }
+
+    @Test
+    fun `getPreviousWeekDistanceMeters delegates to DAO with previous week range`() = runTest {
+        every { mockDao.getDistanceMetersBetween(any(), any()) } returns flowOf(12000.0)
+
+        val result = repository.getPreviousWeekDistanceMeters().first()
+
+        assertEquals(12000.0, result, 0.001)
+    }
+
+    @Test
+    fun `getPreviousWeekWorkoutCount delegates to DAO with previous week range`() = runTest {
+        every { mockDao.getCompletedWorkoutCountBetween(any(), any()) } returns flowOf(5)
+
+        val result = repository.getPreviousWeekWorkoutCount().first()
+
+        assertEquals(5, result)
+    }
+
+    // =========================================================================
+    // Dog walk events
+    // =========================================================================
+
+    @Test
+    fun `getDogWalkEventsForWorkout maps entities to domain models`() = runTest {
+        val event = DogWalkEventEntity(
+            id = "evt-1",
+            workoutId = "w-1",
+            eventType = DogWalkEventType.PEE,
+            timestamp = 5000L,
+            latitude = 40.7128,
+            longitude = -74.0060,
+        )
+        coEvery { mockDao.getDogWalkEventsForWorkout("w-1") } returns listOf(event)
+
+        val result = repository.getDogWalkEventsForWorkout("w-1")
+
+        assertEquals(1, result.size)
+        assertEquals("evt-1", result[0].id)
+        assertEquals(DogWalkEventType.PEE, result[0].eventType)
+        assertEquals(40.7128, result[0].latitude!!, 0.001)
+    }
+
+    @Test
+    fun `getDogWalkEventsForWorkout returns empty when no events`() = runTest {
+        coEvery { mockDao.getDogWalkEventsForWorkout("w-none") } returns emptyList()
+
+        assertTrue(repository.getDogWalkEventsForWorkout("w-none").isEmpty())
+    }
+
+    @Test
+    fun `getTotalDogWalkEventCount delegates to DAO`() = runTest {
+        coEvery { mockDao.getTotalDogWalkEventCount() } returns 42
+
+        assertEquals(42, repository.getTotalDogWalkEventCount())
+    }
+
+    @Test
+    fun `getTotalEventCountByType delegates to DAO`() = runTest {
+        coEvery { mockDao.getTotalEventCountByType("PEE") } returns 10
+
+        assertEquals(10, repository.getTotalEventCountByType("PEE"))
     }
 }
