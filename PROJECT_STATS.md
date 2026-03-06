@@ -3,10 +3,10 @@
 ## Overview
 - **Project:** git-fast
 - **Started:** 2026-02-17
-- **Last Active:** 2026-03-06
+- **Last Active:** 2026-03-05
 - **Tech Stack:** Kotlin, Jetpack Compose, Android (API 26+), Room, Hilt
 - **Key Dependencies:** androidx-compose-bom, hilt-android, room-runtime, room-ktx, play-services-location, kotlinx-coroutines, material3, maps-compose, health-connect-client
-- **Test Coverage:** 69.7% line / 52.9% branch
+- **Test Coverage:** 76.4% line / 54.9% branch
 
 ## Activity Log
 
@@ -94,12 +94,10 @@
 | 2026-03-05 | Auto-detect ghost route (#184): RouteAutoDetector with 3-phase GPS trajectory matching, remove manual RouteGhostTagSelector, auto-tag route at save, bearing utility, 17 new tests, field notes from today's walk | 15 | 1 | +420/-75 |
 | 2026-03-05 | Agent factory specialists: create 4 domain agents (room, gps, rpg, compose-ui) with project-specific context, patterns, and quality checklists; track .claude/agents/ in git | 5 | 1 | +672/-1 |
 | 2026-03-05 | Generate-agents: add testing-specialist and firebase-specialist agents via /generate-agents skill | 2 | 1 | +398/-0 |
-| 2026-03-06 | Increase test coverage: 49 new tests for WorkoutRepository (62%→100%) and FirestoreSync (70%→86%); overall 68.8%→69.7% line; merged PR #190 | 2 | 1 | +695/-0 |
-| 2026-03-06 | Increase test coverage: 11 new tests for SettingsViewModel (syncHealthConnect, HC permissions, signIn errors) and CharacterSheetViewModel (vitality data loading, selectTab); PR #192 | 2 | 1 | +189/-0 |
 
 ## Totals
-- **Total Sessions:** 83
-- **Total Commits:** 132
-- **Total Files Changed:** 1162
-- **Total Lines Added:** 49057
+- **Total Sessions:** 81
+- **Total Commits:** 130
+- **Total Files Changed:** 1158
+- **Total Lines Added:** 48173
 - **Total Lines Removed:** 3963
