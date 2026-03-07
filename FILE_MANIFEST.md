@@ -432,6 +432,21 @@ All paths relative to `app/src/test/java/com/gitfast/app/`.
 | `home-screen.html` | Home screen HTML mockup template |
 | `.gitignore` | Ignores generated PNGs and comparisons/ |
 
+## Diagrams (`docs/diagrams/`)
+
+| File | Purpose |
+|------|---------|
+| `architecture.excalidraw` | Architecture overview — UI, VM, Service, Data, Util layers |
+| `data-flow.excalidraw` | GPS to persistence data flow |
+| `navigation.excalidraw` | Compose navigation graph (screen transitions) |
+| `db-schema.excalidraw` | Room database ER diagram |
+| `service-lifecycle.excalidraw` | WorkoutService state machine |
+| `workout-phases.excalidraw` | Warmup / Laps / Cooldown phase flow |
+| `rpg-xp-system.excalidraw` | RPG XP calculation and achievement flow |
+| `dependency-injection.excalidraw` | Hilt DI module graph |
+| `exports/` | Exported PNGs referenced by README.md |
+| `exports/README.md` | Instructions for exporting PNGs from Excalidraw |
+
 ## Watch Firmware (`watch/`)
 
 | File | Purpose |
