@@ -1,0 +1,21 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "git-fast",
+  "elements": [],
+  "appState": {
+    "gridSize": 20,
+    "gridStep": 5,
+    "gridModeEnabled": true,
+    "viewBackgroundColor": "#0D1117",
+    "currentItemStrokeColor": "#39FF14",
+    "currentItemBackgroundColor": "transparent",
+    "currentItemFillStyle": "solid",
+    "currentItemStrokeWidth": 2,
+    "currentItemFontFamily": 3,
+    "currentItemFontSize": 16,
+    "currentItemTextAlign": "center",
+    "theme": "dark"
+  },
+  "files": {}
+}
