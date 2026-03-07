@@ -4,7 +4,7 @@
   "source": "git-fast",
   "elements": [
     {
-      "id": "808a640f1f6800de",
+      "id": "1c2be52a655ab7d8",
       "type": "ellipse",
       "x": 0,
       "y": 40,
@@ -27,20 +27,20 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "504c9a7d7fa04ae3",
+          "id": "0457e8e50b3d398d",
           "type": "text"
         },
         {
-          "id": "fbafb9b33b10a3bb",
+          "id": "1dbf6c8799ed7a17",
           "type": "arrow"
         }
       ],
-      "updated": 1772918096893,
+      "updated": 1772918206571,
       "link": null,
       "locked": false
     },
     {
-      "id": "504c9a7d7fa04ae3",
+      "id": "0457e8e50b3d398d",
       "type": "text",
       "x": 4,
       "y": 44,
@@ -62,7 +62,7 @@
       "versionNonce": 536,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206571,
       "link": null,
       "locked": false,
       "text": "Start\nWorkout",
@@ -70,12 +70,12 @@
       "fontFamily": 3,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "808a640f1f6800de",
+      "containerId": "1c2be52a655ab7d8",
       "originalText": "Start\nWorkout",
       "autoResize": true
     },
     {
-      "id": "cf1d0e497711aeed",
+      "id": "e3a0bea003e605ba",
       "type": "rectangle",
       "x": 320,
       "y": 50,
@@ -100,24 +100,24 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "b9f03be012ddee25",
+          "id": "0af4c00e6a0bce06",
           "type": "text"
         },
         {
-          "id": "fbafb9b33b10a3bb",
+          "id": "1dbf6c8799ed7a17",
           "type": "arrow"
         },
         {
-          "id": "3db4341101fba2e7",
+          "id": "60bc86453df778f5",
           "type": "arrow"
         }
       ],
-      "updated": 1772918096893,
+      "updated": 1772918206571,
       "link": null,
       "locked": false
     },
     {
-      "id": "b9f03be012ddee25",
+      "id": "0af4c00e6a0bce06",
       "type": "text",
       "x": 324,
       "y": 54,
@@ -139,7 +139,7 @@
       "versionNonce": 540,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206571,
       "link": null,
       "locked": false,
       "text": "WARMUP Phase",
@@ -147,12 +147,12 @@
       "fontFamily": 3,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "cf1d0e497711aeed",
+      "containerId": "e3a0bea003e605ba",
       "originalText": "WARMUP Phase",
       "autoResize": true
     },
     {
-      "id": "a532313ecc843660",
+      "id": "51ca81c0fbfe60b5",
       "type": "rectangle",
       "x": 640,
       "y": 50,
@@ -177,24 +177,24 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "e73b204feb29f79c",
+          "id": "b9e7d6c3258f6166",
           "type": "text"
         },
         {
-          "id": "3db4341101fba2e7",
+          "id": "60bc86453df778f5",
           "type": "arrow"
         },
         {
-          "id": "ed205fac8d32f01e",
+          "id": "5bca1be3f01344ba",
           "type": "arrow"
         }
       ],
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false
     },
     {
-      "id": "e73b204feb29f79c",
+      "id": "b9e7d6c3258f6166",
       "type": "text",
       "x": 644,
       "y": 54,
@@ -216,7 +216,7 @@
       "versionNonce": 544,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "text": "LAPS Phase",
@@ -224,12 +224,12 @@
       "fontFamily": 3,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "a532313ecc843660",
+      "containerId": "51ca81c0fbfe60b5",
       "originalText": "LAPS Phase",
       "autoResize": true
     },
     {
-      "id": "e2f47e2837600ff9",
+      "id": "7e3a4e12dea0be4e",
       "type": "rectangle",
       "x": 960,
       "y": 50,
@@ -254,24 +254,24 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "39bb44592d740a87",
+          "id": "230dc28915c31c1b",
           "type": "text"
         },
         {
-          "id": "ed205fac8d32f01e",
+          "id": "5bca1be3f01344ba",
           "type": "arrow"
         },
         {
-          "id": "8236bcb9d6a40957",
+          "id": "28062c6c4b171516",
           "type": "arrow"
         }
       ],
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false
     },
     {
-      "id": "39bb44592d740a87",
+      "id": "230dc28915c31c1b",
       "type": "text",
       "x": 964,
       "y": 54,
@@ -293,7 +293,7 @@
       "versionNonce": 548,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "text": "COOLDOWN Phase",
@@ -301,12 +301,12 @@
       "fontFamily": 3,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "e2f47e2837600ff9",
+      "containerId": "7e3a4e12dea0be4e",
       "originalText": "COOLDOWN Phase",
       "autoResize": true
     },
     {
-      "id": "4189ac8f9a376ad1",
+      "id": "fe560648a03c53c3",
       "type": "ellipse",
       "x": 1280,
       "y": 40,
@@ -329,20 +329,20 @@
       "isDeleted": false,
       "boundElements": [
         {
-          "id": "d8bbac2351cba277",
+          "id": "871c6417511ff57c",
           "type": "text"
         },
         {
-          "id": "8236bcb9d6a40957",
+          "id": "28062c6c4b171516",
           "type": "arrow"
         }
       ],
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false
     },
     {
-      "id": "d8bbac2351cba277",
+      "id": "871c6417511ff57c",
       "type": "text",
       "x": 1284,
       "y": 44,
@@ -364,7 +364,7 @@
       "versionNonce": 552,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "text": "Save &\nSummary",
@@ -372,12 +372,12 @@
       "fontFamily": 3,
       "textAlign": "center",
       "verticalAlign": "middle",
-      "containerId": "4189ac8f9a376ad1",
+      "containerId": "fe560648a03c53c3",
       "originalText": "Save &\nSummary",
       "autoResize": true
     },
     {
-      "id": "fbafb9b33b10a3bb",
+      "id": "1dbf6c8799ed7a17",
       "type": "arrow",
       "x": 140,
       "y": 80,
@@ -401,7 +401,7 @@
       "versionNonce": 554,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "points": [
@@ -416,12 +416,12 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "elementId": "808a640f1f6800de",
+        "elementId": "1c2be52a655ab7d8",
         "focus": 0,
         "gap": 5
       },
       "endBinding": {
-        "elementId": "cf1d0e497711aeed",
+        "elementId": "e3a0bea003e605ba",
         "focus": 0,
         "gap": 5
       },
@@ -429,7 +429,7 @@
       "endArrowhead": "arrow"
     },
     {
-      "id": "3db4341101fba2e7",
+      "id": "60bc86453df778f5",
       "type": "arrow",
       "x": 520,
       "y": 72,
@@ -453,7 +453,7 @@
       "versionNonce": 556,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "points": [
@@ -468,12 +468,12 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "elementId": "cf1d0e497711aeed",
+        "elementId": "e3a0bea003e605ba",
         "focus": 0,
         "gap": 5
       },
       "endBinding": {
-        "elementId": "a532313ecc843660",
+        "elementId": "51ca81c0fbfe60b5",
         "focus": 0,
         "gap": 5
       },
@@ -481,7 +481,7 @@
       "endArrowhead": "arrow"
     },
     {
-      "id": "701676cbaa679aa5",
+      "id": "e0d5048099ca2c04",
       "type": "text",
       "x": 547,
       "y": 62,
@@ -503,7 +503,7 @@
       "versionNonce": 558,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "text": "startLaps()",
@@ -516,7 +516,7 @@
       "autoResize": true
     },
     {
-      "id": "ed205fac8d32f01e",
+      "id": "5bca1be3f01344ba",
       "type": "arrow",
       "x": 840,
       "y": 72,
@@ -540,7 +540,7 @@
       "versionNonce": 560,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "points": [
@@ -555,12 +555,12 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "elementId": "a532313ecc843660",
+        "elementId": "51ca81c0fbfe60b5",
         "focus": 0,
         "gap": 5
       },
       "endBinding": {
-        "elementId": "e2f47e2837600ff9",
+        "elementId": "7e3a4e12dea0be4e",
         "focus": 0,
         "gap": 5
       },
@@ -568,7 +568,7 @@
       "endArrowhead": "arrow"
     },
     {
-      "id": "8a2a3e3e76788020",
+      "id": "e60d6dde2c910a90",
       "type": "text",
       "x": 873,
       "y": 62,
@@ -590,7 +590,7 @@
       "versionNonce": 562,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "text": "endLaps()",
@@ -603,7 +603,7 @@
       "autoResize": true
     },
     {
-      "id": "8236bcb9d6a40957",
+      "id": "28062c6c4b171516",
       "type": "arrow",
       "x": 1160,
       "y": 72,
@@ -627,7 +627,7 @@
       "versionNonce": 564,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "points": [
@@ -642,12 +642,12 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "elementId": "e2f47e2837600ff9",
+        "elementId": "7e3a4e12dea0be4e",
         "focus": 0,
         "gap": 5
       },
       "endBinding": {
-        "elementId": "4189ac8f9a376ad1",
+        "elementId": "fe560648a03c53c3",
         "focus": 0,
         "gap": 5
       },
@@ -655,7 +655,7 @@
       "endArrowhead": "arrow"
     },
     {
-      "id": "63294f7dffd2d9d1",
+      "id": "aa99a91bd9c502a9",
       "type": "text",
       "x": 1181,
       "y": 66,
@@ -677,7 +677,7 @@
       "versionNonce": 566,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "text": "stopWorkout()",
@@ -690,7 +690,7 @@
       "autoResize": true
     },
     {
-      "id": "92656f4000e14902",
+      "id": "f9f41df522fc559e",
       "type": "text",
       "x": 670,
       "y": -10,
@@ -712,7 +712,7 @@
       "versionNonce": 568,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1772918096893,
+      "updated": 1772918206572,
       "link": null,
       "locked": false,
       "text": "markLap() (self-loop)",
